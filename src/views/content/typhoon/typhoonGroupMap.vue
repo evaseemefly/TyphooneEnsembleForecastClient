@@ -1,0 +1,1472 @@
+<template>
+    <div id="rescue_map">
+        <div id="map_content">
+            <l-map
+                ref="basemap"
+                :zoom="zoom"
+                :center="center"
+                @click="createMarker"
+                @update:zoom="zoomUpdated"
+                :options="mapOptions"
+                :maxZoom="mapOptions.maxZoom"
+                :minZoom="mapOptions.minZoom"
+            >
+                <l-tile-layer :url="url"></l-tile-layer>
+                <!-- <l-tile-layer :url="coverageUrl"></l-tile-layer> -->
+                <!-- 加载 发布的岸线服务 -->
+                <!-- TODO:[-] 20-09-01 统一将岸线 wms 整合至全球国境线 wms 服务中，此处暂时注释掉 -->
+                <!-- <l-wms-tile-layer
+                    :baseUrl="landWMS.url"
+                    :layers="landWMS.options.layer"
+                    :format="landWMS.options.format"
+                    :transparent="landWMS.options.transparent"
+                ></l-wms-tile-layer> -->
+                <!-- 九段线 -->
+                <l-wms-tile-layer
+                    :baseUrl="ninelineWMS.url"
+                    :layers="ninelineWMS.options.layer"
+                    :format="ninelineWMS.options.format"
+                    :transparent="ninelineWMS.options.transparent"
+                ></l-wms-tile-layer>
+                <!-- 南海岛礁 -->
+                <l-wms-tile-layer
+                    :baseUrl="southlandWMS.url"
+                    :layers="southlandWMS.options.layer"
+                    :format="southlandWMS.options.format"
+                    :transparent="southlandWMS.options.transparent"
+                ></l-wms-tile-layer>
+                <!-- TODO:[-] 20-07-31 添加一个china的图层 -->
+                <!-- <l-wms-tile-layer
+                    :baseUrl="landTwPoygonsWMS.url"
+                    :layers="landTwPoygonsWMS.options.layer"
+                    :format="landTwPoygonsWMS.options.format"
+                    :transparent="landTwPoygonsWMS.options.transparent"
+                    :zIndex="landTwPoygonsWMS.options.zindex"
+                ></l-wms-tile-layer> -->
+
+                <!-- TODO:[-] 20-08-26 新加入的世界国境线 -->
+                <l-wms-tile-layer
+                    :baseUrl="worldLineWMS.url"
+                    :layers="worldLineWMS.options.layer"
+                    :format="worldLineWMS.options.format"
+                    :transparent="worldLineWMS.options.transparent"
+                    :zIndex="worldLineWMS.options.zindex"
+                ></l-wms-tile-layer>
+
+                <!-- TODO:[*] 20-08-11 叠加的风场的 wms dir layer 注意使用此种方式会导致更新 data 后并不会触发wms的刷新！ -->
+                <!-- <l-wms-tile-layer
+                    :baseUrl="windWMS.url"
+                    :layers="windWMS.options.layer"
+                    :format="windWMS.options.format"
+                    :transparent="windWMS.options.transparent"
+                    :styles="windWMS.options.style"
+                ></l-wms-tile-layer> -->
+                <!-- TODO:[-] 20-08-06 新加入的 china 的 dem 图层 
+                        不使用此种方式了，会拖慢加载的速度
+                -->
+                <!-- <l-wms-tile-layer
+                    :baseUrl="landChinaDemUrl"
+                    :layers="landChinaDemOptions.layers"
+                    :format="landChinaDemOptions.format"
+                    :transparent="true"
+                    :zIndex="landChinaDemOptions.zIndex"
+                ></l-wms-tile-layer> -->
+                <!-- 东中国海所在区域 -->
+                <!-- <l-wms-tile-layer
+                    :baseUrl="ecsLineWMSUrl"
+                    :layers="ecsLineWMSOptions.layers"
+                    :format="ecsLineWMSOptions.format"
+                    :transparent="true"
+                ></l-wms-tile-layer> -->
+
+                <!-- TODO:[-] 20-08-07 加入预报区域的线段(非多边形，因为很多情况无法闭合) -->
+                <l-polyline
+                    :lat-lngs="currentPolyLine.latlngs"
+                    :fill="false"
+                    :color="currentPolyLine.style.color"
+                    :stroke="currentPolyLine.style.stroke"
+                    :opacity="currentPolyLine.style.opacity"
+                ></l-polyline>
+                <!-- TODO:[-] 20-08-11 加入的风场的预报区域的线段 -->
+                <l-polyline
+                    :lat-lngs="windPolyLine.latlngs"
+                    :fill="false"
+                    :color="windPolyLine.style.color"
+                    :stroke="windPolyLine.style.stroke"
+                    :opacity="windPolyLine.style.opacity"
+                ></l-polyline>
+                <!-- ------------------- -->
+                <l-polyline
+                    :lat-lngs="polyline.latlngs"
+                    :fill="false"
+                    :color="polyline.color"
+                ></l-polyline>
+                <!-- TODO:[-] 21-03-05 新加入的 西北太测试0.2度切分后的网格 -->
+                <!-- 21-03-06 + 暂时注释掉，使用 wfs 的方式加载并 add to map -->
+                <!-- <l-wms-tile-layer
+                    :baseUrl="ewtDiffPoygonsWMS.url"
+                    :layers="ewtDiffPoygonsWMS.options.layer"
+                    :format="ewtDiffPoygonsWMS.options.format"
+                    :transparent="ewtDiffPoygonsWMS.options.transparent"
+                    :zIndex="ewtDiffPoygonsWMS.options.zindex"
+                ></l-wms-tile-layer> -->
+                <l-circle
+                    v-for="temp in oilAvgPointList"
+                    :key="temp.id"
+                    :lat-lng="temp.latlon"
+                    @click="testOnOver(temp)"
+                />
+                <!-- <l-marker :lat-lng="makerLatlng"></l-marker> -->
+                <l-circle :lat-lng="makerLatlng"></l-circle>
+                <!-- <LeafletHeatmap :lat-lng="oilHeatmapList" :radius="15"></LeafletHeatmap> -->
+                <!-- TODO:[*] 19-10-16 注意若动态的添加latlng的话会报错 -->
+                <!-- 参考的错误如下：
+        https://github.com/jurb/vue2-leaflet-heatmap/issues/2-->
+                <!-- 使用的插件：
+        https://github.com/jurb/vue2-leaflet-heatmap-->
+                <!-- <LeafletHeatmap
+        :lat-lng="oilHeatmapList"
+        :radius="60"
+        :min-opacity=".75"
+        :max-zoom="10"
+        :blur="60"
+        ></LeafletHeatmap>-->
+                <!-- <l-circle v-for="temp in oilScatterPointList" :key="temp.id" :lat-lng="temp" /> -->
+            </l-map>
+            <!-- TODO:[-] 20-07-20 新加入的 main bar 替换之前的 time bar -->
+            <!-- <TimeBar :targetDate="startDate" :days="days" :interval="interval"></TimeBar> -->
+            <BottomMainBar
+                :startDate="startDate"
+                :endDate="finishDate"
+                :interval="interval"
+                :days="days"
+                :currentCaseCoverageList="currentCaseCoverageList"
+            ></BottomMainBar>
+            <div id="process">
+                <!-- TODO:[-] 20-01-27 使用eu的进度条 -->
+                <!-- <el-progress
+          :text-inside="true"
+          :stroke-width="18"
+          :percentage="processOptions.rate"
+        ></el-progress> -->
+                <!-- 使用bt的进度条 -->
+                <!-- <div
+          class="progress-bar progress-bar-striped progress-bar-animated"
+          role="progressbar"
+          aria-valuenow="{{processOptions.rate}}"
+          aria-valuenow="0"
+          aria-valuenow="100"
+          style="width: 75%"
+        ></div> -->
+                <!-- 使用bootstrap-vue的组件 -->
+                <b-progress
+                    :value="processOptions.rate"
+                    :max="100"
+                    show-progress
+                    animated
+                ></b-progress>
+            </div>
+        </div>
+        <div id="ocean-main-toolsbar">
+            <OceanMainToolsBar></OceanMainToolsBar>
+        </div>
+        <!-- <div id="right_opt_toolsbar"> -->
+        <div id="right-bar">
+            <!-- 19-10-28 加入右侧信息栏_v1版本 -->
+            <OilRightBar
+                :oilRealData="oilAvgRealData"
+                :days="days"
+                :startDate="startDate"
+                :interval="interval"
+                :targetDate="current"
+                :numsData="processOptions.num"
+                :oilModelData="targetOilModelData"
+            ></OilRightBar>
+
+            <!-- TODO:[-] 20-07-17 使用统一风格后的 右侧信息栏 -->
+            <!-- <RightOptToolsBar></RightOptToolsBar> -->
+        </div>
+        <!-- TODO:[-] 20-07-14 去掉了地图点选功能 -->
+        <!-- <div id="bottom_btn_make_point">
+            <MakePointBtn></MakePointBtn>
+        </div> -->
+        <div class="left-top-select">
+            <!-- <OilFactorSelect></OilFactorSelect> -->
+            <CurdBtn :caseList="caseList"></CurdBtn>
+        </div>
+        <!-- TODO:[-] 20-01-27 在地图页面加入创建等的btn -->
+        <div id="toolbar_btns">
+            <!-- <CurdBtn></CurdBtn> -->
+        </div>
+
+        <div class="dialog-create-case">
+            <CreatedCaseForm ref="caseForm"></CreatedCaseForm>
+        </div>
+        <!-- <div class="">
+            <GridDetailForm ref="gridForm"></GridDetailForm>
+        </div> -->
+    </div>
+</template>
+<script lang="ts">
+import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
+import { Getter, Mutation, State, namespace } from 'vuex-class'
+import { mixins } from 'vue-class-component'
+import { Debounce } from 'vue-debounce-decorator'
+import * as L from 'leaflet'
+import 'leaflet-velocity'
+import _ from 'lodash'
+// import '@ansur/leaflet-pulse-icon/dist/L.Icon.Pulse'
+// 手动引入 第三方的 icon 脉冲效果
+// import '@ansur/leaflet-pulse-icon/src/L.Icon.Pulse'
+// import '@ansur/leaflet-pulse-icon/src/L.Icon.Pulse.css'
+// import L.icon.Pluse from '@ansur/leaflet-pulse-icon'
+// import * as LV from 'leaflet-velocity'
+// import * as lvts from 'leaflet-velocity-ts'
+// TODO:[*] 19-10-16 加入vue2 leaflet heatmap不使用以下的方式
+// import { HeatmapOverlay } from "heatmap.js";
+// 引入 d3.js
+import * as d3 from 'd3'
+// TODO:[-] 20-08-19 在前端实现根据加载的geojson生成的栅格图层
+// 引入第三方的 leaflet-canvaslayer-field
+// TODO:[*] 20-08-24 使用此插件会引发一个未知错误，就是会导致流场首次加载时出现偏移，只能暂时注释掉
+// import 'leaflet-canvaslayer-field/dist/leaflet.canvaslayer.field'
+// 目前无法通过es6的方式引入该模块
+// Module not found: Error: Can't resolve 'ih-leaflet-canvaslayer-field'
+// import 'ih-leaflet-canvaslayer-field'
+// Module not found: Error: Can't resolve 'leaflet-canvaslayer-field'
+// import 'leaflet-canvaslayer-field'
+
+// 使用leaflet-canvaslayer-field还需要依赖的库
+import chroma from 'chroma-js'
+import * as geotiff from 'geotiff'
+// import * as leafletGeotiff from 'leaflet-canvaslayer-field/dist/leaflet.canvaslayer.field'
+
+// 20-09-02 还是去掉此插件
+// import 'leaflet-canvaslayer-field/dist/leaflet.canvaslayer.field.js'
+// 使用其他的 geotiff 读取插件
+// leaflet-geotiff
+// 20-09-02 注意使用 leaflet-geotiff 需要引入 plotty
+import 'plotty/dist/plotty'
+// import 'leaflet-geotiff'
+// import 'leaflet-geotiff/leaflet-geotiff-plotty'
+// import 'leaflet-geotiff/leaflet-geotiff'
+// import 'leaflet-geotiff/leaflet-geotiff-plotty'
+// ----
+// 使用以下方式可以成功引入(尝试别的办法暂时注释掉，可用)
+// import * as geotiff from 'leaflet-geotiff/leaflet-geotiff'
+// import * as plotty from 'leaflet-geotiff/leaflet-geotiff-plotty'
+// ----
+// 20-09-02 尝试使用:georaster-layer-for-leaflet
+// import * as parse_georaster from 'georaster'
+// import * as GeoRasterLayer from 'georaster-layer-for-leaflet'
+//---
+// 20-09-07 引入了raster-marching-squares
+import * as rasterMarching from 'raster-marching-squares'
+
+// 20-09-0 引入 leaflet-windbarb.js
+// Vue.loadScript('@/common/leaflet-windbarb')
+
+import {
+    LMap,
+    LTileLayer,
+    LMarker,
+    LPopup,
+    LPolyline,
+    LCircle,
+    LIcon,
+    LWMSTileLayer
+    // LeafletHeatmap
+} from 'vue2-leaflet'
+// import LeafletHeatmap from "vue2-leaflet-heatmap";
+
+// github:https://github.com/Leaflet/Leaflet.heat
+// npm:https://www.npmjs.com/package/leaflet.heat
+// import {}  "leaflet.heat";
+// 注意此处的引用方式，极其蛋疼
+import HeatmapOverlay from 'heatmap.js/plugins/leaflet-heatmap'
+
+// 此种方式较为繁琐：https://www.patrick-wied.at/static/heatmapjs/example-heatmap-leaflet.html
+import 'heatmap.js'
+import moment from 'moment'
+// 各类组件
+import TimeBar from '@/views/members/bar/TimeBar.vue'
+import RightDetailBar from '@/views/members/bar/rightBarDetail.vue'
+import RightOilBar from '@/views/members/bar/rightOilBar.vue'
+// 屏幕右侧的各类信息栏
+import OilRightBar from '@/views/bar/oilRightBar.vue'
+// import OilFactorSelect from '@/views/members/select/OilFactorSelect.vue'
+import CreatedCaseForm from '@/views/members/form/create_case/CreateCaseForm.vue'
+// 各类 btn
+import CurdBtn from '@/views/members/tools/CurdBtn.vue'
+import MakePointBtn from '@/views/members/tools/MakePointBtn.vue'
+// 20-07-14 新引入的 屏幕左侧的工具栏
+import OceanMainToolsBar from '@/views/members/bar/toolsBar/oceanMainToolsBar.vue'
+// TODO:[-] 20-07-17 新加入的 右侧操作工具栏
+import RightOptToolsBar from '@/views/members/bar/rightOptToolsBar.vue'
+// TODO:[-] 20-07-20 新加入的底部的 main bar (包含 time bar)
+import BottomMainBar from '@/views/members/bar/bottomMainBar.vue'
+// + 21-03-07 新加入的 grid_charts 模块
+import GridDetailForm from '@/views/members/form/grid_form/GridDetailForm.vue'
+// 各api
+import { loadOilSpillingAvgRealData, getTargetCodeDateRange } from '@/api/api'
+import { loadWindFlow, loadCurrentTif } from '@/api/geo'
+
+// TODO:[-] 20-01-23 尝试将oil的部分操作放在oil 类中()
+// TODO:[-] 21-01-12
+import { Oil, IOptions, OilScatter } from './oil'
+import { Coverage, IOptions as ICoverageOptions } from './coverage'
+import { OilPointRealDataMidModel } from '@/middle_model/rescue'
+import { OilMidModel } from '@/middle_model/oil'
+import { ICaseMin, CaseMinInfo, CaseOilModel } from '@/middle_model/case'
+// 20-10-30 引入 CanvasLayerMidModel
+import { CanvasLayerMidModel } from '@/middle_model/geo'
+import { getDaysNum } from '@/common/date'
+
+// 各类 DTO
+import { CustomerMarker, CustomerGisFormMarker } from './marker'
+// 20-08-11 wms 相关的中间 model
+import { WMSOptionsMidModel, WMSMidModel, WindBarOptMidModel } from '@/middle_model/geo'
+
+// TODO:[-] 20-07-06 将 与 flow 相关的放入在.flow.ts 中
+import { IVelocityDisplayOpt, IVelocityLayerOpt, ICoverageFlow, CoverageCurrentFlow } from './flow'
+
+// 引入常量
+import { optionsFactors, optionsShowTypes } from '@/const/Oil'
+import { DEFAULT_COVERAGE_ID, DEFAULT_NUMBER, USELESS_COVERAGE_ID } from '@/const/common'
+import { OilFactor, ShowType } from '@/enum/OilSelect'
+// 20-10-23 产品种类
+import { ProductEnum } from '@/enum/dict'
+import { AreaEnum } from '@/enum/area'
+import { Case, CaseModelInfo } from '@/views/content/oilspilling/case'
+import { CoverageMin } from '@/views/content/oilspilling/coverage'
+// + 21-01-27 引入 提取到外侧的 mixin const wms
+import { WMSMixin } from '@/views/content/oilspilling/mixin/constWMS'
+import { CommonOptMixin } from '@/views/content/oilspilling/mixin/constOpt'
+import { ConstantMixin } from '@/views/content/oilspilling/mixin/constant'
+import { TestMixin } from '@/views/content/oilspilling/mixin/testMixin'
+import { ConstArrowMixin } from '@/views/content/oilspilling/mixin/constArrow'
+import { WFSMixin } from '@/views/content/oilspilling/mixin/wfsMixin'
+// TODO:[*] 21-03-10 加入的海浪等值线测试 mixin
+// import { WaveMixin } from '@/views/content/oilspilling/mixin/testWaveMixin'
+// + 21-03-24 修改后的 海浪 等值线
+import { WaveMixin } from '@/views/content/oilspilling/mixin/waveMixin'
+// TODO:[-] 20-09-07 对 raster 的业务逻辑进行了拆分
+import {
+    RasterIsoline,
+    RasterPixel,
+    RasterScalar,
+    RasterScalarField,
+    RasterGeoLayer,
+    WindRasterGeoLayer,
+    WaveRasterGeoLayer,
+    IRaster
+} from '@/views/content/oilspilling/raster'
+import { WindArrow } from '@/views/content/oilspilling/arrow'
+// + 21-03-24 海浪等值线绘制类
+import { WaveContourLine, WaveArrow } from '@/views/content/oilspilling/wave'
+// 引入枚举
+import { DictEnum } from '@/enum/dict'
+import { LayerTypeEnum } from '@/enum/map'
+
+// api
+import { loadCoverageInfo, loadGeoserverInfo, loadCoverageListByIds } from '@/api/geo'
+// + 21 typhoon api
+import { getTargetTyGroupComplexModel } from '@/api/tyhoon'
+// STORE 常量
+import {
+    GET_MAP_NOW,
+    GET_CREATE_OIL_CASE_MODAL,
+    GET_CURRENT_LATLNG,
+    GET_GEO_COVERAGETYPE,
+    GET_MAP_LAYERS,
+    GET_CURRENT_LATLNG_LOCK,
+    SET_INITIAL_LATLNG,
+    GET_INITIAL_LATLNG,
+    // + 21-01-27 新加入的用来控制组件间触发异步时间造成的错位情况的 时间锁
+    SET_TIMER_LOCK,
+    GET_TIMER_LOCK
+} from '@/store/types'
+import { DEFAULT_LAYER_ID } from '@/const/common'
+import { ArrayPropsDefinition } from 'vue/types/options'
+import { SET_CURRENT_LATLNG } from '@/store/types'
+
+import { IVelocityOptions, IPolyLine, IRasterOptions } from './types'
+
+const DEFAULT = 'DEFAULT'
+// 21-01-04 分页读取散点的页面散点数
+const DEFAULT_SCATTER_PAGE_COUNT = 1000
+
+@Component({
+    components: {
+        'l-marker': LMarker,
+        'l-map': LMap,
+        'l-tile-layer': LTileLayer,
+        'l-polyline': LPolyline,
+        'l-circle': LCircle,
+        'l-icon': LIcon,
+        'l-wms-tile-layer': LWMSTileLayer,
+        TimeBar,
+        RightDetailBar,
+        RightOilBar,
+        OilRightBar,
+        CurdBtn,
+        CreatedCaseForm,
+        // MakePointBtn,
+        OceanMainToolsBar,
+        RightOptToolsBar,
+        BottomMainBar
+        // GridDetailForm
+        // LeafletHeatmap
+    }
+    // + 21-01-27 新引入的 mixin
+    // mixins: [WMSMixin, CommonOptMixin]
+})
+export default class OilSpillingMap extends mixins(
+    WMSMixin,
+    CommonOptMixin,
+    TestMixin,
+    ConstantMixin,
+    ConstArrowMixin,
+    WaveMixin,
+    WFSMixin
+) {
+    mydata: any = null
+    code = DEFAULT
+    zoom = 5
+    center: number[] = [17.6, 131.6]
+    // TODO:[-] 20-11-09 新加入的 map 相关的一些基础静态配置
+    mapOptions: {} = {
+        preferCanvas: true,
+        minZoom: 3,
+        // 可缩放的最大 level
+        maxZoom: 11,
+        render: L.canvas()
+    }
+    isZoomLock = false
+    coverageUrl = ''
+    makerLatlng = [0, 0]
+    // TODO:[-] 21-01-06 初始位置，加载 case 后将case的初始位置赋值于此
+    initialLatLng = [0, 0]
+    // 指定时间
+    // targetDate: Date = new Date();
+    // 溢油平均轨迹
+    oilAvgPointList: OilPointRealDataMidModel[] = []
+    // TODO:[*] 19-10-31 由于设置类型为any，且赋值为null，引发的子组件在为null的情况下未渲染
+    oilAvgRealData: OilMidModel = new OilMidModel()
+    // 指定时刻的全部轨迹散点数组
+    oilScatterPointList: number[][] = []
+    oilScatterCircleList: any[] = []
+    // TODO:[-] 20-06-21 批量添加通过 group 的方式进行添加
+    layerGroupScatters: any = null
+    // 21-01-04 由 layerScatterMarkersGroups 替代了，因为是分页加载散点
+    // layerGroupTemp: any = null
+    layerScatterMarkersGroups: L.Layer[] = []
+    oilHeatmapList: any[] = []
+    polyline: {
+        latlngs: []
+        color: string
+    } = {
+        latlngs: [],
+        color: 'yellow'
+    }
+
+    // 20-08-09 + 当前选中的coverageInfos
+    // coverageInfoList: { coverageArea: number; coverageType: number }[] = []
+
+    // 预报区域(线,非多边形)
+    currentPolyLine: IPolyLine = {
+        latlngs: [
+            [41.0, 129.836],
+            [41.0, 133.0],
+            [22.2, 133.0],
+            [22.2, 120.8931],
+            [22.2, 120.6888],
+            [22.2, 114.2333]
+        ],
+        style: {
+            stroke: true,
+            opacity: 0.7,
+            color: '#16a085'
+        }
+    }
+
+    // 20-08-11 风场预报区域
+    windPolyLine: IPolyLine = {
+        latlngs: [
+            [0.0, 100.0],
+            [0.0, 150.0],
+            [50.0, 150.0],
+            [50.0, 100],
+            [0.0, 100.0]
+        ],
+        style: {
+            stroke: true,
+            opacity: 0.7,
+            color: '#f39c12'
+        }
+    }
+
+    // TODO:[-] 20-05-25 是否显示 创建 case 的 modal 框
+    isCaseDialogVisible = false
+
+    // TODO:[*] 19-11-04 heatLayer 当前的热图layer
+    tempHeatLayer: HeatmapOverlay = null
+    // TODO:[*] 20-06-13 修改 heatLayer 为一个数组
+    tempHeatLayers: any[] = []
+    // tempHeatData: { lat: number; lng: number }[] = []
+    // TODO:[-] 20-05-26 maker icon 样式
+    icon_marker = L.icon({
+        iconUrl: '/leaflet/images/marker-icon.png',
+        iconSize: [32, 37],
+        iconAnchor: [16, 37] // 防止地图缩放时产品偏移，需固定绝对位置
+    })
+    // TODO:[*] 20-07-15 新加入的关于点选位置添加在地图中的 markers
+    iconMySelectedMarker: L.Marker = null
+    iconMySelectedGisFormMarker: L.Marker = null
+    // 当前选定的 case model 信息
+    tempCaseModel: CaseOilModel
+    // timebar的起始时间
+    // TODO:[*] 19-11-07 去掉默认的起始时间
+    now: Date = new Date()
+    startDate: Date = new Date()
+    targetDate: Date = new Date()
+    finishDate: Date = new Date()
+    // 每天的间隔
+    interval = 24
+    // timebar共有多少天
+    days = 3
+
+    tempOilDivIcon: any = null
+    tempOil: any = null
+    // TODO:[*] 19-11-12 加入show type与show factor
+    showType: number
+    showFactor: number
+    // TODO:[*] 20-01-27 与进度相关的options
+    processOptions: { rate: number; num: { current: number; sum: number } } = {
+        rate: 0,
+        num: { current: 0, sum: 0 }
+    }
+    caseList: CaseMinInfo[] = []
+    // 当前选择的case code对应的 oil 的模型 data
+    targetOilModelData: CaseOilModel = new CaseOilModel()
+    // 新添加的，供 由 coverageId 与 current 发生改变而触发的方法监听使用
+    // TODO:[*] 20-10-25 注意此对象主要是为风场提供使用的
+    wmsOptions: IVelocityOptions = {
+        coverageId: DEFAULT_COVERAGE_ID,
+        current: new Date(),
+        isShow: true,
+        productType: ProductEnum.COVERAGE_TYPE_WIND
+    }
+
+    // TODO:[-] 20-10-25 加入的用来处理 风力杆 的 opt
+    windOptions: IRasterOptions = {
+        coverageId: DEFAULT_COVERAGE_ID,
+        current: new Date(),
+        isShow: false,
+        productType: ProductEnum.COVERAGE_TYPE_WIND,
+        level: 3,
+        area: AreaEnum.GLOBAL
+    }
+    windRasterOptions: IRasterOptions = {
+        // TODO:[-] 21-02-10 注意 coverageId 是由 watch casecode -> loadTargetOilModelData 中修改的，而非 getCoverageId
+        coverageId: DEFAULT_COVERAGE_ID,
+        current: new Date(),
+        isShow: false,
+        productType: ProductEnum.COVERAGE_TYPE_WIND,
+        level: 3,
+        area: AreaEnum.GLOBAL
+    }
+    // TODO:[*] 20-10-31 新加入了用来处理 流场raster 的 opt
+    currentRasterOptions: IRasterOptions = {
+        coverageId: DEFAULT_COVERAGE_ID,
+        current: new Date(),
+        isShow: false,
+        productType: ProductEnum.COVERAGE_TYPE_CURRENT,
+        level: 5,
+        area: AreaEnum.GLOBAL
+    }
+    currentRasterLayerId: number = DEFAULT_LAYER_ID
+    // TODO:[-] 21-03-01 + 加入的 当前 风场 layerId
+    windRasterLayerId: number = DEFAULT_LAYER_ID
+    // TODO:[-] 21-04-05 + 当前的 海浪-海表面高度 LayerId
+    waveWveRasterLayerId: number = DEFAULT_LAYER_ID
+    // TODO:[*] 20-10-22 + 缩放等级
+    zoomLevel = 5
+    // TODO:[-] 20-07-07 + 用来监听实现 windy 效果
+    velocityOptions: IRasterOptions = {
+        coverageId: DEFAULT_COVERAGE_ID,
+        current: new Date(),
+        isShow: false,
+        productType: ProductEnum.COVERAGE_TYPE_CURRENT,
+        level: 5,
+        area: AreaEnum.GLOBAL
+    }
+    // TODO:[-] 21-04-05 + 用来监听 海浪-海表面 高度的 raster
+    waveWveRasterOption: IRasterOptions = {
+        // TODO:[-] 21-04-06 + 区别 DEFAULT
+        coverageId: USELESS_COVERAGE_ID,
+        current: new Date(),
+        isShow: false,
+        productType: ProductEnum.COVERAGE_TYPE_WAVE_WVE,
+        level: 5,
+        area: AreaEnum.GLOBAL
+    }
+    // 风场 layer
+    windLayer: any = null
+    // TODO:[*] 20-10-26 + 风力杆 layer (canvasMarkerLayer)
+    windBarLayer: L.Layer = null
+
+    // TODO:[-] 20-07-30 新加入的 风场 abs的 wms layer
+    windAbsLayer: any = null
+    // 用于动态加载的 wms 的 ws 的str
+    wmsWorkSpace = ''
+    layerControl: any = null
+    // 流场 layer (注意是一个矢量 layer 注意与上面的 风场的区分)
+    velocityLayer: any = null
+    currentRaster: IRaster = null
+    // TODO:[*] 20-07-27 记录当前 add layers to map 时的 layers种类数组
+    existLayers: LayerTypeEnum[] = []
+    // TODO:[-] 20-06-20 加入的是否分页的标识符
+    isPagination = true
+    // 创建大量散点使用 add layerGroup 的方式添加，记录 group 的 id
+    layerGroupId: number = DEFAULT_NUMBER
+    layerGroupIds: number[] = []
+    // 当前的 caseCode 对应的 coverage info min model 集合
+    currentCaseCoverageList: CoverageMin[] = []
+
+    // TODO:[-] 21-01-12
+    oilScatters: OilScatter = null
+
+    // windLayer: any = null
+
+    created() {
+        this.startDate = new Date(
+            this.now.getFullYear(),
+            this.now.getMonth(),
+            this.now.getDate(),
+            0,
+            0
+        )
+        this.targetDate = moment(this.startDate)
+            .add(2, 'days')
+            .add(-1, 'seconds')
+            .toDate()
+        this.finishDate = this.targetDate
+
+        // TODO:[*] 19-11-05:页面加载时需要获取当前code对应的旗帜时间
+        // this.loadDateRange()
+    }
+
+    mounted() {
+        // 由于是测试，页面加载完成后先加载当前 code 的平均轨迹
+        // TODO:[*] 20-01-23 暂时去掉页面加载后读取平均轨迹的步骤(暂时去掉)
+        const testTyphoonId = 1
+        const mymap: L.Map = this.$refs.basemap['mapObject']
+        this.testGetAddTyGroupPath2Map(testTyphoonId)
+    }
+
+    testGetAddTyGroupPath2Map(tyId: number): void {
+        getTargetTyGroupComplexModel(tyId).then((res) => {
+            if (res.status === 200) {
+                console.log(res.data)
+            }
+        })
+    }
+
+    loadCaseList() {
+        this.clearCaseList()
+        const productType = this.$store.getters['common/productType']
+        const caseList: CaseMinInfo[] = []
+        const caseFactory = new Case(productType)
+        caseFactory.getCaseListByUser().then((res) => {
+            // console.log(`获取到上面的promise传给的 CaseMinInfo[]:${res}`)
+            this.caseList = res
+        })
+    }
+
+    // TODO:[-] 20-06-29 加载 岸线的 wms服务
+    initLandWMS(): void {
+        const mymap: any = this.$refs.basemap['mapObject']
+        const wmsLayer = L.tileLayer.wms('http://localhost:8082/geoserver/nmefc_current/wms?', {
+            layers: 'nmefc_current:land_china', //需要加载的图层
+            format: 'image/png', //返回的数据格式
+            transparent: true
+            //crs: L.CRS.EPSG4326
+        })
+        mymap.addLayer(wmsLayer)
+    }
+
+    init9LinesWMS(): void {
+        const mymap: any = this.$refs.basemap['mapObject']
+        const wmsLayer = L.tileLayer.wms('http://localhost:8082/geoserver/nmefc_current/wms?', {
+            layers: 'nmefc_current:9line', //需要加载的图层
+            format: 'image/png', //返回的数据格式
+            transparent: true
+            //crs: L.CRS.EPSG4326
+        })
+        mymap.addLayer(wmsLayer)
+    }
+
+    // 初始化 layer control
+    // TODO:[*] 20-07-27 以后可以去掉 layer control 的这种操作方式
+    initLayerControl(): void {
+        // TODO:[*] 20-07-08 注意已经存在了一个 this.initControlLayer 方法
+        const mymap: any = this.$refs.basemap['mapObject']
+        const esriDarkGreyCanvas = L.tileLayer(
+            'http://{s}.sm.mapstack.stamen.com/' +
+                '(toner-lite,$fff[difference],$fff[@23],$fff[hsl-saturation@20])/' +
+                '{z}/{x}/{y}.png',
+            {
+                attribution: 'Tiles &copy; Esri &mdash; Esri,WMS'
+            }
+        )
+        // 1- 创建 controler 的 base layer
+        const baseLayers = {
+            '风+流场': esriDarkGreyCanvas
+        }
+
+        // 2- 判断 layer control 是否存在，若存在先清除
+        if (this.layerControl != null) {
+            this.layerControl.remove()
+        }
+        // 3- 创建 layer control , add to map
+        this.layerControl = L.control.layers(baseLayers)
+        this.layerControl.setPosition('bottomright')
+        // this.layerControl.addTo(mymap)
+    }
+
+    // 使用 windy 的效果实现 流场
+    initDemoMap(data: any): void {
+        // TODO:[-] 20-07-07 此处的问题已经在地图中渲染的 flow ，并未被及时清除，导致会叠加多个 flow
+        // TODO:[-] 20-07-08 将初始化 layer control 放在 this.initLayerControl 方法中
+        // const mymap: any = this.$refs.basemap['mapObject']
+        // const esriDarkGreyCanvas = L.tileLayer(
+        //     'http://{s}.sm.mapstack.stamen.com/' +
+        //         '(toner-lite,$fff[difference],$fff[@23],$fff[hsl-saturation@20])/' +
+        //         '{z}/{x}/{y}.png',
+        //     {
+        //         attribution: 'Tiles &copy; Esri &mdash; Esri,WMS'
+        //     }
+        // )
+        // const baseLayers = {
+        //     '风+流场': esriDarkGreyCanvas
+        // }
+
+        // this.clearVelocityLayer()
+        // 每次需要判断当前的 layerControl 是否为null，若不为null需要清除
+
+        // if (this.layerControl != null) {
+        //     this.layerControl.remove()
+        // }
+        // this.layerControl = L.control.layers(baseLayers)
+        // this.layerControl.addTo(mymap)
+
+        // TODO:[-] 20-07-08 清除 矢量 layer 以及 初始化 layer control 放在 getcurrent 与 casecode 监听中
+        // this.clearVelocityLayer()
+        // this.initLayerControl()
+        const mymap = this.$refs.basemap['mapObject']
+        // TODO:[-] 21-03-04 每次添加 图层前，需要先判断该图层是否定义，若定义则先remove
+        this.clearVelocityLayer()
+        const currentFlow = new CoverageCurrentFlow()
+        currentFlow.initLayer(data)
+        // 暂时去掉 layerControl
+        // this.layerControl.addOverlay(currentFlow.velocityLayer, '流场-flow-nmefc')
+        this.velocityLayer = currentFlow.velocityLayer
+        // TODO:[*] 21-03-04 缺少 add to map 的步骤
+        this.velocityLayer.addTo(mymap)
+
+        // TODO:[*] 20-08-18 新尝试加入风场的 栅格 图层
+        // d3.json(data, (res) => {
+        //     console.log(res)
+        // })
+        // const s = L.ScalarField.fromASCIIGrid(data)
+        // TODO:[*] 20-09-02 暂时未搞定，先去掉
+        // this.loadGeoTiff()
+        // 20-09-02 此种方式会有无法设置透明度的bug
+        // this.addGeoTiff()
+        // this.addGeoTiff2()
+
+        // this.loadGeoTiffCustomer()
+    }
+
+    // TODO:[*] 20-08-19 以下为使用d3js的测试，暂时不使用d3js了，实现起来较为复杂
+
+    initial() {
+        const mymap = this.$refs.basemap['mapObject']
+        const svg = d3
+                .select(mymap.getPanes().overlayPane)
+                .append('svg')
+                .attr('class', 'leaflet-zoom-hide'),
+            g = svg.append('g')
+        svg.attr('width', 1500).attr('height', 800)
+        drawCircle()
+    }
+
+    // 向 controller 中添加 wms layers
+    addWMSLayer(): void {}
+
+    // TODO:[-] 20-05-26 加入了地图选点的功能
+    createMarker(event: { latlng: { lat: number; lng: number } }): void {
+        let latlon: Array<number> = []
+        latlon = [parseFloat(event.latlng.lat.toFixed(4)), parseFloat(event.latlng.lng.toFixed(4))]
+
+        // console.log(`latlon:${latlon}`)
+        // TODO:[-] 21-01-06 新加入的判断 lock
+        if (!this.getCurrentLatlngLock) {
+            this.setLatlng(latlon)
+        }
+    }
+
+    clearAllLayer(): void {
+        this.clearOilAvgPolyLine()
+        this.clearOilAvgPointList()
+        this.clearAllPoint()
+        // this.clearScatterPoint()
+        this.clearHeatLayer()
+    }
+
+    // 清除散点list
+    clearScatterCircleList(): void {
+        this.oilScatterCircleList = []
+    }
+
+    // 根据 leaflet_id -> map.removce(layer)
+    clearLayerById(id: number): void {
+        const mymap: L.Map = this.$refs.basemap['mapObject']
+        mymap.eachLayer((layer: L.Layer) => {
+            if (layer._leaflet_id === id) {
+                mymap.removeLayer(layer)
+            }
+        })
+    }
+
+    // 向地图中添加溢油详细数据的div
+    // 暂时不用
+    addOilDiv2Map(tempOil: OilMidModel): void {
+        // const myself = this
+        const baseMap: any = this.$refs.basemap
+        const myMap: any = baseMap['mapObject']
+        const oilDivHtml = tempOil.toDivHtml()
+        const oilDivIcon = L.divIcon({
+            className: 'oil_icon_default',
+            html: oilDivHtml,
+            // 坐标，[相对于原点的水平位置（左加右减），相对原点的垂直位置（上加下减）]
+            iconAnchor: [-20, 30]
+        })
+
+        const oilDivIconTemp = L.marker([tempOil.latlon[1], tempOil.latlon[0]], {
+            icon: oilDivIcon
+        }).addTo(myMap)
+        // console.log("将divIcon插入map中");
+        this.tempOilDivIcon = oilDivIconTemp
+    }
+
+    // 根据 case code 获取对应的 case model 信息
+    loadTargetOilModelData(code: string) {
+        this.currentCaseCoverageList = []
+        const oilModel = new CaseModelInfo(code)
+        this.initControlLayer(true)
+        return oilModel.getCaseModelInfo().then((res) => {
+            this.targetOilModelData = res
+            // TODO:[-] 20-12-31 注意对于 流场 + 风场，有一个未选择时，会出现 gids 出现 -1 的情况，需要剔除？
+            // 此处目前的解决办法是从 gids 中剔除 默认的 -1
+            res.gids = res.gids.filter((val) => val !== DEFAULT_COVERAGE_ID)
+            loadCoverageListByIds(res.gids).then((resCoverageList) => {
+                /*
+                    coverage_area: 502
+                    coverage_type: 401
+                    create_date: "2020-06-19T06:20:31Z"
+                    dimessions: "time,lat,lon"
+                    file_name: "ecsnew_current_20200618.nc"
+                    file_size: 369656808
+                    id: 65
+                    is_original: null
+                    relative_path: "COMMON\DAILY\2020\06\16"
+                    root_path: "D:\03data\geoserver_data\current"
+                    variables: "u,v"
+                    []
+                */
+                // 返回 指定 ids 的对应的 geo_coverageinfo 集合
+                if (resCoverageList.status == 200) {
+                    loadGeoserverInfo().then((resGeoSer) => {
+                        // 此处只是用于获取 geoserver 的服务地址
+                        if (resGeoSer.status == 200) {
+                            const server: { host: string } = resGeoSer.data[0]
+                            resCoverageList.data.forEach(
+                                (temp: {
+                                    id: number
+                                    file_name: string
+                                    coverage_type: number
+                                    coverage_area: number
+                                }) => {
+                                    const coverageName = temp.file_name.split('.')[0]
+                                    this.currentCaseCoverageList.push(
+                                        new CoverageMin(
+                                            temp.id,
+                                            coverageName,
+                                            temp.coverage_type,
+                                            temp.coverage_area
+                                        )
+                                    )
+                                    // 执行 add wms layer (to control 不再使用 control 了)
+                                    if (temp.coverage_type === DictEnum.COVERAGE_TYPE_WIND) {
+                                        // TODO:[-] 20-07-07 注意若 返回的 coverage 为 风场(风场数据是需要加载wms服务的),所以此处需要修改 this.wmsOptions -> coverageId
+                                        this.wmsOptions.coverageId = temp.id
+                                        this.windOptions.coverageId = temp.id
+                                        // TODO:[-] 21-02-10 新加入了 wind raster
+                                        this.windRasterOptions.coverageId = temp.id
+                                        // TODO:[-] 21-03-04 由于在加载 case info 时，不需要手动触发加载 wms 相关服务以及 windy 效果的服务,以下暂时注释掉
+                                        // this.loadWMSFactory(temp.id, this.targetDate, server)
+                                    }
+                                    // TODO:[-] + 20-07-07 执行 add velocity layer
+                                    if (temp.coverage_type == DictEnum.COVERAGE_TYPE_CURRENT) {
+                                        this.velocityOptions.coverageId = temp.id
+                                        // 20-11-01 + 修改 currentRaster Opt
+                                        this.currentRasterOptions.coverageId = temp.id
+                                        // TODO:[-] 21-03-04 由于在加载 case info 时，不需要手动触发加载 wms 相关服务以及 windy 效果的服务,以下暂时注释掉
+                                        // this.loadFlowWindyFactory(temp.id, this.targetDate)
+                                    }
+                                }
+                            )
+                        }
+                    })
+                }
+            })
+        })
+    }
+
+    loadTargetRealData(code: string, date: Date) {
+        // const myself = this
+        loadOilSpillingAvgRealData(code, date).then((res) => {
+            if (res.status === 200) {
+                // console.log(res.data);
+                const data = res.data
+                this.oilAvgRealData = new OilMidModel(
+                    data['time'],
+                    data['status'],
+                    data['code'],
+                    data['point']['coordinates'].reverse(),
+                    data['current'],
+                    data['wind']
+                )
+            }
+        })
+    }
+
+    // TODO:[*] 19-11-05 根据当前的 code 获取oil avg的起止时间
+    loadDateRange(): void {
+        // const myself = this
+        getTargetCodeDateRange(this.code)
+            .then((res) => {
+                if (res.status === 200) {
+                    // 获取起止时间
+                    const start = new Date(res.data['start'])
+                    const end = new Date(res.data['end'])
+                    /*
+          下面需要获取：
+                [ ] -1 有多少天
+                [ ] -2 起始时间
+                [ ] -3 每天的格子数量
+
+        */
+                    // console.log(res);
+                    const daysCount = getDaysNum(start, end)
+                    this.days = daysCount
+                    // 20-02-20 加载其实时间范围时，为current赋值
+                    // TODO:[-] 20-06-20 在获取时间范围时，只需要为起止时间赋值，不需要设置当前的时间
+                    // this.$store.dispatch('map/setNow', start)
+                    this.startDate = start
+                    this.finishDate = end
+                    // TODO:[*] 19-11-07 此处每次获取完start之后，先赋值给current，之后再由timebar选择之后再更新
+                    this.targetDate = start
+                }
+            })
+            .catch((res) => {
+                console.log(`获取时间范围出错${res}`)
+            })
+    }
+
+    // TODO:[*] 20-04-17 根据当前的 task -> db: user_taskinfo -> rela_geo_base -> geo_coverageinfo
+    loadDateRangeByCoverage(): void {}
+
+    // 将当前的溢油数据的div从map中移出
+    clearOilDivFromMap(): void {
+        // console.log("鼠标移出");
+        // const myself = this
+        const mymap: any = this.$refs.basemap['mapObject']
+        mymap.removeLayer(this.tempOilDivIcon)
+        this.tempOilDivIcon = null
+    }
+
+    // TODO:[*] 19-11-08 使用vuex-clas的方式监听oil 的两个select
+    @Getter('getShowFactor', { namespace: 'oil' }) getShowFactor
+
+    @Watch('getShowFactor')
+    OnShowFactor(val: number) {
+        // console.log(`监听到vuex中namespace:oil factor发生变化:${valNew}`);
+        this.showFactor = val
+        // TODO:[-] 20-01-23 此处暂时注释掉对于factor改变后应该加载的业务逻辑
+    }
+
+    @Getter('casecode', { namespace: 'case' }) casecode: string
+
+    @Getter('getShowType', { namespace: 'oil' }) getShowType: number
+
+    @Watch('processOptions.rate')
+    onProcessOptions(rate: number) {
+        // console.log(`监听到processOptions发生变化:${rate}`)
+    }
+
+    // TODO:[-] 20-06-24 缩放至指定位置
+    zoomLocation(point: { lat: number; lng: number }) {
+        console.log(point)
+        this.center = [point.lat, point.lng]
+    }
+
+    // 20-08-12 监听 当前的 targetOilModelData 的变化，若发生变化后则更新 自定义的 位置 marker
+    @Watch('targetOilModelData')
+    onOilModelData(res: CaseOilModel): void {
+        // 21-01-06 监听到 当前的 oilModelData变化后，将lat,lon 赋值给 this.initialLatlng
+        this.setLatlng([res.lat, res.lon])
+        this.setInitialLatlng([res.lat, res.lon])
+        this.addPositionMarker2Map([res.lat, res.lon])
+    }
+
+    addPositionMarker2Map(latlon: number[]): void {
+        const mymap: L.Map = this.$refs.basemap['mapObject']
+        this.makerLatlng = latlon
+        // TODO:[-] 20-07-15 暂时注释掉 pulse icon 因为会出现偏移
+        // const iconMarker = L.icon.pulse({ iconSize: [12, 12], color: 'red' })
+        // L.marker(valNew, { icon: iconMarker }).addTo(mymap)
+
+        if (this.iconMySelectedMarker !== null) {
+            mymap.removeLayer(this.iconMySelectedMarker)
+            mymap.removeLayer(this.iconMySelectedGisFormMarker)
+        }
+        const myIcon = new CustomerMarker()
+        const myIconGisForm = new CustomerGisFormMarker(latlon)
+        const myIconHtml = myIcon.toHtml()
+        const myMarkerIcon = L.divIcon({
+            className: 'my-marker',
+            html: myIconHtml,
+            iconAnchor: [6, 6]
+        })
+
+        // TODO:[*] 21-03-09 ERROR:
+        // [Vue warn]: Error in callback for watcher "getLatlng": "RangeError: Maximum call stack size exceeded"
+        const myDivIcon = L.marker([latlon[0], latlon[1]], {
+            icon: myMarkerIcon
+        }).addTo(mymap)
+        this.iconMySelectedMarker = myDivIcon
+
+        const myDivIconGisForm = L.marker([latlon[0], latlon[1]], {
+            icon: L.divIcon({
+                className: 'my-marker-gis-form',
+                html: myIconGisForm.toHtml(),
+                iconAnchor: [-30, 30]
+            })
+        }).addTo(mymap)
+        this.iconMySelectedGisFormMarker = myDivIconGisForm
+    }
+
+    // @Getter('getNow', { namespace: 'map' }) getcurrent
+
+    // TODO:[*] 20-02-20 监听 store->map->mutations->GET_MAP_NOW
+    // @Mutation(GET_MAP_NOW, { namespace: 'map' }) getcurrent
+
+    @Getter('getNow', { namespace: 'map' }) getcurrent
+
+    // @Debounce(2000)
+    @Watch('getcurrent')
+    async onCurrent(valNew: Date): Promise<void> {
+        const mymap: L.Map = this.$refs.basemap['mapObject']
+        const that = this
+        // TODO:[-] 21-01-27 将异步时间锁锁住
+    }
+
+    // TODO:[-] 20-04-16 注意此处的 Getter -> geo.ts -> getters 而不是 actions!
+    @Getter('coverageid', { namespace: 'geo' }) getCoverageId
+
+    @Watch('getCoverageId')
+    onCoverageId(valNew: number): void {}
+
+    @Getter('coverageType', { namespace: 'geo' }) getCoverageType
+
+    @Watch('getCoverageType')
+    onCoverageType(valNew: number): void {}
+
+    // TODO:[*] 20-10-26 + 加入用来验证 风场|流场|流场raster opt 的变动情况
+    verifyOpt(newvalNew: { coverageId: number; isShow: boolean }, unChechShow = true): boolean {
+        if (newvalNew.coverageId === DEFAULT_COVERAGE_ID) {
+            return false
+        }
+        return (unChechShow || newvalNew.isShow) && this.loadRasterLock
+    }
+
+    @Watch('wmsOptions', { immediate: true, deep: true })
+    onWmsOptions(valNew: { coverageId: number; current: Date }): void {
+        const that = this
+    }
+
+    // TODO:[-] 20-10-25 + 加入的监听风场变化
+    @Watch('windOptions', { immediate: true, deep: true })
+    onWindOptions(valNew: IRasterOptions, valOld: IRasterOptions): void {}
+
+    // TODO:[-] 21-03-24 + 监听全球海浪等值线
+    @Watch('waveOptions', { immediate: true, deep: true })
+    onWaveOptions(valNew: IRasterOptions): void {}
+
+    // TODO:[-] 21-02-10 + 监听风场 raster 的变化以加载风场 geotiff to map
+    @Watch('windRasterOptions', { immediate: true, deep: true })
+    onWindRasterOptions(valNew: IRasterOptions, valOld: IRasterOptions): void {}
+
+    // TODO:[-] 21-04-05 + 监听 海浪-海表面高度 raster 的变化以加载海浪 geotiff -> map
+    @Watch('waveWveRasterOption', { immediate: true, deep: true })
+    onWaveWveRasterOptions(valNew: IRasterOptions): void {}
+
+    @Watch('getCurrentRasterOptions', { immediate: true, deep: true })
+    onCurrentRasterOptions(valNew: IRasterOptions, valOld: IRasterOptions): void {}
+
+    @Watch('currentRasterLayerId')
+    onCurrentRasterLayerId(valNew: number, valOld: number): void {}
+
+    @Watch('wmsOpt')
+    onWmsOpt(valNew: any): void {
+        // console.log(valNew)
+    }
+
+    @Mutation(SET_CURRENT_LATLNG, { namespace: 'map' })
+    setLatlng
+
+    @Getter('GET_CURRENT_LATLNG', { namespace: 'map' }) getLatlng: Array<number>
+
+    @Watch('getLatlng')
+    onLatlng(valNew: Array<number>): void {
+        // this.addPositionMarker2Map(valNew)
+    }
+
+    @Mutation(SET_INITIAL_LATLNG, { namespace: 'map' })
+    setInitialLatlng
+
+    @Getter(GET_INITIAL_LATLNG, { namespace: 'map' })
+    getInitialLatlng: number[]
+
+    @Getter('GET_CURRENT_LATLNG_LOCK', { namespace: 'map' }) getCurrentLatlngLock: boolean
+
+    // 监听当前 map 需要叠加的 layer
+    @Getter(GET_MAP_LAYERS, { namespace: 'map' })
+    getLayers: LayerTypeEnum[]
+
+    // + 21-01-27 新加入的用来控制组件间触发异步时间造成的错位情况的 时间锁
+    @Mutation(SET_TIMER_LOCK, { namespace: 'map' })
+    setTimerLock
+
+    @Getter(GET_TIMER_LOCK, { namespace: 'map' }) getMapTimerLock: boolean
+
+    @Watch('zoom')
+    OnZoom(valNew: number, valOld: number): void {
+        // 使用此种方式实现对于平移触发 -> update:zoom 相同值的过滤
+        // console.log(`new:${valNew}|old:${valOld}`)
+        let level = 0
+        if (valNew > 5) {
+            level = 5
+        } else if (valNew <= 5) {
+            level = 3
+        }
+        // 修改对应的风力杆 -> windOptions
+        this.windOptions.level = level
+    }
+
+    zoomUpdated(valNew: number, valOld: number): void {
+        this.zoom = valNew
+        // console.log(`new:${valNew}|old:${valOld}`)
+    }
+
+    @Watch('getLayers')
+    OnLayers(valNews: LayerTypeEnum[]): void {
+        this.coverageWMS2Map(valNews)
+    }
+}
+</script>
+<style lang="less">
+// TODO:[*] 19-11-13 注意引入less时不需要加.less后缀
+@import '../../../styles/base';
+@import '../../../styles/map/my-leaflet';
+@import './style/arrow';
+
+#rescue_map {
+    /* height: 100%; */
+    /* display: flex;
+  flex-direction: column; */
+
+    .vue2leaflet-map {
+        // TODO:[-] 20-08-07 若使用自己发的地图服务可以使用此空缺配色
+        // background: #bdc3c7;
+    }
+    @center();
+    // @test();
+    // display: flex;
+    // flex: 22;
+    // height: 86vh;
+    /* width: 1500px;
+  height: 700px; */
+    /* background: #2a79d4; */
+
+    // 左侧的切换按钮
+    .left-top-select {
+        position: absolute;
+        top: 70px;
+        left: 50px;
+        z-index: 1500;
+        display: flex;
+    }
+
+    #toolbar_btns {
+        position: absolute;
+        top: 17em;
+        // left: 10em;
+        z-index: 1500;
+        width: 70%;
+    }
+
+    // TODO:[-] 20-07-13 由于右侧信息栏要隐藏，所以禁用了滚动条
+    overflow: hidden;
+}
+
+#map_content {
+    // 此处放在base.less中的@centermap中
+    // padding: 10px;
+    flex: 5;
+    display: flex;
+    flex-direction: column;
+    // 留出右侧的 信息栏 的位置
+    // margin-right: 50px;
+    @centermap();
+
+    #process {
+        display: flex;
+        z-index: 1500;
+        width: 100%;
+
+        .progress {
+            width: 100%;
+        }
+
+        // margin-right: 10rem;
+        // position: absolute;
+        // bottom: 8rem;
+        // left: 12rem;
+        // width: 15em;
+    }
+
+    // TODO:[-] 20-06-18 添加的 overlayer 的样式
+    .leaflet-control-layers-list label {
+        color: black !important;
+    }
+
+    // 20-08-04 覆盖一下leaflet的control-zoom 样式
+    .leaflet-control-container {
+        .leaflet-top {
+            top: 60px;
+        }
+    }
+}
+
+#right-bar {
+    // 不再需要 右侧信息栏 占位，
+    // flex: 1;
+    // margin-right: 10px;
+    // padding: 10px;
+    padding-top: 10px;
+
+    position: absolute;
+    right: 10px;
+    z-index: 1500;
+    width: 300px;
+    top: 70px;
+    /* background: rgba(188, 143, 143, 0.507); */
+}
+
+#rescue_map .vue2leaflet-map {
+    /* display: flex;
+  flex-direction: column;
+  flex: 24; */
+    display: flex;
+    flex: 1;
+    /* 底部圆角 */
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+// 加载散点的进度条
+
+// 地图页面的打点功能
+#bottom_btn_make_point {
+    position: absolute;
+    z-index: 1500;
+    bottom: 7rem;
+    left: 0.5rem;
+}
+
+.oil_icon_default {
+    width: 750px !important;
+    z-index: 1700 !important;
+}
+
+.typhoon_data_div .row {
+    color: white;
+}
+
+.typhoon_data_div .card-body {
+    color: white;
+}
+
+.typhoon_data_div {
+    z-index: 10000;
+    color: white;
+    padding-left: 0px !important;
+    padding-right: 0px !important;
+    background: linear-gradient(to right, #1a6865 30%, rgba(4, 107, 114, 0.103));
+}
+
+#oil_div {
+    z-index: 2000;
+}
+
+.card-header {
+    text-align: center;
+    text-shadow: 2px 2px 10px grey;
+}
+
+.row {
+    text-align: center;
+    text-shadow: 2px 2px 10px grey;
+    margin-bottom: 10px;
+}
+
+/* 注意card有一个左右15px的padding */
+.card {
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+.row_footer {
+    margin-left: -21px;
+    margin-right: -21px;
+    margin-bottom: -21px;
+}
+
+/* 底部div */
+.typhoon_footer {
+    display: flex;
+    flex-direction: row;
+
+    background: #0044cc;
+    width: 100%;
+    color: white;
+    border: 1px;
+    text-align: center;
+    /* 设置圆角 */
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    /* margin-left: -21px;
+				margin-right: -21px; */
+}
+
+.my_primary {
+    color: white;
+    background-color: #007bff;
+}
+
+.my_success {
+    color: white;
+    background-color: #28a745;
+}
+
+.my_info {
+    color: white;
+    background-color: #17a2b8;
+}
+
+.my_danger {
+    color: white;
+    background-color: #dc3545;
+}
+
+.typhoon_footer .columnar {
+    display: flex;
+    width: 50%;
+    flex-direction: column;
+    border-right: 1px solid #0000ff;
+}
+
+.typhoon_footer .columnar .main_val {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    text-align: center;
+    font-size: 20px;
+}
+
+.typhoon_footer .columnar .vice_vak {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+    font-size: 0.625rem;
+}
+
+// TODO:[-] 20-07-08 自定义的 layer control 样式
+.leaflet-control-layers-toggle {
+    // background: aqua;
+}
+
+.leaflet-control-layers-expanded {
+    background: linear-gradient(to right, #1a6865 30%, rgba(4, 107, 114, 0.639));
+    font-size: 90%;
+    text-shadow: 2px 2px 8px #212020;
+
+    span {
+        color: #fff !important;
+        font-size: 130%;
+        text-align: left;
+    }
+}
+
+// TODO:[-] 20-07-14 新加入的 左侧工具栏
+#ocean-main-toolsbar {
+    position: absolute;
+    left: 60px;
+    top: 300px;
+    z-index: 1500;
+}
+
+// TODO:[-] 20-07-15 加入了用来覆盖 脉冲icon的样式,暂时不再使用,因为无法修改其的偏移
+.leaflet-pulsing-icon {
+    margin-left: -0px !important;
+    margin-top: -0px !important;
+}
+
+.my-marker {
+    .my-leaflet-pulsing-icon {
+        width: 12px;
+        height: 12px;
+        border-radius: 100%;
+        -webkit-box-shadow: 1px 1px 8px 0 rgba(0, 0, 0, 0.75);
+        box-shadow: 1px 1px 8px 0 rgba(0, 0, 0, 0.75);
+        background: #76eec6;
+    }
+}
+
+// TODO:[-] 20-07-17 新修改的 右侧工具栏
+#right_opt_toolsbar {
+    position: absolute;
+    right: 50px;
+    top: 300px;
+    z-index: 1500;
+}
+
+#my-test {
+    background: #76eec6;
+}
+</style>

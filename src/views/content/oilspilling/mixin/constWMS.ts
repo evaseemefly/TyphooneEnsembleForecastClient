@@ -1,0 +1,66 @@
+import { Component, Vue } from 'vue-property-decorator'
+// 20-08-11 wms 相关的中间 model
+import { WMSOptionsMidModel, WMSMidModel } from '@/middle_model/geo'
+
+/**
+ * + 21-01-27 作为 mixin 的 wms常量
+ *
+ * @class WMSMixin
+ * @extends {Vue}
+ */
+@Component
+class WMSMixin extends Vue {
+    // mixin definition here
+    landWMS: WMSMidModel = new WMSMidModel(
+        'http://localhost:8082/geoserver/nmefc_current/wms?',
+        new WMSOptionsMidModel('nmefc_current:land_china')
+    )
+    ninelineWMS: WMSMidModel = new WMSMidModel(
+        'http://localhost:8082/geoserver/nmefc_current/wms?',
+        new WMSOptionsMidModel('nmefc_current:9line')
+    )
+    southlandWMS: WMSMidModel = new WMSMidModel(
+        'http://localhost:8082/geoserver/nmefc_current/wms?',
+        new WMSOptionsMidModel('nmefc_current:southsea_land')
+    )
+    // 20-07-29 新加入的东中海的区域
+    ecsLineWMS: WMSMidModel = {
+        url: 'http://localhost:8082/geoserver/nmefc_current/wms?',
+        options: new WMSOptionsMidModel('nmefc_current:ecs_shp')
+    }
+
+    ecsLineWMSUrl = 'http://localhost:8082/geoserver/nmefc_current/wms?'
+
+    ecsLineWMSOptions = {
+        layers: 'nmefc_current:ecs_shp', //需要加载的图层
+        format: 'image/png', //返回的数据格式
+        transparent: true
+    }
+
+    windWMS: WMSMidModel = {
+        url: 'http://localhost:8082/geoserver//wms?TIME=2020-06-18T10:00:00.000Z',
+        options: new WMSOptionsMidModel('nmefc_wind:nmefc_wrf_2020061800')
+    }
+
+    // TODO:[-] 20-07-31 新加入的台湾区域的land 多边形 现改为 china
+    landTwPoygonsWMS: WMSMidModel = new WMSMidModel(
+        'http://localhost:8082/geoserver/nmefc_common/wms?',
+        new WMSOptionsMidModel('nmefc_common:new_china_land', 1500)
+    )
+
+    // TODO:[-] 20-08-26 新加入的全球国境线
+    worldLineWMS: WMSMidModel = new WMSMidModel(
+        'http://localhost:8082/geoserver/nmefc_common/wms?',
+        new WMSOptionsMidModel('nmefc_common:world_map_line', 1500)
+    )
+
+    // TODO:[-] 21-03-05 新加入的测试西北太剪切过的网格
+    ewtDiffPoygonsWMS: WMSMidModel = new WMSMidModel(
+        'http://localhost:8082/geoserver/SearchRescue/wms?',
+        new WMSOptionsMidModel('SearchRescue:020Grid_TEST_EWT_DIFF', 1500)
+    )
+    // TODO:[-] 20-08-26 使用本地 nginx 映射的文件系统
+    // http://localhost:8080/content/localhost/images/map/tdt-8level/5/31/11.png
+    url = 'http://localhost:82/images/map/tdt-8level/{z}/{x}/{y}.png'
+}
+export { WMSMixin }

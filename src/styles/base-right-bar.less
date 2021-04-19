@@ -1,0 +1,175 @@
+// 所有的 右侧状态栏的基础样式
+@import './base-form.less';
+.right-bar-oil {
+    display: flex;
+    border-top-left-radius: 15px;
+    border-bottom-left-radius: 15px;
+    // 20-07-22 新加入的阴影效果
+    box-shadow: 2px 3px 8px black;
+    margin-bottom: 8px;
+    cursor: pointer;
+    .my-detail-title {
+        @form-header-text-color();
+        writing-mode: vertical-lr;
+        // margin: 2em;
+        text-shadow: 0 0 4px black;
+        font-size: 20px;
+        // margin: 5px;
+        margin-left: 5px;
+        margin-right: 5px;
+        width: 30px;
+    }
+    .my-detail-form {
+        width: 290px;
+        @base_font();
+        font-size: 0.7em;
+        margin-bottom: 0px !important;
+        //   @formbox();
+        // 加入四个角的圆角+阴影
+        border-top-left-radius: 15px;
+        border-top-right-radius: 10px;
+        border-bottom-right-radius: 10px;
+        border-bottom-left-radius: 10px;
+        // box-shadow: 2px 2px 10px rgb(109, 96, 96);
+        box-shadow: 2px 2px 10px rgba(41, 101, 141, 0.863);
+        background: linear-gradient(rgb(50, 157, 150), rgb(49, 59, 89));
+        .card-header {
+            // background: #125a8abd;
+            /* background: linear-gradient(rgb(150, 210, 225), rgb(93, 134, 181)); */
+            /* background: rgb(49, 159, 178); */
+            color: rgb(161, 251, 246);
+            text-shadow: 2px 2px 1px 5px rgb(161, 251, 246);
+            font-weight: 400;
+            padding-top: 7px;
+            padding-bottom: 7px !important;
+        }
+        .card-body {
+            /* background: #2367e4bd; */
+            /* background: rgb(45, 93, 133); */
+            // background: linear-gradient(rgb(50, 157, 150), rgb(49, 59, 89));
+
+            color: rgb(240, 237, 56);
+            font-weight: 500;
+
+            padding-bottom: 5px;
+            padding-top: 5px;
+            //   @bottomradius();
+            display: flex;
+            flex-direction: column;
+            .form {
+                display: flex;
+                flex-wrap: wrap;
+                margin-bottom: 0.75em;
+                .cell {
+                    width: 50%;
+                }
+                .title {
+                    flex: 1;
+                    font-size: 90%;
+                    font-weight: 500;
+                    color: aliceblue;
+                }
+                .content {
+                    flex: 2;
+                    display: flex;
+                    /* 主轴对其方式 */
+                    justify-content: center;
+                    /* 交叉轴对其方式 */
+                    align-items: center;
+                    font-size: 120%;
+                    font-weight: 600;
+                }
+            }
+        }
+    }
+}
+// 两种字体颜色
+.my-font-primary {
+    color: rgb(255, 255, 255);
+}
+.my-font-contrast {
+    color: rgb(206, 201, 45);
+}
+@base_font: {
+    text-shadow: 2px 2px 8px rgb(33, 32, 32);
+};
+
+#oil_detail .card-header {
+    text-align: center;
+    text-shadow: 4px 4px 15px rgb(216, 57, 57);
+}
+
+.row {
+    text-align: center;
+    text-shadow: 2px 2px 8px rgb(210, 214, 155);
+    margin-bottom: 5px;
+}
+
+// 未展开
+.mybar_right_out {
+    // position: absolute;
+    // /* right:0px; */
+    // height: 400px;
+    // width: 450px;
+    /* background: #adff2f; */
+
+    // transition: my-bar-right-out 1.5s linear forwards;
+
+    animation: transform-bar-right-out 1s ease-in forwards;
+    // transform: translateX(260px);
+
+    // animation: my-bar-right-out 1.5s linear;
+
+    // animation-name: move-out;
+    // /*动画名称*/
+    // animation-duration: 2s;
+    // /* 设定动画完成后的状态 */
+    // animation-fill-mode: forwards;
+}
+
+// 展开
+.mybar_right_in {
+    // position: absolute;
+    // /* right:0px;  */
+    // height: 400px;
+    // width: 450px;
+    /* background: #adff2f; */
+    // background-color: #adff2f;
+    // transition: my-bar-right-int 2s;
+    // transition: transform 2s;
+    // transform: translateX(0px);
+    // 指定 执行 my-bar-right-in 动画效果，持续1.5s,线性,动画结束时保持结束状态
+    animation: transform-bar-right-in 1s ease-in forwards;
+    // animation-name: move-in;
+    // /*动画名称*/
+    // animation-duration: 1.5s;
+    // /* 设定动画完成后的状态 */
+    // animation-fill-mode: forwards;
+}
+
+@keyframes transform-bar-right-out {
+    0% {
+        transform: translateX(0px);
+        // background-color: rgb(49, 159, 178);
+        @form-header-background-color-end();
+    }
+    100% {
+        transform: translateX(260px);
+        @form-header-background-color-start()
+        // background-color: rgb(49, 59, 89);
+    }
+}
+
+// 建议所有的transform以 transform 开头
+@keyframes transform-bar-right-in {
+    0% {
+        transform: translateX(260px);
+        @form-header-background-color-start()
+        // background-color: rgb(49, 59, 89);
+    }
+    100% {
+        transform: translateX(0px);
+        // background-color: rgb(49, 159, 178);
+        @form-header-background-color-end();
+    }
+}
