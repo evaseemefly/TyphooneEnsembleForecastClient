@@ -326,7 +326,10 @@ import { getDaysNum } from '@/common/date'
 import { CustomerMarker, CustomerGisFormMarker } from './marker'
 // 20-08-11 wms 相关的中间 model
 import { WMSOptionsMidModel, WMSMidModel, WindBarOptMidModel } from '@/middle_model/geo'
-
+import {
+    TyphoonComplexGroupRealDataMidModel,
+    TyphoonForecastRealDataMidModel
+} from '@/middle_model/typhoon'
 // TODO:[-] 20-07-06 将 与 flow 相关的放入在.flow.ts 中
 import { IVelocityDisplayOpt, IVelocityLayerOpt, ICoverageFlow, CoverageCurrentFlow } from './flow'
 
