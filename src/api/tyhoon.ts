@@ -7,9 +7,6 @@ import { DEFAULT_COVERAGE_AREA, DEFAULT_COVERAGE_TYPE } from '@/const/common'
 axios.defaults.withCredentials = true
 axios.defaults.headers = {}
 
-import { SelectTypeEnum } from '../enum/select'
-import Axios from 'axios'
-
 const area = '/typhoon'
 
 const getTargetTyGroupComplexModel = (tyId: number) => {

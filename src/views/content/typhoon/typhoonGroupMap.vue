@@ -15,12 +15,6 @@
                 <!-- <l-tile-layer :url="coverageUrl"></l-tile-layer> -->
                 <!-- 加载 发布的岸线服务 -->
                 <!-- TODO:[-] 20-09-01 统一将岸线 wms 整合至全球国境线 wms 服务中，此处暂时注释掉 -->
-                <!-- <l-wms-tile-layer
-                    :baseUrl="landWMS.url"
-                    :layers="landWMS.options.layer"
-                    :format="landWMS.options.format"
-                    :transparent="landWMS.options.transparent"
-                ></l-wms-tile-layer> -->
                 <!-- 九段线 -->
                 <l-wms-tile-layer
                     :baseUrl="ninelineWMS.url"
@@ -35,14 +29,6 @@
                     :format="southlandWMS.options.format"
                     :transparent="southlandWMS.options.transparent"
                 ></l-wms-tile-layer>
-                <!-- TODO:[-] 20-07-31 添加一个china的图层 -->
-                <!-- <l-wms-tile-layer
-                    :baseUrl="landTwPoygonsWMS.url"
-                    :layers="landTwPoygonsWMS.options.layer"
-                    :format="landTwPoygonsWMS.options.format"
-                    :transparent="landTwPoygonsWMS.options.transparent"
-                    :zIndex="landTwPoygonsWMS.options.zindex"
-                ></l-wms-tile-layer> -->
 
                 <!-- TODO:[-] 20-08-26 新加入的世界国境线 -->
                 <l-wms-tile-layer
@@ -52,32 +38,6 @@
                     :transparent="worldLineWMS.options.transparent"
                     :zIndex="worldLineWMS.options.zindex"
                 ></l-wms-tile-layer>
-
-                <!-- TODO:[*] 20-08-11 叠加的风场的 wms dir layer 注意使用此种方式会导致更新 data 后并不会触发wms的刷新！ -->
-                <!-- <l-wms-tile-layer
-                    :baseUrl="windWMS.url"
-                    :layers="windWMS.options.layer"
-                    :format="windWMS.options.format"
-                    :transparent="windWMS.options.transparent"
-                    :styles="windWMS.options.style"
-                ></l-wms-tile-layer> -->
-                <!-- TODO:[-] 20-08-06 新加入的 china 的 dem 图层 
-                        不使用此种方式了，会拖慢加载的速度
-                -->
-                <!-- <l-wms-tile-layer
-                    :baseUrl="landChinaDemUrl"
-                    :layers="landChinaDemOptions.layers"
-                    :format="landChinaDemOptions.format"
-                    :transparent="true"
-                    :zIndex="landChinaDemOptions.zIndex"
-                ></l-wms-tile-layer> -->
-                <!-- 东中国海所在区域 -->
-                <!-- <l-wms-tile-layer
-                    :baseUrl="ecsLineWMSUrl"
-                    :layers="ecsLineWMSOptions.layers"
-                    :format="ecsLineWMSOptions.format"
-                    :transparent="true"
-                ></l-wms-tile-layer> -->
 
                 <!-- TODO:[-] 20-08-07 加入预报区域的线段(非多边形，因为很多情况无法闭合) -->
                 <l-polyline
@@ -101,15 +61,12 @@
                     :fill="false"
                     :color="polyline.color"
                 ></l-polyline>
-                <!-- TODO:[-] 21-03-05 新加入的 西北太测试0.2度切分后的网格 -->
-                <!-- 21-03-06 + 暂时注释掉，使用 wfs 的方式加载并 add to map -->
-                <!-- <l-wms-tile-layer
-                    :baseUrl="ewtDiffPoygonsWMS.url"
-                    :layers="ewtDiffPoygonsWMS.options.layer"
-                    :format="ewtDiffPoygonsWMS.options.format"
-                    :transparent="ewtDiffPoygonsWMS.options.transparent"
-                    :zIndex="ewtDiffPoygonsWMS.options.zindex"
-                ></l-wms-tile-layer> -->
+                <!-- 台风路径 -->
+                <!-- <l-polyline
+                    :lat-lngs="tyGroupPolyLine.latlngs"
+                    :color="tyGroupPolyLine.color"
+                    :fill="false"
+                ></l-polyline> -->
                 <l-circle
                     v-for="temp in oilAvgPointList"
                     :key="temp.id"
@@ -284,7 +241,8 @@ import {
 // import {}  "leaflet.heat";
 // 注意此处的引用方式，极其蛋疼
 import HeatmapOverlay from 'heatmap.js/plugins/leaflet-heatmap'
-
+// TODO:[-] 21-04-20 加入的 scaleColor
+import { ScaleColor } from '@/common/scaleColor'
 // 此种方式较为繁琐：https://www.patrick-wied.at/static/heatmapjs/example-heatmap-leaflet.html
 import 'heatmap.js'
 import moment from 'moment'
@@ -333,6 +291,7 @@ import {
 // TODO:[-] 20-07-06 将 与 flow 相关的放入在.flow.ts 中
 import { IVelocityDisplayOpt, IVelocityLayerOpt, ICoverageFlow, CoverageCurrentFlow } from './flow'
 
+import { TyphoonCircleStatus } from '@/common/circleStatus'
 // 引入常量
 import { optionsFactors, optionsShowTypes } from '@/const/Oil'
 import { DEFAULT_COVERAGE_ID, DEFAULT_NUMBER, USELESS_COVERAGE_ID } from '@/const/common'
@@ -642,6 +601,11 @@ export default class OilSpillingMap extends mixins(
 
     // windLayer: any = null
 
+    tyGroupLineList: TyphoonComplexGroupRealDataMidModel[] = []
+    tyGroupPolyLine = {
+        latlngs: [],
+        color: 'yellow'
+    }
     created() {
         this.startDate = new Date(
             this.now.getFullYear(),
@@ -669,10 +633,160 @@ export default class OilSpillingMap extends mixins(
     }
 
     testGetAddTyGroupPath2Map(tyId: number): void {
+        const that = this
+        const arrTyComplexGroupRealdata: Array<TyphoonComplexGroupRealDataMidModel> = []
         getTargetTyGroupComplexModel(tyId).then((res) => {
             if (res.status === 200) {
-                console.log(res.data)
+                /*
+                  area: -1
+                  bp: 0
+                  is_bp_increase: true
+                  list_realdata: (9) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+                    0:
+                    bp: 945
+                    forecast_dt: "2020-09-15T17:00:00Z"
+                    gale_radius: 39
+                    gp_id: 1
+                    lat: 18.9
+                    lon: 119.2
+                    ty_id: 1
+                  ty_code: "2022"
+                  ty_id: 1
+                  ty_path_marking: 20042710
+                  ty_path_type: "c"
+                  */
+
+                if (res.data.length > 0) {
+                    res.data.map(
+                        (temp: {
+                            area: number
+                            bp: number
+                            is_bp_increase: boolean
+                            list_realdata: Array<{
+                                bp: number
+                                forecast_dt: string
+                                gale_radius: number
+                                gp_id: number
+                                lat: number
+                                lon: number
+                                ty_id: number
+                            }>
+                            ty_code: string
+                            ty_id: number
+                            ty_path_marking: number
+                            ty_path_type: string
+                        }) => {
+                            const arrTyphoonRealdata: Array<TyphoonForecastRealDataMidModel> = []
+                            temp.list_realdata.forEach(
+                                (tempRealdata: {
+                                    bp: number
+                                    forecast_dt: string
+                                    gale_radius: number
+                                    gp_id: number
+                                    lat: number
+                                    lon: number
+                                    ty_id: number
+                                }) => {
+                                    arrTyphoonRealdata.push(
+                                        new TyphoonForecastRealDataMidModel(
+                                            tempRealdata.ty_id,
+                                            tempRealdata.gp_id,
+                                            new Date(tempRealdata.forecast_dt),
+                                            0,
+                                            tempRealdata.lat,
+                                            tempRealdata.lon,
+                                            tempRealdata.bp,
+                                            tempRealdata.gale_radius
+                                        )
+                                    )
+                                }
+                            )
+                            const tempComplexGroup = new TyphoonComplexGroupRealDataMidModel(
+                                temp.ty_id,
+                                temp.ty_code,
+                                '',
+                                temp.ty_path_marking,
+                                temp.ty_path_type,
+                                temp.bp,
+                                temp.is_bp_increase,
+                                arrTyphoonRealdata
+                            )
+                            arrTyComplexGroupRealdata.push(tempComplexGroup)
+                        }
+                    )
+                }
+                that.tyGroupLineList = arrTyComplexGroupRealdata
+                that.loadTyphoonLine()
+                // console.log(arrTyComplexGroupRealdata)
             }
+        })
+    }
+
+    // + 21-04-20 将 台风 list add to map
+    loadTyphoonLine(): void {
+        const that = this
+        const mymap: any = this.$refs.basemap['mapObject']
+        // 1 从后台读取台风路径信息
+
+        //2 将当前的typhoon_data中获取latlongs
+        // 2-2 由于不同的集合路径需要使用不同的颜色区分，此处使用 scale 动态生成，目前只是针对编号进行颜色的过渡依据
+        const tyGroupListCount = this.tyGroupLineList.length
+        let indexTyGroup = 0
+        const polyScaleColor = new ScaleColor(0, tyGroupListCount)
+        polyScaleColor.setScale('Viridis')
+        this.tyGroupLineList.map((temp) => {
+            indexTyGroup++
+            const polygonPoint: L.LatLng[] = []
+            const cirleScaleColor = new ScaleColor(0, temp.listRealdata.length)
+            cirleScaleColor.setScale('Viridis')
+            let indexDate = 0
+            temp.listRealdata.forEach((tempRealdata) => {
+                indexDate++
+                const typhoonStatus = new TyphoonCircleStatus(
+                    tempRealdata.galeRadius,
+                    tempRealdata.bp
+                )
+                // that.tyGroupPolyLine.latlngs.push([tempRealdata.lat, tempRealdata.lon])
+                polygonPoint.push(new L.LatLng(tempRealdata.lat, tempRealdata.lon))
+                const circleTemp = L.circle(new L.LatLng(tempRealdata.lat, tempRealdata.lon), {
+                    color: cirleScaleColor.getColor(indexDate),
+
+                    // radius: 20
+                    weight: typhoonStatus.getWeight()
+                })
+                circleTemp.addTo(mymap)
+            })
+            // 添加折线
+            const polyColor = polyScaleColor.getColor(indexTyGroup)
+            // 设置鼠标移入时触发的事件
+            // 为当前 线段添加 自定义 data
+            const groupPolyLine = L.polyline(polygonPoint, {
+                color: polyColor,
+                opacity: 0.7,
+                customData: indexTyGroup
+            })
+            // 设置 mouseover 的事件
+            groupPolyLine.on('mouseover', (e: any) => {
+                console.log(e)
+                const layer = e.target
+                layer.setStyle({
+                    opacity: 1,
+                    weight: 7
+                })
+            })
+            groupPolyLine.on('mouseout', (e: any) => {
+                // console.log(e)
+                const layer = e.target
+                layer.setStyle({
+                    opacity: 0.7,
+                    weight: 3
+                })
+            })
+            groupPolyLine.addTo(mymap)
+            // add circle
+            // polygonPoint.forEach((tempPoint) => {
+            //     L.circle(tempPoint, { radius: 20 }).addTo(mymap)
+            // })
         })
     }
 
