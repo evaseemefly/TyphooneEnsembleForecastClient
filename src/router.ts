@@ -3,10 +3,6 @@ import Router from 'vue-router'
 import CaseListContent from './views/content/CaseListContent/CaseList.vue'
 import WindMap from './views/content/wind/windMap.vue'
 import CurrentMap from './views/content/current/currentMap.vue'
-import RescueMap from './views/content/rescue/rescueContent.vue'
-import OilMap from './views/content/oilspilling/oilSpillingMap.vue'
-import OilMapNew from './views/content/oilspilling/oilSpillingMap2.vue'
-import OilMapMerge from './views/content/oilspilling/oilSpillingMap3.vue'
 import TyphoonGroupMap from './views/content/typhoon/typhoonGroupMap.vue'
 import Login from './views/home/login.vue'
 import Logout from './views/home/logout.vue'
@@ -80,26 +76,7 @@ export default new Router({
                     name: 'currentmap',
                     component: CurrentMap
                 },
-                {
-                    path: 'rescuemap',
-                    name: 'rescuemap',
-                    component: RescueMap
-                },
-                {
-                    path: 'oilmap',
-                    name: 'oilmap',
-                    component: OilMap
-                },
-                {
-                    path: 'newoilmap',
-                    name: 'newoilmap',
-                    component: OilMapNew
-                },
-                {
-                    path: 'mergeoilmap',
-                    name: 'mergeoilmap',
-                    component: OilMapMerge
-                },
+
                 {
                     path: 'TyphoonGroupMap',
                     name: 'TyphoonGroupMap',

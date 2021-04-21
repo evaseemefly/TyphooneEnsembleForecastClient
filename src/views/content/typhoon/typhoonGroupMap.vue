@@ -183,15 +183,6 @@ import _ from 'lodash'
 // import { HeatmapOverlay } from "heatmap.js";
 // 引入 d3.js
 import * as d3 from 'd3'
-// TODO:[-] 20-08-19 在前端实现根据加载的geojson生成的栅格图层
-// 引入第三方的 leaflet-canvaslayer-field
-// TODO:[*] 20-08-24 使用此插件会引发一个未知错误，就是会导致流场首次加载时出现偏移，只能暂时注释掉
-// import 'leaflet-canvaslayer-field/dist/leaflet.canvaslayer.field'
-// 目前无法通过es6的方式引入该模块
-// Module not found: Error: Can't resolve 'ih-leaflet-canvaslayer-field'
-// import 'ih-leaflet-canvaslayer-field'
-// Module not found: Error: Can't resolve 'leaflet-canvaslayer-field'
-// import 'leaflet-canvaslayer-field'
 
 // 使用leaflet-canvaslayer-field还需要依赖的库
 import chroma from 'chroma-js'
@@ -204,24 +195,9 @@ import * as geotiff from 'geotiff'
 // leaflet-geotiff
 // 20-09-02 注意使用 leaflet-geotiff 需要引入 plotty
 import 'plotty/dist/plotty'
-// import 'leaflet-geotiff'
-// import 'leaflet-geotiff/leaflet-geotiff-plotty'
-// import 'leaflet-geotiff/leaflet-geotiff'
-// import 'leaflet-geotiff/leaflet-geotiff-plotty'
-// ----
-// 使用以下方式可以成功引入(尝试别的办法暂时注释掉，可用)
-// import * as geotiff from 'leaflet-geotiff/leaflet-geotiff'
-// import * as plotty from 'leaflet-geotiff/leaflet-geotiff-plotty'
-// ----
-// 20-09-02 尝试使用:georaster-layer-for-leaflet
-// import * as parse_georaster from 'georaster'
-// import * as GeoRasterLayer from 'georaster-layer-for-leaflet'
 //---
 // 20-09-07 引入了raster-marching-squares
 import * as rasterMarching from 'raster-marching-squares'
-
-// 20-09-0 引入 leaflet-windbarb.js
-// Vue.loadScript('@/common/leaflet-windbarb')
 
 import {
     LMap,
@@ -299,7 +275,6 @@ import { OilFactor, ShowType } from '@/enum/OilSelect'
 // 20-10-23 产品种类
 import { ProductEnum } from '@/enum/dict'
 import { AreaEnum } from '@/enum/area'
-import { Case, CaseModelInfo } from '@/views/content/oilspilling/case'
 import { CoverageMin } from '@/views/content/oilspilling/coverage'
 // + 21-01-27 引入 提取到外侧的 mixin const wms
 import { WMSMixin } from '@/views/content/oilspilling/mixin/constWMS'
@@ -594,18 +569,24 @@ export default class OilSpillingMap extends mixins(
     layerGroupId: number = DEFAULT_NUMBER
     layerGroupIds: number[] = []
     // 当前的 caseCode 对应的 coverage info min model 集合
-    currentCaseCoverageList: CoverageMin[] = []
+    // currentCaseCoverageList: CoverageMin[] = []
 
     // TODO:[-] 21-01-12
     oilScatters: OilScatter = null
 
     // windLayer: any = null
 
+    // TODO:[-] 21-04-21 与台风业务相关的 data
     tyGroupLineList: TyphoonComplexGroupRealDataMidModel[] = []
     tyGroupPolyLine = {
         latlngs: [],
         color: 'yellow'
     }
+    // 当前的大风半径范围
+    currentGaleRadius: L.Circle = null
+    // group_ty_range
+    // 台风大风半径的范围
+    tyGroupGaleRadiusRange: { max: number; min: number } = { max: 80, min: 31 }
     created() {
         this.startDate = new Date(
             this.now.getFullYear(),
@@ -734,12 +715,19 @@ export default class OilSpillingMap extends mixins(
         let indexTyGroup = 0
         const polyScaleColor = new ScaleColor(0, tyGroupListCount)
         polyScaleColor.setScale('Viridis')
+        // galeRadius sCaleColor
+        const galeRadiusScaleColor = new ScaleColor(
+            that.tyGroupGaleRadiusRange.min,
+            that.tyGroupGaleRadiusRange.max
+        )
+        galeRadiusScaleColor.setScale('Viridis')
         this.tyGroupLineList.map((temp) => {
             indexTyGroup++
             const polygonPoint: L.LatLng[] = []
             const cirleScaleColor = new ScaleColor(0, temp.listRealdata.length)
             cirleScaleColor.setScale('Viridis')
             let indexDate = 0
+            const cirleLayers: L.Layer[] = []
             temp.listRealdata.forEach((tempRealdata) => {
                 indexDate++
                 const typhoonStatus = new TyphoonCircleStatus(
@@ -750,12 +738,51 @@ export default class OilSpillingMap extends mixins(
                 polygonPoint.push(new L.LatLng(tempRealdata.lat, tempRealdata.lon))
                 const circleTemp = L.circle(new L.LatLng(tempRealdata.lat, tempRealdata.lon), {
                     color: cirleScaleColor.getColor(indexDate),
-
                     // radius: 20
-                    weight: typhoonStatus.getWeight()
+                    weight: typhoonStatus.getWeight(),
+                    customData: typhoonStatus
                 })
-                circleTemp.addTo(mymap)
+                // + 21-04-21 添加鼠标移入 circle 显示大风半径的功能
+                circleTemp.on('mouseover', (e: any) => {
+                    // console.log(e.target)
+                    // 对于移入的 circle 先进行加粗突出显示
+                    const layer = e.target
+                    // layer.setStyle({
+                    //     opacity: 1,
+                    //     weight: 7
+                    //     // radius:
+                    // })
+                    const customData: { bp: number; radius: number } = e.target.options.customData
+                    // 获取半径
+                    const targetRadius = customData.radius
+                    const coords: L.LatLng = e.latlng
+                    /*
+                        大体逻辑:
+                            -1 根据当前传入的 circle index 找到对应 group -> realdata
+                            -2 根据对应的 realdata 获取当前的 radius
+                            -3 根据经纬度画圆
+                    */
+                    // radius 单位为 m ，需要乘以系数 1000m = 1km 为基本单位
+                    const radiusUnit = 1000
+                    that.currentGaleRadius = L.circle(coords, {
+                        radius: targetRadius * radiusUnit,
+                        fillColor: galeRadiusScaleColor.getColor(targetRadius),
+                        color: galeRadiusScaleColor.getColor(targetRadius),
+                        weight: 2,
+                        fillOpacity: 0.5
+                    }).addTo(mymap)
+                })
+                circleTemp.on('click', (e: any) => {
+                    // console.log(e)
+                })
+                circleTemp.on('mouseout', (event) => {
+                    mymap.removeLayer(that.currentGaleRadius)
+                    that.currentGaleRadius = null
+                })
+                cirleLayers.push(circleTemp)
+                // circleTemp.addTo(mymap)
             })
+
             // 添加折线
             const polyColor = polyScaleColor.getColor(indexTyGroup)
             // 设置鼠标移入时触发的事件
@@ -767,7 +794,7 @@ export default class OilSpillingMap extends mixins(
             })
             // 设置 mouseover 的事件
             groupPolyLine.on('mouseover', (e: any) => {
-                console.log(e)
+                // console.log(e)
                 const layer = e.target
                 layer.setStyle({
                     opacity: 1,
@@ -782,22 +809,18 @@ export default class OilSpillingMap extends mixins(
                     weight: 3
                 })
             })
-            groupPolyLine.addTo(mymap)
+
+            // TODO:[-] 21-04-21 此处尝试将同一个 集合路径的 折线 + points 统一 add -> groupLayer
+            L.layerGroup([...cirleLayers, groupPolyLine])
+                .on('mouseover', (event: any) => {
+                    console.log(event)
+                })
+                .addTo(mymap)
+            // groupPolyLine.addTo(mymap)
             // add circle
             // polygonPoint.forEach((tempPoint) => {
             //     L.circle(tempPoint, { radius: 20 }).addTo(mymap)
             // })
-        })
-    }
-
-    loadCaseList() {
-        this.clearCaseList()
-        const productType = this.$store.getters['common/productType']
-        const caseList: CaseMinInfo[] = []
-        const caseFactory = new Case(productType)
-        caseFactory.getCaseListByUser().then((res) => {
-            // console.log(`获取到上面的promise传给的 CaseMinInfo[]:${res}`)
-            this.caseList = res
         })
     }
 
@@ -852,76 +875,6 @@ export default class OilSpillingMap extends mixins(
         // this.layerControl.addTo(mymap)
     }
 
-    // 使用 windy 的效果实现 流场
-    initDemoMap(data: any): void {
-        // TODO:[-] 20-07-07 此处的问题已经在地图中渲染的 flow ，并未被及时清除，导致会叠加多个 flow
-        // TODO:[-] 20-07-08 将初始化 layer control 放在 this.initLayerControl 方法中
-        // const mymap: any = this.$refs.basemap['mapObject']
-        // const esriDarkGreyCanvas = L.tileLayer(
-        //     'http://{s}.sm.mapstack.stamen.com/' +
-        //         '(toner-lite,$fff[difference],$fff[@23],$fff[hsl-saturation@20])/' +
-        //         '{z}/{x}/{y}.png',
-        //     {
-        //         attribution: 'Tiles &copy; Esri &mdash; Esri,WMS'
-        //     }
-        // )
-        // const baseLayers = {
-        //     '风+流场': esriDarkGreyCanvas
-        // }
-
-        // this.clearVelocityLayer()
-        // 每次需要判断当前的 layerControl 是否为null，若不为null需要清除
-
-        // if (this.layerControl != null) {
-        //     this.layerControl.remove()
-        // }
-        // this.layerControl = L.control.layers(baseLayers)
-        // this.layerControl.addTo(mymap)
-
-        // TODO:[-] 20-07-08 清除 矢量 layer 以及 初始化 layer control 放在 getcurrent 与 casecode 监听中
-        // this.clearVelocityLayer()
-        // this.initLayerControl()
-        const mymap = this.$refs.basemap['mapObject']
-        // TODO:[-] 21-03-04 每次添加 图层前，需要先判断该图层是否定义，若定义则先remove
-        this.clearVelocityLayer()
-        const currentFlow = new CoverageCurrentFlow()
-        currentFlow.initLayer(data)
-        // 暂时去掉 layerControl
-        // this.layerControl.addOverlay(currentFlow.velocityLayer, '流场-flow-nmefc')
-        this.velocityLayer = currentFlow.velocityLayer
-        // TODO:[*] 21-03-04 缺少 add to map 的步骤
-        this.velocityLayer.addTo(mymap)
-
-        // TODO:[*] 20-08-18 新尝试加入风场的 栅格 图层
-        // d3.json(data, (res) => {
-        //     console.log(res)
-        // })
-        // const s = L.ScalarField.fromASCIIGrid(data)
-        // TODO:[*] 20-09-02 暂时未搞定，先去掉
-        // this.loadGeoTiff()
-        // 20-09-02 此种方式会有无法设置透明度的bug
-        // this.addGeoTiff()
-        // this.addGeoTiff2()
-
-        // this.loadGeoTiffCustomer()
-    }
-
-    // TODO:[*] 20-08-19 以下为使用d3js的测试，暂时不使用d3js了，实现起来较为复杂
-
-    initial() {
-        const mymap = this.$refs.basemap['mapObject']
-        const svg = d3
-                .select(mymap.getPanes().overlayPane)
-                .append('svg')
-                .attr('class', 'leaflet-zoom-hide'),
-            g = svg.append('g')
-        svg.attr('width', 1500).attr('height', 800)
-        drawCircle()
-    }
-
-    // 向 controller 中添加 wms layers
-    addWMSLayer(): void {}
-
     // TODO:[-] 20-05-26 加入了地图选点的功能
     createMarker(event: { latlng: { lat: number; lng: number } }): void {
         let latlon: Array<number> = []
@@ -934,13 +887,7 @@ export default class OilSpillingMap extends mixins(
         }
     }
 
-    clearAllLayer(): void {
-        this.clearOilAvgPolyLine()
-        this.clearOilAvgPointList()
-        this.clearAllPoint()
-        // this.clearScatterPoint()
-        this.clearHeatLayer()
-    }
+    clearAllLayer(): void {}
 
     // 清除散点list
     clearScatterCircleList(): void {
@@ -976,80 +923,6 @@ export default class OilSpillingMap extends mixins(
         }).addTo(myMap)
         // console.log("将divIcon插入map中");
         this.tempOilDivIcon = oilDivIconTemp
-    }
-
-    // 根据 case code 获取对应的 case model 信息
-    loadTargetOilModelData(code: string) {
-        this.currentCaseCoverageList = []
-        const oilModel = new CaseModelInfo(code)
-        this.initControlLayer(true)
-        return oilModel.getCaseModelInfo().then((res) => {
-            this.targetOilModelData = res
-            // TODO:[-] 20-12-31 注意对于 流场 + 风场，有一个未选择时，会出现 gids 出现 -1 的情况，需要剔除？
-            // 此处目前的解决办法是从 gids 中剔除 默认的 -1
-            res.gids = res.gids.filter((val) => val !== DEFAULT_COVERAGE_ID)
-            loadCoverageListByIds(res.gids).then((resCoverageList) => {
-                /*
-                    coverage_area: 502
-                    coverage_type: 401
-                    create_date: "2020-06-19T06:20:31Z"
-                    dimessions: "time,lat,lon"
-                    file_name: "ecsnew_current_20200618.nc"
-                    file_size: 369656808
-                    id: 65
-                    is_original: null
-                    relative_path: "COMMON\DAILY\2020\06\16"
-                    root_path: "D:\03data\geoserver_data\current"
-                    variables: "u,v"
-                    []
-                */
-                // 返回 指定 ids 的对应的 geo_coverageinfo 集合
-                if (resCoverageList.status == 200) {
-                    loadGeoserverInfo().then((resGeoSer) => {
-                        // 此处只是用于获取 geoserver 的服务地址
-                        if (resGeoSer.status == 200) {
-                            const server: { host: string } = resGeoSer.data[0]
-                            resCoverageList.data.forEach(
-                                (temp: {
-                                    id: number
-                                    file_name: string
-                                    coverage_type: number
-                                    coverage_area: number
-                                }) => {
-                                    const coverageName = temp.file_name.split('.')[0]
-                                    this.currentCaseCoverageList.push(
-                                        new CoverageMin(
-                                            temp.id,
-                                            coverageName,
-                                            temp.coverage_type,
-                                            temp.coverage_area
-                                        )
-                                    )
-                                    // 执行 add wms layer (to control 不再使用 control 了)
-                                    if (temp.coverage_type === DictEnum.COVERAGE_TYPE_WIND) {
-                                        // TODO:[-] 20-07-07 注意若 返回的 coverage 为 风场(风场数据是需要加载wms服务的),所以此处需要修改 this.wmsOptions -> coverageId
-                                        this.wmsOptions.coverageId = temp.id
-                                        this.windOptions.coverageId = temp.id
-                                        // TODO:[-] 21-02-10 新加入了 wind raster
-                                        this.windRasterOptions.coverageId = temp.id
-                                        // TODO:[-] 21-03-04 由于在加载 case info 时，不需要手动触发加载 wms 相关服务以及 windy 效果的服务,以下暂时注释掉
-                                        // this.loadWMSFactory(temp.id, this.targetDate, server)
-                                    }
-                                    // TODO:[-] + 20-07-07 执行 add velocity layer
-                                    if (temp.coverage_type == DictEnum.COVERAGE_TYPE_CURRENT) {
-                                        this.velocityOptions.coverageId = temp.id
-                                        // 20-11-01 + 修改 currentRaster Opt
-                                        this.currentRasterOptions.coverageId = temp.id
-                                        // TODO:[-] 21-03-04 由于在加载 case info 时，不需要手动触发加载 wms 相关服务以及 windy 效果的服务,以下暂时注释掉
-                                        // this.loadFlowWindyFactory(temp.id, this.targetDate)
-                                    }
-                                }
-                            )
-                        }
-                    })
-                }
-            })
-        })
     }
 
     loadTargetRealData(code: string, date: Date) {
@@ -1102,9 +975,6 @@ export default class OilSpillingMap extends mixins(
                 console.log(`获取时间范围出错${res}`)
             })
     }
-
-    // TODO:[*] 20-04-17 根据当前的 task -> db: user_taskinfo -> rela_geo_base -> geo_coverageinfo
-    loadDateRangeByCoverage(): void {}
 
     // 将当前的溢油数据的div从map中移出
     clearOilDivFromMap(): void {
@@ -1185,8 +1055,6 @@ export default class OilSpillingMap extends mixins(
         }).addTo(mymap)
         this.iconMySelectedGisFormMarker = myDivIconGisForm
     }
-
-    // @Getter('getNow', { namespace: 'map' }) getcurrent
 
     // TODO:[*] 20-02-20 监听 store->map->mutations->GET_MAP_NOW
     // @Mutation(GET_MAP_NOW, { namespace: 'map' }) getcurrent
