@@ -41,7 +41,7 @@ class TyphoonForecastRealDataMidModel {
     toHtml(): string {
         const that = this
         const htmlStr = `
-    <div class='typhoon_data_div card mb-4 col-md-4 box-shadow'>
+    <div class='typhoon_data_div mb-4 col-md-4 box-shadow'>
 				<div class='card-header'>台风数据</div>
 				<div class='card-body'>
 					<div class='row'>
@@ -50,9 +50,11 @@ class TyphoonForecastRealDataMidModel {
 					</div>
 					<div class='row'>
 						<div class='col-md-4'>中心位置</div>
-						<div class='col-md-8'>${(that.lat, that.lon)}</div>
+						<div class='col-md-8'>${that.lat}-${that.lon}</div>
 					</div>
-					<div class='row row_footer'>
+					
+				</div>
+				<div class='row row_footer'>
 						<div class='typhoon_footer'>
 							<div class='columnar'>
 								<div class='subitem_top'>${that.bp}</div>
@@ -64,7 +66,6 @@ class TyphoonForecastRealDataMidModel {
 							</div>
 						</div>
 					</div>
-				</div>
 			</div>
     `
         return htmlStr

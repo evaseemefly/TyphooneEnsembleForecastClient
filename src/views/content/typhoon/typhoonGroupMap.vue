@@ -1209,7 +1209,8 @@ export default class OilSpillingMap extends mixins(
 @import '../../../styles/base';
 @import '../../../styles/map/my-leaflet';
 @import './style/arrow';
-@import './style/typhoon';
+// @import './style/typhoon';
+@import '../../../styles/typhoon/typhoonDivIcon';
 
 #rescue_map {
     /* height: 100%; */
@@ -1330,22 +1331,6 @@ export default class OilSpillingMap extends mixins(
     z-index: 1700 !important;
 }
 
-.typhoon_data_div .row {
-    color: white;
-}
-
-.typhoon_data_div .card-body {
-    color: white;
-}
-
-.typhoon_data_div {
-    z-index: 10000;
-    color: white;
-    padding-left: 0px !important;
-    padding-right: 0px !important;
-    background: linear-gradient(to right, #1a6865 30%, rgba(4, 107, 114, 0.103));
-}
-
 #oil_div {
     z-index: 2000;
 }
@@ -1365,29 +1350,6 @@ export default class OilSpillingMap extends mixins(
 .card {
     padding-left: 0px;
     padding-right: 0px;
-}
-
-.row_footer {
-    margin-left: -21px;
-    margin-right: -21px;
-    margin-bottom: -21px;
-}
-
-/* 底部div */
-.typhoon_footer {
-    display: flex;
-    flex-direction: row;
-
-    background: #0044cc;
-    width: 100%;
-    color: white;
-    border: 1px;
-    text-align: center;
-    /* 设置圆角 */
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
-    /* margin-left: -21px;
-				margin-right: -21px; */
 }
 
 .my_primary {
