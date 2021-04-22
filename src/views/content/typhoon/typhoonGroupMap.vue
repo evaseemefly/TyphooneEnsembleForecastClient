@@ -586,6 +586,8 @@ export default class OilSpillingMap extends mixins(
     currentGaleRadius: L.Circle = null
     // group_ty_range
     // 台风大风半径的范围
+    // 当前显示的 台风realdata div icon
+    tyRealDataDivIcon: L.Marker = null
     tyGroupGaleRadiusRange: { max: number; min: number } = { max: 80, min: 31 }
     created() {
         this.startDate = new Date(
@@ -732,7 +734,10 @@ export default class OilSpillingMap extends mixins(
                 indexDate++
                 const typhoonStatus = new TyphoonCircleStatus(
                     tempRealdata.galeRadius,
-                    tempRealdata.bp
+                    tempRealdata.bp,
+                    tempRealdata.forecastDt,
+                    tempRealdata.lat,
+                    tempRealdata.lon
                 )
                 // that.tyGroupPolyLine.latlngs.push([tempRealdata.lat, tempRealdata.lon])
                 polygonPoint.push(new L.LatLng(tempRealdata.lat, tempRealdata.lon))
@@ -771,12 +776,18 @@ export default class OilSpillingMap extends mixins(
                         weight: 2,
                         fillOpacity: 0.5
                     }).addTo(mymap)
+                    // + 21-04-22 鼠标移入当前 circle 显示该 divIcon
+                    that.addTyphoonRealDataDiv2Map(typhoonStatus)
                 })
                 circleTemp.on('click', (e: any) => {
                     // console.log(e)
                 })
                 circleTemp.on('mouseout', (event) => {
                     mymap.removeLayer(that.currentGaleRadius)
+                    // + 21-04-22 移除 当前的 tyDivIcon
+                    if (that.tyRealDataDivIcon) {
+                        mymap.removeLayer(that.tyRealDataDivIcon)
+                    }
                     that.currentGaleRadius = null
                 })
                 cirleLayers.push(circleTemp)
@@ -822,6 +833,26 @@ export default class OilSpillingMap extends mixins(
             //     L.circle(tempPoint, { radius: 20 }).addTo(mymap)
             // })
         })
+    }
+
+    // + 21-04-22 将 台风实时圆 add to map
+    addTyphoonRealDataDiv2Map(tyRealDataCircle: TyphoonCircleStatus): void {
+        const myself = this
+        const mymap: any = this.$refs.basemap['mapObject']
+        const typhoonDivHtml: string = tyRealDataCircle.toDivIconHtml()
+
+        const typhoonDivIcon = L.divIcon({
+            className: 'typhoon_icon_default',
+            html: typhoonDivHtml,
+            // 坐标，[相对于原点的水平位置（左加右减），相对原点的垂直位置（上加下减）]
+            iconAnchor: [-20, 30]
+        })
+
+        // console.log(typhoon_div_icon);
+        const typhoonDivIconTarget = L.marker([tyRealDataCircle.lat, tyRealDataCircle.lon], {
+            icon: typhoonDivIcon
+        }).addTo(mymap)
+        myself.tyRealDataDivIcon = typhoonDivIconTarget
     }
 
     // TODO:[-] 20-06-29 加载 岸线的 wms服务
@@ -1178,6 +1209,7 @@ export default class OilSpillingMap extends mixins(
 @import '../../../styles/base';
 @import '../../../styles/map/my-leaflet';
 @import './style/arrow';
+@import './style/typhoon';
 
 #rescue_map {
     /* height: 100%; */
