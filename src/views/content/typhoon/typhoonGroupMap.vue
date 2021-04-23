@@ -785,10 +785,10 @@ export default class OilSpillingMap extends mixins(
                 circleTemp.on('mouseout', (event) => {
                     mymap.removeLayer(that.currentGaleRadius)
                     // + 21-04-22 移除 当前的 tyDivIcon
-                    if (that.tyRealDataDivIcon) {
-                        mymap.removeLayer(that.tyRealDataDivIcon)
-                    }
-                    that.currentGaleRadius = null
+                    // if (that.tyRealDataDivIcon) {
+                    //     mymap.removeLayer(that.tyRealDataDivIcon)
+                    // }
+                    // that.currentGaleRadius = null
                 })
                 cirleLayers.push(circleTemp)
                 // circleTemp.addTo(mymap)
