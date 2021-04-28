@@ -1,0 +1,46 @@
+.my-station-surge-div {
+    // TODO:[*] 21-04-28 注意此处必须要手动给一个宽度，否则会由于 leaflet-div-icon 给设置一个宽度
+    width: 165px;
+    display: inline-block;
+    // background: rgba(0, 0, 255, 0.829);
+    text-align: center;
+    color: aliceblue;
+    box-shadow: 7px 8px 10px 1px #8888884f;
+    // box-shadow: 0 0 10px whitesmoke;
+    /* 边角圆滑处理 */
+    border-radius: 10px;
+    display: flex;
+    // 注意为了防止子容器的颜色超出了父容器设置的圆角
+    overflow: auto;
+    // 新加入的 text 的阴影
+    text-shadow: 1px 3px 4px black;
+    div {
+        // margin: 10px;
+        padding: 10px;
+    }
+    .station-min-div-title {
+        // background: #76eec6d6;
+        // background: #329d96b5;
+        background: #32405c9e;
+        // 若存在剩余空间则填满
+        flex-grow: 2;
+    }
+    .station-min-div-content {
+        // background: linear-gradient(to right,#32405c9e,rgba(50, 157, 150, 0.801));
+    }
+    .liner-default {
+        background: linear-gradient(to right, #32405c9e, rgba(50, 157, 150, 0.801));
+    }
+    .green {
+        background: rgba(26, 172, 13, 0.795);
+    }
+    .yellow {
+        background: rgb(226, 226, 13, 0.795);
+    }
+    .orange {
+        background: rgb(235, 159, 17, 0.795);
+    }
+    .red {
+        background: rgb(233, 37, 37, 0.795);
+    }
+}

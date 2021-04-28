@@ -298,6 +298,8 @@ import {
     WaveRasterGeoLayer,
     IRaster
 } from '@/views/content/oilspilling/raster'
+// TODO:[*] 21-04-28 + 脉冲 icon 用来示意海洋站所在位置
+import { IconCirlePulsing, IconMinStationSurge } from '@/views/members/icon/pulsingIcon'
 import { WindArrow } from '@/views/content/oilspilling/arrow'
 // + 21-03-24 海浪等值线绘制类
 import { WaveContourLine, WaveArrow } from '@/views/content/oilspilling/wave'
@@ -306,9 +308,10 @@ import { DictEnum } from '@/enum/dict'
 import { LayerTypeEnum } from '@/enum/map'
 
 // api
-import { loadCoverageInfo, loadGeoserverInfo, loadCoverageListByIds } from '@/api/geo'
 // + 21 typhoon api
 import { getTargetTyGroupComplexModel } from '@/api/tyhoon'
+// 21-04-28 + station api
+import { getStationListByGroupPath } from '@/api/station'
 // STORE 常量
 import {
     GET_MAP_NOW,
@@ -613,6 +616,88 @@ export default class OilSpillingMap extends mixins(
         const testTyphoonId = 1
         const mymap: L.Map = this.$refs.basemap['mapObject']
         this.testGetAddTyGroupPath2Map(testTyphoonId)
+
+        // TODO:[*] 21-04-28 暂时加入的加载 海洋站位置的 测试
+        const gpId = 1
+        const forecastDt = new Date('2020-09-15T18:00:00Z')
+        /*
+            {
+                "ty_code": "2022",
+                "gp_id": 51,
+                "station_code": "SHW",
+                "forecast_index": 0,
+                "forecast_dt": "2020-09-15T17:00:00Z",
+                "surge": 0.0,
+                "name": "汕尾",
+                "lat": 22.7564,
+                "lon": 115.3572
+            },
+        */
+        getStationListByGroupPath(gpId, forecastDt).then(
+            (res: {
+                status: number
+                data: {
+                    ty_code: string
+                    gp_id: number
+                    station_code: string
+                    forecast_index: number
+                    forecast_dt: Date
+                    surge: number
+                    name: string
+                    lat: number
+                    lon: number
+                }[]
+            }) => {
+                if (res.status === 200) {
+                    console.log(res.data)
+                    if (res.data.length > 0) {
+                        const surgeArr: number[] = []
+                        const iconArr: IconCirlePulsing[] = []
+                        const iconSurgeMinArr: IconMinStationSurge[] = []
+                        res.data.forEach((element) => {
+                            surgeArr.push(element.surge)
+                        })
+                        // 获取极值
+                        const surgeMax = Math.max(surgeArr)
+                        const surgeMin = Math.min(surgeArr)
+                        res.data.forEach((temp) => {
+                            const icon = new IconCirlePulsing({
+                                val: temp.surge,
+                                max: surgeMax,
+                                min: surgeMin
+                            })
+                            const iconSurgeMin = new IconMinStationSurge(temp.name, temp.surge)
+                            iconArr.push(icon)
+                            iconSurgeMinArr.push(iconSurgeMin)
+                        })
+                        let index = 0
+                        // 批量添加至 map 中
+                        iconArr.forEach((temp) => {
+                            const stationDivIcon = L.divIcon({
+                                className: 'surge_pulsing_icon_default',
+                                html: temp.toHtml()
+                                // 目前需要此部分，因为会造成 位置的位移
+                                // 坐标，[相对于原点的水平位置（左加右减），相对原点的垂直位置（上加下减）]
+                                // iconAnchor: [-20, 30]
+                            })
+                            const stationSurgeMinDivICOn = L.divIcon({
+                                className: 'station-surge-icon-default',
+                                html: iconSurgeMinArr[index].toHtml(),
+                                // 坐标，[相对于原点的水平位置（左加右减），相对原点的垂直位置（上加下减）]
+                                iconAnchor: [-20, 30]
+                            })
+                            L.marker([res.data[index].lat, res.data[index].lon], {
+                                icon: stationDivIcon
+                            }).addTo(mymap)
+                            L.marker([res.data[index].lat, res.data[index].lon], {
+                                icon: stationSurgeMinDivICOn
+                            }).addTo(mymap)
+                            index++
+                        })
+                    }
+                }
+            }
+        )
     }
 
     testGetAddTyGroupPath2Map(tyId: number): void {
@@ -1212,6 +1297,9 @@ export default class OilSpillingMap extends mixins(
 // @import './style/typhoon';
 @import '../../../styles/typhoon/typhoonDivIcon';
 
+// + 21-04-28 引入 针对 station surge div Icon 的样式
+@import '../../../styles/station//icon';
+
 #rescue_map {
     /* height: 100%; */
     /* display: flex;
@@ -1426,16 +1514,16 @@ export default class OilSpillingMap extends mixins(
     margin-top: -0px !important;
 }
 
-.my-marker {
-    .my-leaflet-pulsing-icon {
-        width: 12px;
-        height: 12px;
-        border-radius: 100%;
-        -webkit-box-shadow: 1px 1px 8px 0 rgba(0, 0, 0, 0.75);
-        box-shadow: 1px 1px 8px 0 rgba(0, 0, 0, 0.75);
-        background: #76eec6;
-    }
-}
+// .my-marker {
+//     .my-leaflet-pulsing-icon {
+//         width: 12px;
+//         height: 12px;
+//         border-radius: 100%;
+//         -webkit-box-shadow: 1px 1px 8px 0 rgba(0, 0, 0, 0.75);
+//         box-shadow: 1px 1px 8px 0 rgba(0, 0, 0, 0.75);
+//         background: #76eec6;
+//     }
+// }
 
 // TODO:[-] 20-07-17 新修改的 右侧工具栏
 #right_opt_toolsbar {
