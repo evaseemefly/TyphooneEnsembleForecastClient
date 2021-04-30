@@ -297,7 +297,7 @@ import {
     WindRasterGeoLayer,
     WaveRasterGeoLayer,
     IRaster
-} from '@/views/content/oilspilling/raster'
+} from '@/views/content/typhoon/raster'
 // TODO:[*] 21-04-28 + 脉冲 icon 用来示意海洋站所在位置
 import { IconCirlePulsing, IconMinStationSurge } from '@/views/members/icon/pulsingIcon'
 import { WindArrow } from '@/views/content/oilspilling/arrow'
@@ -613,7 +613,7 @@ export default class OilSpillingMap extends mixins(
     mounted() {
         // 由于是测试，页面加载完成后先加载当前 code 的平均轨迹
         // TODO:[*] 20-01-23 暂时去掉页面加载后读取平均轨迹的步骤(暂时去掉)
-        const testTyphoonId = 1
+        const testTyphoonId = 3
         const mymap: L.Map = this.$refs.basemap['mapObject']
         this.testGetAddTyGroupPath2Map(testTyphoonId)
 
@@ -696,6 +696,18 @@ export default class OilSpillingMap extends mixins(
                         })
                     }
                 }
+            }
+        )
+
+        // TODO:[*] 21-04-30 测试 加入的测试加载台风最大增水
+        const raster = new RasterGeoLayer(1, forecastDt, AreaEnum.NORTHWEST)
+        raster.add2map(
+            mymap,
+            (opt = { message: `当前时间${forecastDt}没有对应的tif文件`, type: 'warning' }) => {
+                this.$message({
+                    message: `当前时间${forecastDt}没有对应的tif文件`,
+                    type: 'warning'
+                })
             }
         )
     }
