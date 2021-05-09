@@ -243,7 +243,7 @@ import BottomMainBar from '@/views/members/bar/bottomMainBar.vue'
 import GridDetailForm from '@/views/members/form/grid_form/GridDetailForm.vue'
 // 各api
 import { loadOilSpillingAvgRealData, getTargetCodeDateRange } from '@/api/api'
-import { loadWindFlow, loadCurrentTif } from '@/api/geo'
+import { loadFieldSurgeTif } from '@/api/geo'
 
 // TODO:[-] 20-01-23 尝试将oil的部分操作放在oil 类中()
 // TODO:[-] 21-01-12
@@ -296,7 +296,8 @@ import {
     RasterGeoLayer,
     WindRasterGeoLayer,
     WaveRasterGeoLayer,
-    IRaster
+    IRaster,
+    FieldSurgeGeoLayer
 } from '@/views/content/typhoon/raster'
 // TODO:[*] 21-04-28 + 脉冲 icon 用来示意海洋站所在位置
 import { IconCirlePulsing, IconMinStationSurge } from '@/views/members/icon/pulsingIcon'
@@ -700,16 +701,17 @@ export default class OilSpillingMap extends mixins(
         )
 
         // TODO:[*] 21-04-30 测试 加入的测试加载台风最大增水
-        const raster = new RasterGeoLayer(1, forecastDt, AreaEnum.NORTHWEST)
-        raster.add2map(
-            mymap,
-            (opt = { message: `当前时间${forecastDt}没有对应的tif文件`, type: 'warning' }) => {
-                this.$message({
-                    message: `当前时间${forecastDt}没有对应的tif文件`,
-                    type: 'warning'
-                })
-            }
-        )
+        // TODO:[*] 21-05-07 暂时去掉增大增水
+        // const raster = new RasterGeoLayer(1, forecastDt, AreaEnum.NORTHWEST)
+        // raster.add2map(
+        //     mymap,
+        //     (opt = { message: `当前时间${forecastDt}没有对应的tif文件`, type: 'warning' }) => {
+        //         this.$message({
+        //             message: `当前时间${forecastDt}没有对应的tif文件`,
+        //             type: 'warning'
+        //         })
+        //     }
+        // )
     }
 
     testGetAddTyGroupPath2Map(tyId: number): void {
@@ -732,7 +734,7 @@ export default class OilSpillingMap extends mixins(
                     ty_id: 1
                   ty_code: "2022"
                   ty_id: 1
-                  ty_path_marking: 20042710
+                  ty_path_marking: 0
                   ty_path_type: "c"
                   */
 
@@ -796,14 +798,15 @@ export default class OilSpillingMap extends mixins(
                     )
                 }
                 that.tyGroupLineList = arrTyComplexGroupRealdata
-                that.loadTyphoonLine()
+                // TODO:[*] ! WARNING 21-05-07 此处注意需要动态的获取 tyTimestamp 与 tyCode
+                that.loadTyphoonLine('2022', '2021010416')
                 // console.log(arrTyComplexGroupRealdata)
             }
         })
     }
 
     // + 21-04-20 将 台风 list add to map
-    loadTyphoonLine(): void {
+    loadTyphoonLine(tyCode: string, tyTimestamp: string): void {
         const that = this
         const mymap: any = this.$refs.basemap['mapObject']
         // 1 从后台读取台风路径信息
@@ -876,16 +879,28 @@ export default class OilSpillingMap extends mixins(
                     // + 21-04-22 鼠标移入当前 circle 显示该 divIcon
                     that.addTyphoonRealDataDiv2Map(typhoonStatus)
                 })
-                circleTemp.on('click', (e: any) => {
-                    // console.log(e)
-                })
+
                 circleTemp.on('mouseout', (event) => {
                     mymap.removeLayer(that.currentGaleRadius)
                     // + 21-04-22 移除 当前的 tyDivIcon
-                    // if (that.tyRealDataDivIcon) {
-                    //     mymap.removeLayer(that.tyRealDataDivIcon)
-                    // }
-                    // that.currentGaleRadius = null
+                    if (that.tyRealDataDivIcon) {
+                        mymap.removeLayer(that.tyRealDataDivIcon)
+                    }
+                    that.currentGaleRadius = null
+                })
+                // + 21-05-07 加入鼠标click 事件
+                circleTemp.on('click', (e: any) => {
+                    // e.target -> options -> customData
+                    console.log(e.target)
+                    // 点击向后台发送 获取逐时风暴增水场的请求
+                    // 请求参数包含 ty_code | ty_timestamp | forecast_dt
+                    const params: { forecastDt: Date } = e.target.options.customData
+                    const fieldSurgeGeoLayer = new FieldSurgeGeoLayer(
+                        tyCode,
+                        tyTimestamp,
+                        params.forecastDt
+                    )
+                    fieldSurgeGeoLayer.add2map(mymap, () => {})
                 })
                 cirleLayers.push(circleTemp)
                 // circleTemp.addTo(mymap)

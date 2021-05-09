@@ -40,22 +40,29 @@ class TyphoonCircleStatus {
         return colorStr
     }
 
-    //获取圆圈的半径
+    /**
+     * 获取圆圈的半径
+     *  + 21-05-07 加入一个系数，因为之前的圆圈的半径不够大
+     *
+     * @return {*}  {number}
+     * @memberof TyphoonCircleStatus
+     */
     getWeight(): number {
         let weight = 2
+        const coeff = 1.25
         const val = this.radius
         if (val <= 30) {
-            weight = 3
+            weight = 2
         } else if (val < 40) {
-            weight = 5
+            weight = 3
         } else if (val < 60) {
-            weight = 8
+            weight = 4
         } else if (val < 100) {
-            weight = 10
+            weight = 6
         } else {
-            weight = 12
+            weight = 8
         }
-        return weight
+        return weight * weight
     }
 
     toDivIconHtml(): string {

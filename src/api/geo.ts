@@ -194,6 +194,27 @@ const loadCurrentTif = (
     })
 }
 
+/**
+ *
+ * + 21-05-04
+ * 根据 ty_code + timestamp +forecast_dt 获取对应的 tif url 地址
+ * @param {string} tyCode
+ * @param {string} tyTimeStamp
+ * @param {Date} forecastDt
+ * @return {*}
+ */
+const loadFieldSurgeTif = (tyCode: string, tyTimeStamp: string, forecastDt: Date) => {
+    const url = `${host}${area}/geotiff/url`
+    return axios.get(url, {
+        headers: authHeader(),
+        params: {
+            ty_code: tyCode,
+            ty_timestamp: tyTimeStamp,
+            forecast_dt: forecastDt
+        }
+    })
+}
+
 export {
     loadCoverageList,
     loadCoverageInfo,
@@ -204,5 +225,6 @@ export {
     loadWindBar,
     loadCurrentTif,
     loadWindBarPaged,
-    loadWaveBarPaged
+    loadWaveBarPaged,
+    loadFieldSurgeTif
 }

@@ -25,7 +25,7 @@ import 'georaster'
 // 以下方式引入不成功
 // import * as georaster from 'georaster'
 import 'georaster-layer-for-leaflet'
-import { loadCurrentTif } from '@/api/geo'
+import { loadCurrentTif, loadFieldSurgeTif } from '@/api/geo'
 import { AreaEnum } from '@/enum/area'
 import { DictEnum, ProductEnum } from '@/enum/dict'
 import { USELESS_COVERAGE_ID } from '@/const/common'
@@ -173,6 +173,196 @@ class RasterGeoLayer implements IRaster {
             console.log(error)
             errorCallBackFun
         }
+        return addedLayer
+    }
+}
+
+class SurgeRasterGeoLayer {
+    rasterLayer: L.Layer
+
+    tyCode: string
+
+    tyTimestamp: string
+    /**
+     * 预报的时间
+     *
+     * @type {Date}
+     * @memberof RasterGeoLayer
+     */
+    forecastDt: Date
+
+    constructor(tyCode: string, tyTimestamp: string, forecastDt: Date) {
+        this.tyCode = tyCode
+        this.tyTimestamp = tyTimestamp
+        this.forecastDt = forecastDt
+    }
+
+    public async add2map(
+        map: L.Map,
+        errorCallBackFun: (opt: { message: string; type: string }) => void
+    ): Promise<L.Layer> {
+        let addedLayer: L.Layer = null
+        // TODO:[-] 20-11-04 暂时注释掉，调取远程的文件会出现错误
+        // const urlGeoTifUrl = tifResp.data
+
+        // TODO:[*] 21-04-30 测试 暂时将 读取的 tif路径写死(最大增水)
+        const urlGeoTifUrl =
+            'http://localhost:82/images/TEST/TYPHOONSURGE/maxSurge_TY2022_2021010416_c0_p00.tif'
+        // 大体思路 获取 geotiff file 的路径，二进制方式读取 -> 使用 georaster 插件实现转换 -> 获取色标，
+        // TODO:[-] 20-11-02 将之前的逻辑方式修改为 await 的方式
+        // TODO:[-] 20-11-05 在 fetch 请求头中加入跨域的部分
+        const fetchHeader = new Headers({
+            'Access-Control-Allow-Origin': '*',
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8,'
+        })
+        const response = await fetch(urlGeoTifUrl, {
+            method: 'GET',
+            // headers: fetchHeader,
+            mode: 'cors'
+        })
+        const arrayBuffer = await response.arrayBuffer()
+        // 使用 import 'georaster' 的方式引入会出现没有智能提示的问题
+        // TODO:[-] 20-11-04
+        // Uncaught (in promise) TypeError: Invalid byte order value.
+        // at Function.fromSource (e2c99254-e67c-4422-be5d-01e0b254a36b:10)
+
+        const georasterResponse = await parseGeoraster(arrayBuffer)
+        const min = georasterResponse.mins[0]
+        const max = georasterResponse.maxs[0]
+        const range = georasterResponse.ranges[0]
+        // const scale = chroma.scale('Viridis')
+        const scale = chroma.scale([
+            '#00429d',
+            '#4771b2',
+            '#73a2c6',
+            '#a5d5d8',
+            '#ffffe0',
+            '#ffbcaf',
+            '#f4777f',
+            '#cf3759',
+            '#93003a'
+        ])
+
+        // TODO:[*] 21-02-10 此处当加载全球风场的geotiff时，y不在实际范围内，需要手动处理
+        georasterResponse.ymax = georasterResponse.ymax
+        georasterResponse.ymin = georasterResponse.ymin
+
+        const layer = new GeoRasterLayer({
+            georaster: georasterResponse,
+            opacity: 0.6,
+            pixelValuesToColorFn: function(pixelValues) {
+                const pixelValue = pixelValues[0] // there's just one band in this raster
+
+                // if there's zero wind, don't return a color
+                if (pixelValue === 0 || Number.isNaN(pixelValue)) return null
+
+                // scale to 0 - 1 used by chroma
+                const scaledPixelValue = (pixelValue - min) / range
+
+                const color = scale(scaledPixelValue).hex()
+
+                return color
+            },
+            resolution: 256
+        })
+        addedLayer = layer.addTo(map)
+        this.rasterLayer = addedLayer
+        try {
+            // const tifResp = await loadCurrentTif(
+            //     this.coverageId,
+            //     this.forecastDt,
+            //     this.forecastArea,
+            //     DictEnum.COVERAGE_TYPE_CURRENT
+            // )
+            if (tifResp.status == 200) {
+                return addedLayer
+            }
+        } catch (error) {
+            console.log(error)
+            errorCallBackFun
+        }
+        return addedLayer
+    }
+}
+
+class FieldSurgeGeoLayer extends SurgeRasterGeoLayer {
+    public async add2map(
+        map: L.Map,
+        errorCallBackFun: (opt: { message: string; type: string }) => void
+    ): Promise<L.Layer> {
+        let addedLayer: L.Layer = null
+        const that = this
+        const forecastDtStr = moment(this.forecastDt).format('YYYY-MM-DD HH')
+        try {
+            // TODO:[*] 21-04-30 测试 暂时将 读取的 tif路径写死(最大增水)
+            const tifResp = await loadFieldSurgeTif(that.tyCode, that.tyTimestamp, that.forecastDt)
+            const urlGeoTifUrl = tifResp.data
+            // 大体思路 获取 geotiff file 的路径，二进制方式读取 -> 使用 georaster 插件实现转换 -> 获取色标，
+            // TODO:[-] 20-11-02 将之前的逻辑方式修改为 await 的方式
+            // TODO:[-] 20-11-05 在 fetch 请求头中加入跨域的部分
+            const fetchHeader = new Headers({
+                'Access-Control-Allow-Origin': '*',
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8,'
+            })
+            const response = await fetch(urlGeoTifUrl, {
+                method: 'GET',
+                // headers: fetchHeader,
+                mode: 'cors'
+            })
+            const arrayBuffer = await response.arrayBuffer()
+            // 使用 import 'georaster' 的方式引入会出现没有智能提示的问题
+            // TODO:[-] 20-11-04
+            // Uncaught (in promise) TypeError: Invalid byte order value.
+            // at Function.fromSource (e2c99254-e67c-4422-be5d-01e0b254a36b:10)
+
+            const georasterResponse = await parseGeoraster(arrayBuffer)
+            const min = georasterResponse.mins[0]
+            const max = georasterResponse.maxs[0]
+            const range = georasterResponse.ranges[0]
+            const scale = chroma.scale('Viridis')
+            // const scale = chroma.scale([
+            //     '#00429d',
+            //     '#4771b2',
+            //     '#73a2c6',
+            //     '#a5d5d8',
+            //     '#ffffe0',
+            //     '#ffbcaf',
+            //     '#f4777f',
+            //     '#cf3759',
+            //     '#93003a'
+            // ])
+
+            // TODO:[*] 21-02-10 此处当加载全球风场的geotiff时，y不在实际范围内，需要手动处理
+            georasterResponse.ymax = georasterResponse.ymax
+            georasterResponse.ymin = georasterResponse.ymin
+
+            const layer = new GeoRasterLayer({
+                georaster: georasterResponse,
+                opacity: 0.6,
+                pixelValuesToColorFn: function(pixelValues) {
+                    const pixelValue = pixelValues[0] // there's just one band in this raster
+
+                    // if there's zero wind, don't return a color
+                    if (pixelValue === 0 || Number.isNaN(pixelValue)) return null
+
+                    // scale to 0 - 1 used by chroma
+                    const scaledPixelValue = (pixelValue - min) / range
+
+                    const color = scale(scaledPixelValue).hex()
+
+                    return color
+                },
+                resolution: 256
+            })
+            addedLayer = layer.addTo(map)
+            that.rasterLayer = addedLayer
+        } catch (error) {
+            errorCallBackFun({
+                message: `不存在指定时间${forecastDtStr}台风逐时增水场(field_surge)的tif`,
+                type: 'warning'
+            })
+        }
+
         return addedLayer
     }
 }
@@ -426,4 +616,10 @@ class WaveRasterGeoLayer extends RasterGeoLayer {
     }
 }
 
-export { RasterGeoLayer, WindRasterGeoLayer, WaveRasterGeoLayer }
+export {
+    RasterGeoLayer,
+    WindRasterGeoLayer,
+    WaveRasterGeoLayer,
+    SurgeRasterGeoLayer,
+    FieldSurgeGeoLayer
+}
