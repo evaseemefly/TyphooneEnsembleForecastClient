@@ -61,18 +61,6 @@
                     :fill="false"
                     :color="polyline.color"
                 ></l-polyline>
-                <!-- 台风路径 -->
-                <!-- <l-polyline
-                    :lat-lngs="tyGroupPolyLine.latlngs"
-                    :color="tyGroupPolyLine.color"
-                    :fill="false"
-                ></l-polyline> -->
-                <l-circle
-                    v-for="temp in oilAvgPointList"
-                    :key="temp.id"
-                    :lat-lng="temp.latlon"
-                    @click="testOnOver(temp)"
-                />
                 <!-- <l-marker :lat-lng="makerLatlng"></l-marker> -->
                 <l-circle :lat-lng="makerLatlng"></l-circle>
                 <!-- <LeafletHeatmap :lat-lng="oilHeatmapList" :radius="15"></LeafletHeatmap> -->
@@ -381,6 +369,7 @@ export default class OilSpillingMap extends mixins(
         minZoom: 3,
         // 可缩放的最大 level
         maxZoom: 11,
+        // 目前已经使用了 canvas 渲染
         render: L.canvas()
     }
     isZoomLock = false
@@ -388,15 +377,8 @@ export default class OilSpillingMap extends mixins(
     makerLatlng = [0, 0]
     // TODO:[-] 21-01-06 初始位置，加载 case 后将case的初始位置赋值于此
     initialLatLng = [0, 0]
-    // 指定时间
-    // targetDate: Date = new Date();
-    // 溢油平均轨迹
-    oilAvgPointList: OilPointRealDataMidModel[] = []
     // TODO:[*] 19-10-31 由于设置类型为any，且赋值为null，引发的子组件在为null的情况下未渲染
     oilAvgRealData: OilMidModel = new OilMidModel()
-    // 指定时刻的全部轨迹散点数组
-    oilScatterPointList: number[][] = []
-    oilScatterCircleList: any[] = []
     // TODO:[-] 20-06-21 批量添加通过 group 的方式进行添加
     layerGroupScatters: any = null
     // 21-01-04 由 layerScatterMarkersGroups 替代了，因为是分页加载散点
@@ -446,15 +428,6 @@ export default class OilSpillingMap extends mixins(
             color: '#f39c12'
         }
     }
-
-    // TODO:[-] 20-05-25 是否显示 创建 case 的 modal 框
-    isCaseDialogVisible = false
-
-    // TODO:[*] 19-11-04 heatLayer 当前的热图layer
-    tempHeatLayer: HeatmapOverlay = null
-    // TODO:[*] 20-06-13 修改 heatLayer 为一个数组
-    tempHeatLayers: any[] = []
-    // tempHeatData: { lat: number; lng: number }[] = []
     // TODO:[-] 20-05-26 maker icon 样式
     icon_marker = L.icon({
         iconUrl: '/leaflet/images/marker-icon.png',
@@ -476,9 +449,6 @@ export default class OilSpillingMap extends mixins(
     interval = 24
     // timebar共有多少天
     days = 3
-
-    tempOilDivIcon: any = null
-    tempOil: any = null
     // TODO:[*] 19-11-12 加入show type与show factor
     showType: number
     showFactor: number
@@ -498,16 +468,10 @@ export default class OilSpillingMap extends mixins(
         isShow: true,
         productType: ProductEnum.COVERAGE_TYPE_WIND
     }
-
-    // TODO:[-] 20-10-25 加入的用来处理 风力杆 的 opt
-    windOptions: IRasterOptions = {
-        coverageId: DEFAULT_COVERAGE_ID,
-        current: new Date(),
-        isShow: false,
-        productType: ProductEnum.COVERAGE_TYPE_WIND,
-        level: 3,
-        area: AreaEnum.GLOBAL
-    }
+    // TODO:[-] 21-04-05 + 当前的 海浪-海表面高度 LayerId
+    waveWveRasterLayerId: number = DEFAULT_LAYER_ID
+    // TODO:[*] 20-10-22 + 缩放等级
+    zoomLevel = 5
     windRasterOptions: IRasterOptions = {
         // TODO:[-] 21-02-10 注意 coverageId 是由 watch casecode -> loadTargetOilModelData 中修改的，而非 getCoverageId
         coverageId: DEFAULT_COVERAGE_ID,
@@ -517,22 +481,6 @@ export default class OilSpillingMap extends mixins(
         level: 3,
         area: AreaEnum.GLOBAL
     }
-    // TODO:[*] 20-10-31 新加入了用来处理 流场raster 的 opt
-    currentRasterOptions: IRasterOptions = {
-        coverageId: DEFAULT_COVERAGE_ID,
-        current: new Date(),
-        isShow: false,
-        productType: ProductEnum.COVERAGE_TYPE_CURRENT,
-        level: 5,
-        area: AreaEnum.GLOBAL
-    }
-    currentRasterLayerId: number = DEFAULT_LAYER_ID
-    // TODO:[-] 21-03-01 + 加入的 当前 风场 layerId
-    windRasterLayerId: number = DEFAULT_LAYER_ID
-    // TODO:[-] 21-04-05 + 当前的 海浪-海表面高度 LayerId
-    waveWveRasterLayerId: number = DEFAULT_LAYER_ID
-    // TODO:[*] 20-10-22 + 缩放等级
-    zoomLevel = 5
     // TODO:[-] 20-07-07 + 用来监听实现 windy 效果
     velocityOptions: IRasterOptions = {
         coverageId: DEFAULT_COVERAGE_ID,
@@ -542,29 +490,11 @@ export default class OilSpillingMap extends mixins(
         level: 5,
         area: AreaEnum.GLOBAL
     }
-    // TODO:[-] 21-04-05 + 用来监听 海浪-海表面 高度的 raster
-    waveWveRasterOption: IRasterOptions = {
-        // TODO:[-] 21-04-06 + 区别 DEFAULT
-        coverageId: USELESS_COVERAGE_ID,
-        current: new Date(),
-        isShow: false,
-        productType: ProductEnum.COVERAGE_TYPE_WAVE_WVE,
-        level: 5,
-        area: AreaEnum.GLOBAL
-    }
-    // 风场 layer
-    windLayer: any = null
-    // TODO:[*] 20-10-26 + 风力杆 layer (canvasMarkerLayer)
-    windBarLayer: L.Layer = null
-
-    // TODO:[-] 20-07-30 新加入的 风场 abs的 wms layer
-    windAbsLayer: any = null
     // 用于动态加载的 wms 的 ws 的str
     wmsWorkSpace = ''
     layerControl: any = null
     // 流场 layer (注意是一个矢量 layer 注意与上面的 风场的区分)
     velocityLayer: any = null
-    currentRaster: IRaster = null
     // TODO:[*] 20-07-27 记录当前 add layers to map 时的 layers种类数组
     existLayers: LayerTypeEnum[] = []
     // TODO:[-] 20-06-20 加入的是否分页的标识符
@@ -572,13 +502,6 @@ export default class OilSpillingMap extends mixins(
     // 创建大量散点使用 add layerGroup 的方式添加，记录 group 的 id
     layerGroupId: number = DEFAULT_NUMBER
     layerGroupIds: number[] = []
-    // 当前的 caseCode 对应的 coverage info min model 集合
-    // currentCaseCoverageList: CoverageMin[] = []
-
-    // TODO:[-] 21-01-12
-    oilScatters: OilScatter = null
-
-    // windLayer: any = null
 
     // TODO:[-] 21-04-21 与台风业务相关的 data
     tyGroupLineList: TyphoonComplexGroupRealDataMidModel[] = []
@@ -614,7 +537,8 @@ export default class OilSpillingMap extends mixins(
     mounted() {
         // 由于是测试，页面加载完成后先加载当前 code 的平均轨迹
         // TODO:[*] 20-01-23 暂时去掉页面加载后读取平均轨迹的步骤(暂时去掉)
-        const testTyphoonId = 3
+        // TODO：[-] 21-05-10 注意 mac 的tyId=1 | 5750 tyId=3
+        const testTyphoonId = 1
         const mymap: L.Map = this.$refs.basemap['mapObject']
         this.testGetAddTyGroupPath2Map(testTyphoonId)
 
@@ -935,15 +859,10 @@ export default class OilSpillingMap extends mixins(
 
             // TODO:[-] 21-04-21 此处尝试将同一个 集合路径的 折线 + points 统一 add -> groupLayer
             L.layerGroup([...cirleLayers, groupPolyLine])
-                .on('mouseover', (event: any) => {
-                    console.log(event)
-                })
+                // .on('mouseover', (event: any) => {
+                //     console.log(event)
+                // })
                 .addTo(mymap)
-            // groupPolyLine.addTo(mymap)
-            // add circle
-            // polygonPoint.forEach((tempPoint) => {
-            //     L.circle(tempPoint, { radius: 20 }).addTo(mymap)
-            // })
         })
     }
 
@@ -1032,11 +951,6 @@ export default class OilSpillingMap extends mixins(
 
     clearAllLayer(): void {}
 
-    // 清除散点list
-    clearScatterCircleList(): void {
-        this.oilScatterCircleList = []
-    }
-
     // 根据 leaflet_id -> map.removce(layer)
     clearLayerById(id: number): void {
         const mymap: L.Map = this.$refs.basemap['mapObject']
@@ -1045,87 +959,6 @@ export default class OilSpillingMap extends mixins(
                 mymap.removeLayer(layer)
             }
         })
-    }
-
-    // 向地图中添加溢油详细数据的div
-    // 暂时不用
-    addOilDiv2Map(tempOil: OilMidModel): void {
-        // const myself = this
-        const baseMap: any = this.$refs.basemap
-        const myMap: any = baseMap['mapObject']
-        const oilDivHtml = tempOil.toDivHtml()
-        const oilDivIcon = L.divIcon({
-            className: 'oil_icon_default',
-            html: oilDivHtml,
-            // 坐标，[相对于原点的水平位置（左加右减），相对原点的垂直位置（上加下减）]
-            iconAnchor: [-20, 30]
-        })
-
-        const oilDivIconTemp = L.marker([tempOil.latlon[1], tempOil.latlon[0]], {
-            icon: oilDivIcon
-        }).addTo(myMap)
-        // console.log("将divIcon插入map中");
-        this.tempOilDivIcon = oilDivIconTemp
-    }
-
-    loadTargetRealData(code: string, date: Date) {
-        // const myself = this
-        loadOilSpillingAvgRealData(code, date).then((res) => {
-            if (res.status === 200) {
-                // console.log(res.data);
-                const data = res.data
-                this.oilAvgRealData = new OilMidModel(
-                    data['time'],
-                    data['status'],
-                    data['code'],
-                    data['point']['coordinates'].reverse(),
-                    data['current'],
-                    data['wind']
-                )
-            }
-        })
-    }
-
-    // TODO:[*] 19-11-05 根据当前的 code 获取oil avg的起止时间
-    loadDateRange(): void {
-        // const myself = this
-        getTargetCodeDateRange(this.code)
-            .then((res) => {
-                if (res.status === 200) {
-                    // 获取起止时间
-                    const start = new Date(res.data['start'])
-                    const end = new Date(res.data['end'])
-                    /*
-          下面需要获取：
-                [ ] -1 有多少天
-                [ ] -2 起始时间
-                [ ] -3 每天的格子数量
-
-        */
-                    // console.log(res);
-                    const daysCount = getDaysNum(start, end)
-                    this.days = daysCount
-                    // 20-02-20 加载其实时间范围时，为current赋值
-                    // TODO:[-] 20-06-20 在获取时间范围时，只需要为起止时间赋值，不需要设置当前的时间
-                    // this.$store.dispatch('map/setNow', start)
-                    this.startDate = start
-                    this.finishDate = end
-                    // TODO:[*] 19-11-07 此处每次获取完start之后，先赋值给current，之后再由timebar选择之后再更新
-                    this.targetDate = start
-                }
-            })
-            .catch((res) => {
-                console.log(`获取时间范围出错${res}`)
-            })
-    }
-
-    // 将当前的溢油数据的div从map中移出
-    clearOilDivFromMap(): void {
-        // console.log("鼠标移出");
-        // const myself = this
-        const mymap: any = this.$refs.basemap['mapObject']
-        mymap.removeLayer(this.tempOilDivIcon)
-        this.tempOilDivIcon = null
     }
 
     // TODO:[*] 19-11-08 使用vuex-clas的方式监听oil 的两个select
@@ -1230,66 +1063,14 @@ export default class OilSpillingMap extends mixins(
         }
         return (unChechShow || newvalNew.isShow) && this.loadRasterLock
     }
-
-    @Watch('wmsOptions', { immediate: true, deep: true })
-    onWmsOptions(valNew: { coverageId: number; current: Date }): void {
-        const that = this
-    }
-
-    // TODO:[-] 20-10-25 + 加入的监听风场变化
-    @Watch('windOptions', { immediate: true, deep: true })
-    onWindOptions(valNew: IRasterOptions, valOld: IRasterOptions): void {}
-
-    // TODO:[-] 21-03-24 + 监听全球海浪等值线
-    @Watch('waveOptions', { immediate: true, deep: true })
-    onWaveOptions(valNew: IRasterOptions): void {}
-
-    // TODO:[-] 21-02-10 + 监听风场 raster 的变化以加载风场 geotiff to map
-    @Watch('windRasterOptions', { immediate: true, deep: true })
-    onWindRasterOptions(valNew: IRasterOptions, valOld: IRasterOptions): void {}
-
-    // TODO:[-] 21-04-05 + 监听 海浪-海表面高度 raster 的变化以加载海浪 geotiff -> map
-    @Watch('waveWveRasterOption', { immediate: true, deep: true })
-    onWaveWveRasterOptions(valNew: IRasterOptions): void {}
-
-    @Watch('getCurrentRasterOptions', { immediate: true, deep: true })
-    onCurrentRasterOptions(valNew: IRasterOptions, valOld: IRasterOptions): void {}
-
-    @Watch('currentRasterLayerId')
-    onCurrentRasterLayerId(valNew: number, valOld: number): void {}
-
     @Watch('wmsOpt')
     onWmsOpt(valNew: any): void {
         // console.log(valNew)
     }
 
-    @Mutation(SET_CURRENT_LATLNG, { namespace: 'map' })
-    setLatlng
-
-    @Getter('GET_CURRENT_LATLNG', { namespace: 'map' }) getLatlng: Array<number>
-
-    @Watch('getLatlng')
-    onLatlng(valNew: Array<number>): void {
-        // this.addPositionMarker2Map(valNew)
-    }
-
-    @Mutation(SET_INITIAL_LATLNG, { namespace: 'map' })
-    setInitialLatlng
-
-    @Getter(GET_INITIAL_LATLNG, { namespace: 'map' })
-    getInitialLatlng: number[]
-
-    @Getter('GET_CURRENT_LATLNG_LOCK', { namespace: 'map' }) getCurrentLatlngLock: boolean
-
     // 监听当前 map 需要叠加的 layer
     @Getter(GET_MAP_LAYERS, { namespace: 'map' })
     getLayers: LayerTypeEnum[]
-
-    // + 21-01-27 新加入的用来控制组件间触发异步时间造成的错位情况的 时间锁
-    @Mutation(SET_TIMER_LOCK, { namespace: 'map' })
-    setTimerLock
-
-    @Getter(GET_TIMER_LOCK, { namespace: 'map' }) getMapTimerLock: boolean
 
     @Watch('zoom')
     OnZoom(valNew: number, valOld: number): void {
@@ -1302,17 +1083,12 @@ export default class OilSpillingMap extends mixins(
             level = 3
         }
         // 修改对应的风力杆 -> windOptions
-        this.windOptions.level = level
+        // this.windOptions.level = level
     }
 
     zoomUpdated(valNew: number, valOld: number): void {
         this.zoom = valNew
         // console.log(`new:${valNew}|old:${valOld}`)
-    }
-
-    @Watch('getLayers')
-    OnLayers(valNews: LayerTypeEnum[]): void {
-        this.coverageWMS2Map(valNews)
     }
 }
 </script>
