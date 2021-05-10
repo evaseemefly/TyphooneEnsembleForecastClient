@@ -539,7 +539,7 @@ export default class OilSpillingMap extends mixins(
         // 由于是测试，页面加载完成后先加载当前 code 的平均轨迹
         // TODO:[*] 20-01-23 暂时去掉页面加载后读取平均轨迹的步骤(暂时去掉)
         // TODO：[-] 21-05-10 注意 mac 的tyId=1 | 5750 tyId=3
-        const testTyphoonId = 1
+        const testTyphoonId = 3
         const mymap: L.Map = this.$refs.basemap['mapObject']
         this.testGetAddTyGroupPath2Map(testTyphoonId)
 
@@ -777,11 +777,11 @@ export default class OilSpillingMap extends mixins(
                     // console.log(e.target)
                     // 对于移入的 circle 先进行加粗突出显示
                     const layer = e.target
-                    // layer.setStyle({
-                    //     opacity: 1,
-                    //     weight: 7
-                    //     // radius:
-                    // })
+                    layer.setStyle({
+                        opacity: 1,
+                        weight: layer.options.weight * 1.25
+                        // radius:
+                    })
                     const customData: { bp: number; radius: number } = e.target.options.customData
                     // 获取半径
                     const targetRadius = customData.radius
@@ -805,7 +805,13 @@ export default class OilSpillingMap extends mixins(
                     that.addTyphoonRealDataDiv2Map(typhoonStatus)
                 })
 
-                circleTemp.on('mouseout', (event) => {
+                circleTemp.on('mouseout', (e) => {
+                    // console.log(e)
+                    const layer = e.target
+                    layer.setStyle({
+                        opacity: 0.7,
+                        weight: layer.options.weight / 1.25
+                    })
                     mymap.removeLayer(that.currentGaleRadius)
                     // + 21-04-22 移除 当前的 tyDivIcon
                     if (that.tyRealDataDivIcon) {
@@ -852,22 +858,22 @@ export default class OilSpillingMap extends mixins(
                 customData: indexTyGroup
             })
             // 设置 mouseover 的事件
-            groupPolyLine.on('mouseover', (e: any) => {
-                // console.log(e)
-                const layer = e.target
-                layer.setStyle({
-                    opacity: 1,
-                    weight: 7
-                })
-            })
-            groupPolyLine.on('mouseout', (e: any) => {
-                // console.log(e)
-                const layer = e.target
-                layer.setStyle({
-                    opacity: 0.7,
-                    weight: 3
-                })
-            })
+            // groupPolyLine.on('mouseover', (e: any) => {
+            //     // console.log(e)
+            //     const layer = e.target
+            //     layer.setStyle({
+            //         opacity: 1,
+            //         weight: 7
+            //     })
+            // })
+            // groupPolyLine.on('mouseout', (e: any) => {
+            //     // console.log(e)
+            //     const layer = e.target
+            //     layer.setStyle({
+            //         opacity: 0.7,
+            //         weight: 3
+            //     })
+            // })
 
             // TODO:[-] 21-04-21 此处尝试将同一个 集合路径的 折线 + points 统一 add -> groupLayer
             L.layerGroup([...cirleLayers, groupPolyLine])
