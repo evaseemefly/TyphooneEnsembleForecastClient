@@ -5,8 +5,6 @@
                 ref="basemap"
                 :zoom="zoom"
                 :center="center"
-                @click="createMarker"
-                @update:zoom="zoomUpdated"
                 :options="mapOptions"
                 :maxZoom="mapOptions.maxZoom"
                 :minZoom="mapOptions.minZoom"
@@ -515,6 +513,9 @@ export default class OilSpillingMap extends mixins(
     // 台风大风半径的范围
     // 当前显示的 台风realdata div icon
     tyRealDataDivIcon: L.Marker = null
+
+    // + 21-05-10 当前的 逐时风暴增水场 layer，每次切换时会替换，且从 map 中清除
+    fieldSurgeRasterLayer: L.Layer = null
     tyGroupGaleRadiusRange: { max: number; min: number } = { max: 80, min: 31 }
     created() {
         this.startDate = new Date(
@@ -824,7 +825,18 @@ export default class OilSpillingMap extends mixins(
                         tyTimestamp,
                         params.forecastDt
                     )
-                    fieldSurgeGeoLayer.add2map(mymap, () => {})
+                    if (that.fieldSurgeRasterLayer) {
+                        mymap.removeLayer(that.fieldSurgeRasterLayer)
+                        that.fieldSurgeRasterLayer = null
+                    }
+                    // ERROR：
+                    //  'await' expressions are only allowed within async functions and at the top levels of modules.
+                    fieldSurgeGeoLayer
+                        .add2map(mymap, () => {})
+                        .then((res) => {
+                            console.log(res)
+                            that.fieldSurgeRasterLayer = res
+                        })
                 })
                 cirleLayers.push(circleTemp)
                 // circleTemp.addTo(mymap)
