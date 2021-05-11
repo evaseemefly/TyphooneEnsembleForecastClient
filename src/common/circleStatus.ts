@@ -58,9 +58,9 @@ class TyphoonCircleStatus {
         } else if (val < 60) {
             weight = 4
         } else if (val < 100) {
-            weight = 6
+            weight = 5
         } else {
-            weight = 8
+            weight = 6
         }
         return weight * weight
     }

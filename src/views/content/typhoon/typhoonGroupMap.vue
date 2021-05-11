@@ -539,7 +539,7 @@ export default class OilSpillingMap extends mixins(
         // 由于是测试，页面加载完成后先加载当前 code 的平均轨迹
         // TODO:[*] 20-01-23 暂时去掉页面加载后读取平均轨迹的步骤(暂时去掉)
         // TODO：[-] 21-05-10 注意 mac 的tyId=1 | 5750 tyId=3
-        const testTyphoonId = 3
+        const testTyphoonId = 1
         const mymap: L.Map = this.$refs.basemap['mapObject']
         this.testGetAddTyGroupPath2Map(testTyphoonId)
 
@@ -778,8 +778,8 @@ export default class OilSpillingMap extends mixins(
                     // 对于移入的 circle 先进行加粗突出显示
                     const layer = e.target
                     layer.setStyle({
-                        opacity: 1,
-                        weight: layer.options.weight * 1.25
+                        opacity: 1
+                        // weight: layer.options.weight * 1.25
                         // radius:
                     })
                     const customData: { bp: number; radius: number } = e.target.options.customData
@@ -809,8 +809,8 @@ export default class OilSpillingMap extends mixins(
                     // console.log(e)
                     const layer = e.target
                     layer.setStyle({
-                        opacity: 0.7,
-                        weight: layer.options.weight / 1.25
+                        opacity: 0.7
+                        // weight: layer.options.weight / 1.25
                     })
                     mymap.removeLayer(that.currentGaleRadius)
                     // + 21-04-22 移除 当前的 tyDivIcon
@@ -844,6 +844,7 @@ export default class OilSpillingMap extends mixins(
                             that.fieldSurgeRasterLayer = res
                         })
                 })
+                circleTemp.setStyle({ zIndexOffset: 19999 })
                 cirleLayers.push(circleTemp)
                 // circleTemp.addTo(mymap)
             })
