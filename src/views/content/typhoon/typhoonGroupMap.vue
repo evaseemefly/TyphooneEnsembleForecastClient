@@ -507,6 +507,8 @@ export default class OilSpillingMap extends mixins(
         latlngs: [],
         color: 'yellow'
     }
+    // TODO:[-] + 21-05-12 台风集合预报路径的概率半径集合 24: 60, 48:100,72:120,96:150,120:180
+    tyGroupProPathCircles: { lat: number; lon: number; radius: number }[] = []
     // 当前的大风半径范围
     currentGaleRadius: L.Circle = null
     // group_ty_range
@@ -516,6 +518,7 @@ export default class OilSpillingMap extends mixins(
 
     // + 21-05-10 当前的 逐时风暴增水场 layer，每次切换时会替换，且从 map 中清除
     fieldSurgeRasterLayer: L.Layer = null
+
     tyGroupGaleRadiusRange: { max: number; min: number } = { max: 80, min: 31 }
     created() {
         this.startDate = new Date(
@@ -642,6 +645,9 @@ export default class OilSpillingMap extends mixins(
     testGetAddTyGroupPath2Map(tyId: number): void {
         const that = this
         const arrTyComplexGroupRealdata: Array<TyphoonComplexGroupRealDataMidModel> = []
+        // 每次处理签需要先清除当前的 台风集合预报路径概率半径集合
+        this.tyGroupProPathCircles = []
+
         getTargetTyGroupComplexModel(tyId).then((res) => {
             if (res.status === 200) {
                 /*
@@ -684,6 +690,7 @@ export default class OilSpillingMap extends mixins(
                             ty_path_type: string
                         }) => {
                             const arrTyphoonRealdata: Array<TyphoonForecastRealDataMidModel> = []
+
                             temp.list_realdata.forEach(
                                 (tempRealdata: {
                                     bp: number
@@ -747,6 +754,7 @@ export default class OilSpillingMap extends mixins(
             that.tyGroupGaleRadiusRange.min,
             that.tyGroupGaleRadiusRange.max
         )
+        let forecastDtStart: Date = undefined
         galeRadiusScaleColor.setScale('Viridis')
         this.tyGroupLineList.map((temp) => {
             indexTyGroup++
@@ -755,6 +763,7 @@ export default class OilSpillingMap extends mixins(
             cirleScaleColor.setScale('Viridis')
             let indexDate = 0
             const cirleLayers: L.Layer[] = []
+
             temp.listRealdata.forEach((tempRealdata) => {
                 indexDate++
                 const typhoonStatus = new TyphoonCircleStatus(
@@ -766,86 +775,104 @@ export default class OilSpillingMap extends mixins(
                 )
                 // that.tyGroupPolyLine.latlngs.push([tempRealdata.lat, tempRealdata.lon])
                 polygonPoint.push(new L.LatLng(tempRealdata.lat, tempRealdata.lon))
-                const circleTemp = L.circle(new L.LatLng(tempRealdata.lat, tempRealdata.lon), {
-                    color: cirleScaleColor.getColor(indexDate),
-                    // radius: 20
-                    weight: typhoonStatus.getWeight(),
-                    customData: typhoonStatus
-                })
-                // + 21-04-21 添加鼠标移入 circle 显示大风半径的功能
-                circleTemp.on('mouseover', (e: any) => {
-                    // console.log(e.target)
-                    // 对于移入的 circle 先进行加粗突出显示
-                    const layer = e.target
-                    layer.setStyle({
-                        opacity: 1
-                        // weight: layer.options.weight * 1.25
-                        // radius:
+                // TODO:[-] 21-05-12 此处加入判断，对于 非中心路径不做 circle 的 push操作
+                // 注意! 还需要加入bp==0的判断条件
+                if (temp.tyPathType === 'c' && temp.tyPathMarking === 0 && temp.bp === 0) {
+                    const circleTemp = L.circle(new L.LatLng(tempRealdata.lat, tempRealdata.lon), {
+                        color: cirleScaleColor.getColor(indexDate),
+                        // radius: 20
+                        weight: typhoonStatus.getWeight(),
+                        customData: typhoonStatus
                     })
-                    const customData: { bp: number; radius: number } = e.target.options.customData
-                    // 获取半径
-                    const targetRadius = customData.radius
-                    const coords: L.LatLng = e.latlng
-                    /*
+                    // 获取第一个时间作为 预报的起始时间
+                    if (indexDate === 1) {
+                        forecastDtStart = tempRealdata.forecastDt
+                    }
+                    const tempProPathRadius: number = that.getTyProPathRadius(indexDate)
+                    if (tempProPathRadius !== 0) {
+                        that.tyGroupProPathCircles.push({
+                            lat: tempRealdata.lat,
+                            lon: tempRealdata.lon,
+                            radius: tempProPathRadius
+                        })
+                    }
+                    // + 21-04-21 添加鼠标移入 circle 显示大风半径的功能
+                    circleTemp.on('mouseover', (e: any) => {
+                        // console.log(e.target)
+                        // 对于移入的 circle 先进行加粗突出显示
+                        const layer = e.target
+                        layer.setStyle({
+                            opacity: 1
+                            // weight: layer.options.weight * 1.25
+                            // radius:
+                        })
+                        const customData: { bp: number; radius: number } =
+                            e.target.options.customData
+                        // 获取半径
+                        const targetRadius = customData.radius
+                        const coords: L.LatLng = e.latlng
+                        /*
                         大体逻辑:
                             -1 根据当前传入的 circle index 找到对应 group -> realdata
                             -2 根据对应的 realdata 获取当前的 radius
                             -3 根据经纬度画圆
                     */
-                    // radius 单位为 m ，需要乘以系数 1000m = 1km 为基本单位
-                    const radiusUnit = 1000
-                    that.currentGaleRadius = L.circle(coords, {
-                        radius: targetRadius * radiusUnit,
-                        fillColor: galeRadiusScaleColor.getColor(targetRadius),
-                        color: galeRadiusScaleColor.getColor(targetRadius),
-                        weight: 2,
-                        fillOpacity: 0.5
-                    }).addTo(mymap)
-                    // + 21-04-22 鼠标移入当前 circle 显示该 divIcon
-                    that.addTyphoonRealDataDiv2Map(typhoonStatus)
-                })
-
-                circleTemp.on('mouseout', (e) => {
-                    // console.log(e)
-                    const layer = e.target
-                    layer.setStyle({
-                        opacity: 0.7
-                        // weight: layer.options.weight / 1.25
+                        // radius 单位为 m ，需要乘以系数 1000m = 1km 为基本单位
+                        const radiusUnit = 1000
+                        that.currentGaleRadius = L.circle(coords, {
+                            radius: targetRadius * radiusUnit,
+                            fillColor: galeRadiusScaleColor.getColor(targetRadius),
+                            color: galeRadiusScaleColor.getColor(targetRadius),
+                            weight: 2,
+                            fillOpacity: 0.5
+                        }).addTo(mymap)
+                        // + 21-04-22 鼠标移入当前 circle 显示该 divIcon
+                        that.addTyphoonRealDataDiv2Map(typhoonStatus)
                     })
-                    mymap.removeLayer(that.currentGaleRadius)
-                    // + 21-04-22 移除 当前的 tyDivIcon
-                    if (that.tyRealDataDivIcon) {
-                        mymap.removeLayer(that.tyRealDataDivIcon)
-                    }
-                    that.currentGaleRadius = null
-                })
-                // + 21-05-07 加入鼠标click 事件
-                circleTemp.on('click', (e: any) => {
-                    // e.target -> options -> customData
-                    console.log(e.target)
-                    // 点击向后台发送 获取逐时风暴增水场的请求
-                    // 请求参数包含 ty_code | ty_timestamp | forecast_dt
-                    const params: { forecastDt: Date } = e.target.options.customData
-                    const fieldSurgeGeoLayer = new FieldSurgeGeoLayer(
-                        tyCode,
-                        tyTimestamp,
-                        params.forecastDt
-                    )
-                    if (that.fieldSurgeRasterLayer) {
-                        mymap.removeLayer(that.fieldSurgeRasterLayer)
-                        that.fieldSurgeRasterLayer = null
-                    }
-                    // ERROR：
-                    //  'await' expressions are only allowed within async functions and at the top levels of modules.
-                    fieldSurgeGeoLayer
-                        .add2map(mymap, () => {})
-                        .then((res) => {
-                            console.log(res)
-                            that.fieldSurgeRasterLayer = res
+
+                    circleTemp.on('mouseout', (e) => {
+                        // console.log(e)
+                        const layer = e.target
+                        layer.setStyle({
+                            opacity: 0.7
+                            // weight: layer.options.weight / 1.25
                         })
-                })
-                circleTemp.setStyle({ zIndexOffset: 19999 })
-                cirleLayers.push(circleTemp)
+                        mymap.removeLayer(that.currentGaleRadius)
+                        // + 21-04-22 移除 当前的 tyDivIcon
+                        if (that.tyRealDataDivIcon) {
+                            mymap.removeLayer(that.tyRealDataDivIcon)
+                        }
+                        that.currentGaleRadius = null
+                    })
+                    // + 21-05-07 加入鼠标click 事件
+                    circleTemp.on('click', (e: any) => {
+                        // e.target -> options -> customData
+                        console.log(e.target)
+                        // 点击向后台发送 获取逐时风暴增水场的请求
+                        // 请求参数包含 ty_code | ty_timestamp | forecast_dt
+                        const params: { forecastDt: Date } = e.target.options.customData
+                        const fieldSurgeGeoLayer = new FieldSurgeGeoLayer(
+                            tyCode,
+                            tyTimestamp,
+                            params.forecastDt
+                        )
+                        if (that.fieldSurgeRasterLayer) {
+                            mymap.removeLayer(that.fieldSurgeRasterLayer)
+                            that.fieldSurgeRasterLayer = null
+                        }
+                        // ERROR：
+                        //  'await' expressions are only allowed within async functions and at the top levels of modules.
+                        fieldSurgeGeoLayer
+                            .add2map(mymap, () => {})
+                            .then((res) => {
+                                console.log(res)
+                                that.fieldSurgeRasterLayer = res
+                            })
+                    })
+                    circleTemp.setStyle({ zIndexOffset: 19999 })
+                    cirleLayers.push(circleTemp)
+                }
+
                 // circleTemp.addTo(mymap)
             })
 
@@ -883,6 +910,34 @@ export default class OilSpillingMap extends mixins(
                 // })
                 .addTo(mymap)
         })
+        this.addTyGroupProPathCircles()
+    }
+
+    addTyGroupProPathCircles(): void {
+        const radiusUnit = 1000
+        if (this.tyGroupProPathCircles.length > 0) {
+            const mymap: any = this.$refs.basemap['mapObject']
+            const cirleLayers: L.Layer[] = []
+            const tyGroupProPathMaxCircle: number = Math.max.apply(
+                Math,
+                this.tyGroupProPathCircles.map((temp) => {
+                    return temp.radius
+                })
+            )
+            const cirleScaleColor = new ScaleColor(0, tyGroupProPathMaxCircle)
+            this.tyGroupProPathCircles.forEach((tempTyGroup) => {
+                const circleTemp = L.circle(new L.LatLng(tempTyGroup.lat, tempTyGroup.lon), {
+                    color: cirleScaleColor.getColor(tempTyGroup.radius),
+                    radius: tempTyGroup.radius * radiusUnit,
+                    fill: true,
+                    fillOpacity: 0.7,
+                    //weight: tempTyGroup.radius,
+                    opacity: 0.7
+                })
+                cirleLayers.push(circleTemp)
+            })
+            L.layerGroup([...cirleLayers]).addTo(mymap)
+        }
     }
 
     // + 21-04-22 将 台风实时圆 add to map
@@ -903,6 +958,35 @@ export default class OilSpillingMap extends mixins(
             icon: typhoonDivIcon
         }).addTo(mymap)
         myself.tyRealDataDivIcon = typhoonDivIconTarget
+    }
+
+    // 根据传入的 时间 index 返回当前 dateIndex 对应的 大风概率半径
+    getTyProPathRadius(index: number, options: { interval: number } = { interval: 6 }): number {
+        let radius = 0
+        const indexTemp = index - 1
+
+        switch (true) {
+            // TODO:[-] 21-03-26 备份之前的色标
+            case indexTemp * options.interval === 24:
+                radius = 60
+                break
+            case indexTemp * options.interval === 48:
+                radius = 100
+                break
+            case indexTemp * options.interval === 72:
+                radius = 120
+                break
+            case indexTemp * options.interval === 96:
+                radius = 150
+                break
+            case indexTemp * options.interval === 120:
+                radius = 180
+                break
+            default:
+                radius = 0
+                break
+        }
+        return radius
     }
 
     // TODO:[-] 20-06-29 加载 岸线的 wms服务

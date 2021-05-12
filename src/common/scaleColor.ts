@@ -15,6 +15,9 @@ class ScaleColor {
         this.scale = chroma.scale(scaleName)
     }
     getColor(val: number): string {
+        if(this.scale===undefined){
+            this.setScale()
+        }
         const scale = this.scale
         if (val === 0 || Number.isNaN(val)) return '#7f8c8d'
 
