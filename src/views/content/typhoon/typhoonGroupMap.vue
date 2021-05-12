@@ -204,7 +204,7 @@ import {
 // 注意此处的引用方式，极其蛋疼
 import HeatmapOverlay from 'heatmap.js/plugins/leaflet-heatmap'
 // TODO:[-] 21-04-20 加入的 scaleColor
-import { ScaleColor } from '@/common/scaleColor'
+import { ScaleColor, TyGroupPathScaleColor } from '@/common/scaleColor'
 // 此种方式较为繁琐：https://www.patrick-wied.at/static/heatmapjs/example-heatmap-leaflet.html
 import 'heatmap.js'
 import moment from 'moment'
@@ -314,6 +314,7 @@ import {
     GET_TIMER_LOCK
 } from '@/store/types'
 import { DEFAULT_LAYER_ID } from '@/const/common'
+import { RADIUSUNIT } from '@/const/typhoon'
 import { ArrayPropsDefinition } from 'vue/types/options'
 import { SET_CURRENT_LATLNG } from '@/store/types'
 
@@ -542,7 +543,7 @@ export default class OilSpillingMap extends mixins(
         // 由于是测试，页面加载完成后先加载当前 code 的平均轨迹
         // TODO:[*] 20-01-23 暂时去掉页面加载后读取平均轨迹的步骤(暂时去掉)
         // TODO：[-] 21-05-10 注意 mac 的tyId=1 | 5750 tyId=3
-        const testTyphoonId = 1
+        const testTyphoonId = 3
         const mymap: L.Map = this.$refs.basemap['mapObject']
         this.testGetAddTyGroupPath2Map(testTyphoonId)
 
@@ -747,7 +748,7 @@ export default class OilSpillingMap extends mixins(
         // 2-2 由于不同的集合路径需要使用不同的颜色区分，此处使用 scale 动态生成，目前只是针对编号进行颜色的过渡依据
         const tyGroupListCount = this.tyGroupLineList.length
         let indexTyGroup = 0
-        const polyScaleColor = new ScaleColor(0, tyGroupListCount)
+        const polyScaleColor = new TyGroupPathScaleColor(0, tyGroupListCount)
         polyScaleColor.setScale('Viridis')
         // galeRadius sCaleColor
         const galeRadiusScaleColor = new ScaleColor(
@@ -756,6 +757,11 @@ export default class OilSpillingMap extends mixins(
         )
         let forecastDtStart: Date = undefined
         galeRadiusScaleColor.setScale('Viridis')
+
+        // TODO:[-] 21-05-12 新加入的 对 tyGroupLineList 重新进行排序
+        this.tyGroupLineList = this.tyGroupLineList.sort(
+            (a, b) => a.tyPathMarking - b.tyPathMarking
+        )
         this.tyGroupLineList.map((temp) => {
             indexTyGroup++
             const polygonPoint: L.LatLng[] = []
@@ -773,7 +779,6 @@ export default class OilSpillingMap extends mixins(
                     tempRealdata.lat,
                     tempRealdata.lon
                 )
-                // that.tyGroupPolyLine.latlngs.push([tempRealdata.lat, tempRealdata.lon])
                 polygonPoint.push(new L.LatLng(tempRealdata.lat, tempRealdata.lon))
                 // TODO:[-] 21-05-12 此处加入判断，对于 非中心路径不做 circle 的 push操作
                 // 注意! 还需要加入bp==0的判断条件
@@ -782,12 +787,18 @@ export default class OilSpillingMap extends mixins(
                         color: cirleScaleColor.getColor(indexDate),
                         // radius: 20
                         weight: typhoonStatus.getWeight(),
-                        customData: typhoonStatus
+                        customData: typhoonStatus,
+                        radius: typhoonStatus.getWeight() * RADIUSUNIT,
+                        fill: true,
+                        fillOpacity: 0.7,
+                        //weight: tempTyGroup.radius,
+                        opacity: 0.7
                     })
                     // 获取第一个时间作为 预报的起始时间
                     if (indexDate === 1) {
                         forecastDtStart = tempRealdata.forecastDt
                     }
+                    // 根据传入的 时间 index 返回当前 dateIndex 对应的 大风概率半径
                     const tempProPathRadius: number = that.getTyProPathRadius(indexDate)
                     if (tempProPathRadius !== 0) {
                         that.tyGroupProPathCircles.push({
@@ -872,19 +883,32 @@ export default class OilSpillingMap extends mixins(
                     circleTemp.setStyle({ zIndexOffset: 19999 })
                     cirleLayers.push(circleTemp)
                 }
-
-                // circleTemp.addTo(mymap)
             })
 
             // 添加折线
             const polyColor = polyScaleColor.getColor(indexTyGroup)
             // 设置鼠标移入时触发的事件
             // 为当前 线段添加 自定义 data
-            const groupPolyLine = L.polyline(polygonPoint, {
+            let groupPolyLine = L.polyline(polygonPoint, {
                 color: polyColor,
-                opacity: 0.7,
+                opacity: 0.3,
+                fillOpacity: 0.3,
+                weight: 3,
                 customData: indexTyGroup
             })
+            if (temp.tyPathType === 'c' && temp.tyPathMarking === 0 && temp.bp === 0) {
+                // groupPolyLine.options['weight'] = 5
+                groupPolyLine = L.polyline(polygonPoint, {
+                    color: polyColor,
+                    opacity: 0.9,
+                    weight: 20,
+                    fillOpacity: 0.9,
+                    customData: indexTyGroup,
+                    smoothFactor: 3
+                })
+                groupPolyLine.setStyle({ zIndexOffset: 19999 })
+            }
+
             // 设置 mouseover 的事件
             // groupPolyLine.on('mouseover', (e: any) => {
             //     // console.log(e)
@@ -913,8 +937,8 @@ export default class OilSpillingMap extends mixins(
         this.addTyGroupProPathCircles()
     }
 
+    // + 21-05-12 添加 中间路径的概率半径 -> map
     addTyGroupProPathCircles(): void {
-        const radiusUnit = 1000
         if (this.tyGroupProPathCircles.length > 0) {
             const mymap: any = this.$refs.basemap['mapObject']
             const cirleLayers: L.Layer[] = []
@@ -928,7 +952,7 @@ export default class OilSpillingMap extends mixins(
             this.tyGroupProPathCircles.forEach((tempTyGroup) => {
                 const circleTemp = L.circle(new L.LatLng(tempTyGroup.lat, tempTyGroup.lon), {
                     color: cirleScaleColor.getColor(tempTyGroup.radius),
-                    radius: tempTyGroup.radius * radiusUnit,
+                    radius: tempTyGroup.radius * RADIUSUNIT,
                     fill: true,
                     fillOpacity: 0.7,
                     //weight: tempTyGroup.radius,

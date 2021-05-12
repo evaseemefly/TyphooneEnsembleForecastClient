@@ -15,7 +15,7 @@ class ScaleColor {
         this.scale = chroma.scale(scaleName)
     }
     getColor(val: number): string {
-        if(this.scale===undefined){
+        if (this.scale === undefined) {
             this.setScale()
         }
         const scale = this.scale
@@ -30,4 +30,26 @@ class ScaleColor {
     }
 }
 
-export { ScaleColor }
+/**
+ * 台风集合路径配色
+ *
+ * @class TyGroupPathScaleColor
+ * @extends {ScaleColor}
+ */
+class TyGroupPathScaleColor extends ScaleColor {
+    setScale(scaleName: string | string[] = 'Viridis') {
+        this.scale = chroma.scale([
+            '#00429d',
+            '#4771b2',
+            '#73a2c6',
+            '#a5d5d8',
+            '#ffffe0',
+            '#ffbcaf',
+            '#f4777f',
+            '#cf3759',
+            '#93003a'
+        ])
+    }
+}
+
+export { ScaleColor, TyGroupPathScaleColor }
