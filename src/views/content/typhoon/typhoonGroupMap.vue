@@ -543,7 +543,7 @@ export default class OilSpillingMap extends mixins(
         // 由于是测试，页面加载完成后先加载当前 code 的平均轨迹
         // TODO:[*] 20-01-23 暂时去掉页面加载后读取平均轨迹的步骤(暂时去掉)
         // TODO：[-] 21-05-10 注意 mac 的tyId=1 | 5750 tyId=3
-        const testTyphoonId = 3
+        const testTyphoonId = 1
         const mymap: L.Map = this.$refs.basemap['mapObject']
         this.testGetAddTyGroupPath2Map(testTyphoonId)
 
@@ -759,9 +759,12 @@ export default class OilSpillingMap extends mixins(
         galeRadiusScaleColor.setScale('Viridis')
 
         // TODO:[-] 21-05-12 新加入的 对 tyGroupLineList 重新进行排序
-        this.tyGroupLineList = this.tyGroupLineList.sort(
-            (a, b) => a.tyPathMarking - b.tyPathMarking
-        )
+        // 此处的排序提取在 this.sortTyGroupLineList ,以下暂时注释掉
+        // this.tyGroupLineList = this.tyGroupLineList.sort(
+        //     (a, b) => a.tyPathMarking - b.tyPathMarking
+        // )
+        this.sortTyGroupLineList()
+
         this.tyGroupLineList.map((temp) => {
             indexTyGroup++
             const polygonPoint: L.LatLng[] = []
@@ -789,6 +792,7 @@ export default class OilSpillingMap extends mixins(
                         weight: typhoonStatus.getWeight(),
                         customData: typhoonStatus,
                         radius: typhoonStatus.getWeight() * RADIUSUNIT,
+                        // radius: typhoonStatus.getWeight(),
                         fill: true,
                         fillOpacity: 0.7,
                         //weight: tempTyGroup.radius,
@@ -891,8 +895,8 @@ export default class OilSpillingMap extends mixins(
             // 为当前 线段添加 自定义 data
             let groupPolyLine = L.polyline(polygonPoint, {
                 color: polyColor,
-                opacity: 0.3,
-                fillOpacity: 0.3,
+                opacity: 0.2,
+                fillOpacity: 0.2,
                 weight: 3,
                 customData: indexTyGroup
             })
@@ -900,13 +904,17 @@ export default class OilSpillingMap extends mixins(
                 // groupPolyLine.options['weight'] = 5
                 groupPolyLine = L.polyline(polygonPoint, {
                     color: polyColor,
-                    opacity: 0.9,
-                    weight: 20,
-                    fillOpacity: 0.9,
+                    opacity: 1,
+                    weight: 6,
+                    fillOpacity: 1,
                     customData: indexTyGroup,
                     smoothFactor: 3
                 })
-                groupPolyLine.setStyle({ zIndexOffset: 19999 })
+                // TODO:[*] 21-05-13 尝试修改 zindex
+                // 方式1:
+                // groupPolyLine.setStyle({ zIndexOffset: 19999 })
+                groupPolyLine.options['zIndexOffset'] = 19999
+                // groupPolyLine.setZIndexOffset(19999)
             }
 
             // 设置 mouseover 的事件
@@ -928,11 +936,30 @@ export default class OilSpillingMap extends mixins(
             // })
 
             // TODO:[-] 21-04-21 此处尝试将同一个 集合路径的 折线 + points 统一 add -> groupLayer
-            L.layerGroup([...cirleLayers, groupPolyLine])
-                // .on('mouseover', (event: any) => {
-                //     console.log(event)
-                // })
-                .addTo(mymap)
+            // 目前看均无法设置 折线的 zindex
+            if (temp.tyPathType === 'c' && temp.tyPathMarking === 0 && temp.bp === 0) {
+                // groupPolyLine.setStyle({ zIndex: 9999 })
+                // groupPolyLine.setStyle({ zIndexOffset: 9999 })
+                groupPolyLine.addTo(mymap)
+                // TODO:[-] 21-05-12 尝试只针对折线 修改其 zindex
+
+                // .setZIndex(19999)
+                // // .on('mouseover', (event: any) => {
+                // //     console.log(event)
+                // // })
+                // .addTo(mymap)
+                let tempLayer = L.layerGroup([...cirleLayers])
+                tempLayer = tempLayer.setZIndex(9999)
+                // tempLayer.setStyle({ zIndexOffset: 9999 })
+                tempLayer.addTo(mymap)
+                console.log(tempLayer)
+            } else {
+                let tempLayer = L.layerGroup([...cirleLayers])
+                tempLayer = tempLayer.setZIndex(2000)
+                tempLayer.addTo(mymap)
+                groupPolyLine.addTo(mymap)
+                // console.log(tempLayer)
+            }
         })
         this.addTyGroupProPathCircles()
     }
@@ -1011,6 +1038,41 @@ export default class OilSpillingMap extends mixins(
                 break
         }
         return radius
+    }
+
+    // TODO:[-] + 21-05-13 对集合预报路径进行重新排序，越内侧越靠前
+    sortTyGroupLineList(): void {
+        let arr1: TyphoonComplexGroupRealDataMidModel[] = []
+        let arr2: TyphoonComplexGroupRealDataMidModel[] = []
+        // 将 标识符为 : [c,f,s] 提起出来存在 arr1 中
+        // 将 标识符为 : [r,l] 提取出来存在 arr2 中
+        this.tyGroupLineList.forEach((temp) => {
+            if (['r', 'l'].includes(temp.tyPathType)) {
+                arr2.push(temp)
+            } else if (['c', 'f', 's'].includes(temp.tyPathType)) {
+                arr1.push(temp)
+            }
+        })
+        // 对于 arr2 对 数字进行排序
+        arr2 = arr2.sort((a, b) => {
+            return a.tyPathMarking - b.tyPathMarking
+        })
+        arr1 = arr1.sort((a, b) => {
+            if (a.tyPathType === 'c' && b.tyPathType !== 'c') {
+                return -1
+            } else if (a.tyPathType === 'c' && b.tyPathType === 'c') {
+                return 0
+            } else if (['f', 's'].includes(a.tyPathType) && ['f', 's'].includes(b.tyPathType)) {
+                return a.tyPathMarking - b.tyPathMarking
+            } else {
+                return 0
+            }
+        })
+        this.tyGroupLineList = [...arr1, ...arr2]
+        // TODO:[-] 21-05-13 新加入一个对其倒叙，因为此种方式排序完的数组，中间路径会出现在最前，也就是最先被叠加
+        this.tyGroupLineList = this.tyGroupLineList.sort((a, b) => {
+            return -1
+        })
     }
 
     // TODO:[-] 20-06-29 加载 岸线的 wms服务

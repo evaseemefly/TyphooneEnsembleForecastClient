@@ -49,6 +49,17 @@ class TyGroupPathScaleColor extends ScaleColor {
             '#cf3759',
             '#93003a'
         ])
+        // this.scale = chroma.scale([
+        //     '#93003a',
+        //     '#cf3759',
+        //     '#f4777f',
+        //     '#ffbcaf',
+        //     '#ffffe0',
+        //     '#a5d5d8',
+        //     '#73a2c6',
+        //     '#4771b2',
+        //     '#00429d'
+        // ])
     }
 }
 
