@@ -53,7 +53,7 @@ class IconCirlePulsing {
 }
 
 /**
- * 海洋站icon
+ * 海洋站精简 icon form 精简信息框
  *
  * @class IconStationSurge
  */
@@ -74,7 +74,7 @@ class IconMinStationSurge {
       </div>`
         return divHtml
     }
-    getAlarmColor(): string {
+    private getAlarmColor(): string {
         const surge = this.surge
         let colorStr = 'green'
         switch (true) {
@@ -94,4 +94,30 @@ class IconMinStationSurge {
         return colorStr
     }
 }
-export { IconCirlePulsing, IconMinStationSurge }
+
+/**
+ * 潮位站的详细 icon form 详情信息框
+ *
+ * @class IconDetailedStationSurge
+ */
+class IconDetailedStationSurge {
+    stationName: string
+    surge: number
+    productTypeStr: string
+    surgeMin: number
+    surgeMax: number
+    constructor(
+        name: string,
+        surge: number,
+        surgeMin: number,
+        surgeMax: number,
+        productTypeStr = '潮位'
+    ) {
+        this.stationName = name
+        this.surge = surge
+        this.surgeMin = surgeMin
+        this.surgeMax = surgeMax
+        this.productTypeStr = productTypeStr
+    }
+}
+export { IconCirlePulsing, IconMinStationSurge, IconDetailedStationSurge }

@@ -290,6 +290,7 @@ import { IconCirlePulsing, IconMinStationSurge } from '@/views/members/icon/puls
 import { WindArrow } from '@/views/content/oilspilling/arrow'
 // + 21-03-24 海浪等值线绘制类
 import { WaveContourLine, WaveArrow } from '@/views/content/oilspilling/wave'
+import { StationSurge, IToHtml } from './station'
 // 引入枚举
 import { DictEnum } from '@/enum/dict'
 import { LayerTypeEnum } from '@/enum/map'
@@ -298,7 +299,7 @@ import { LayerTypeEnum } from '@/enum/map'
 // + 21 typhoon api
 import { getTargetTyGroupComplexModel } from '@/api/tyhoon'
 // 21-04-28 + station api
-import { getStationListByGroupPath } from '@/api/station'
+import { getStationListByGroupPath, getStationSurgeRangeListByGroupPath } from '@/api/station'
 // STORE 常量
 import {
     GET_MAP_NOW,
@@ -360,7 +361,7 @@ export default class OilSpillingMap extends mixins(
 ) {
     mydata: any = null
     code = DEFAULT
-    zoom = 5
+    zoom = 6
     center: number[] = [17.6, 131.6]
     // TODO:[-] 20-11-09 新加入的 map 相关的一些基础静态配置
     mapOptions: {} = {
@@ -470,7 +471,7 @@ export default class OilSpillingMap extends mixins(
     // TODO:[-] 21-04-05 + 当前的 海浪-海表面高度 LayerId
     waveWveRasterLayerId: number = DEFAULT_LAYER_ID
     // TODO:[*] 20-10-22 + 缩放等级
-    zoomLevel = 5
+    zoomLevel = 7
     windRasterOptions: IRasterOptions = {
         // TODO:[-] 21-02-10 注意 coverageId 是由 watch casecode -> loadTargetOilModelData 中修改的，而非 getCoverageId
         coverageId: DEFAULT_COVERAGE_ID,
@@ -519,7 +520,12 @@ export default class OilSpillingMap extends mixins(
 
     // + 21-05-10 当前的 逐时风暴增水场 layer，每次切换时会替换，且从 map 中清除
     fieldSurgeRasterLayer: L.Layer = null
-
+    // + 21-05-14 当前的预报时间
+    forecastDt = new Date('2020-09-15T18:00:00Z')
+    // + 21-05-14 当前选定的 gpId
+    gpId = 1
+    tyCode = '2022'
+    timestampStr = '2021010416'
     tyGroupGaleRadiusRange: { max: number; min: number } = { max: 80, min: 31 }
     created() {
         this.startDate = new Date(
@@ -543,13 +549,29 @@ export default class OilSpillingMap extends mixins(
         // 由于是测试，页面加载完成后先加载当前 code 的平均轨迹
         // TODO:[*] 20-01-23 暂时去掉页面加载后读取平均轨迹的步骤(暂时去掉)
         // TODO：[-] 21-05-10 注意 mac 的tyId=1 | 5750 tyId=3
-        const testTyphoonId = 1
-        const mymap: L.Map = this.$refs.basemap['mapObject']
+        const testTyphoonId = 3
+
         this.testGetAddTyGroupPath2Map(testTyphoonId)
 
         // TODO:[*] 21-04-28 暂时加入的加载 海洋站位置的 测试
-        const gpId = 1
-        const forecastDt = new Date('2020-09-15T18:00:00Z')
+        this.loadStationList()
+        // TODO:[*] 21-04-30 测试 加入的测试加载台风最大增水
+        // TODO:[*] 21-05-07 暂时去掉增大增水
+        // const raster = new RasterGeoLayer(1, forecastDt, AreaEnum.NORTHWEST)
+        // raster.add2map(
+        //     mymap,
+        //     (opt = { message: `当前时间${forecastDt}没有对应的tif文件`, type: 'warning' }) => {
+        //         this.$message({
+        //             message: `当前时间${forecastDt}没有对应的tif文件`,
+        //             type: 'warning'
+        //         })
+        //     }
+        // )
+    }
+
+    // 加载海洋站风暴潮增水
+    loadStationListBackup(): void {
+        const mymap: L.Map = this.$refs.basemap['mapObject']
         /*
             {
                 "ty_code": "2022",
@@ -563,7 +585,7 @@ export default class OilSpillingMap extends mixins(
                 "lon": 115.3572
             },
         */
-        getStationListByGroupPath(gpId, forecastDt).then(
+        getStationListByGroupPath(this.gpId, this.forecastDt).then(
             (res: {
                 status: number
                 data: {
@@ -579,7 +601,6 @@ export default class OilSpillingMap extends mixins(
                 }[]
             }) => {
                 if (res.status === 200) {
-                    console.log(res.data)
                     if (res.data.length > 0) {
                         const surgeArr: number[] = []
                         const iconArr: IconCirlePulsing[] = []
@@ -628,21 +649,113 @@ export default class OilSpillingMap extends mixins(
                 }
             }
         )
-
-        // TODO:[*] 21-04-30 测试 加入的测试加载台风最大增水
-        // TODO:[*] 21-05-07 暂时去掉增大增水
-        // const raster = new RasterGeoLayer(1, forecastDt, AreaEnum.NORTHWEST)
-        // raster.add2map(
-        //     mymap,
-        //     (opt = { message: `当前时间${forecastDt}没有对应的tif文件`, type: 'warning' }) => {
-        //         this.$message({
-        //             message: `当前时间${forecastDt}没有对应的tif文件`,
-        //             type: 'warning'
-        //         })
-        //     }
-        // )
     }
 
+    loadStationList(): void {
+        const zoom = this.zoom
+        const that = this
+        const mymap: L.Map = this.$refs.basemap['mapObject']
+        const surgeArr: number[] = []
+        const iconArr: IconCirlePulsing[] = []
+        const iconSurgeMinArr: IconMinStationSurge[] = []
+        getStationSurgeRangeListByGroupPath(
+            this.gpId,
+            this.tyCode,
+            this.forecastDt,
+            this.timestampStr
+        ).then(
+            (res: {
+                status: number
+                data: {
+                    ty_code: string
+                    gp_id: number
+                    station_code: string
+                    forecast_index: number
+                    forecast_dt: Date
+                    surge: number
+                    name: string
+                    lat: number
+                    lon: number
+                    surge_max: number
+                    surge_min: number
+                }[]
+            }) => {
+                if (res.status === 200) {
+                    if (res.data.length > 0) {
+                        // TODO:[-] 21-05-14
+                        // [
+                        //     {
+                        //         "ty_code": "2022",
+                        //         "gp_id": 1,
+                        //         "station_code": "SHW",
+                        //         "forecast_index": 3,
+                        //         "forecast_dt": "2020-09-15T20:00:00Z",
+                        //         "surge": -16.0,
+                        //         "name": "汕尾",
+                        //         "lat": 22.7564,
+                        //         "lon": 115.3572,
+                        //         "surge_max": -14.1,
+                        //         "surge_min": -17.5
+                        //     },
+                        // ]
+                        const surgeArr: number[] = []
+                        const iconArr: IconCirlePulsing[] = []
+                        const iconSurgeMinArr: IToHtml[] = []
+                        res.data.forEach((element) => {
+                            surgeArr.push(element.surge)
+                        })
+                        // 获取极值
+                        const surgeMax = Math.max(surgeArr)
+                        const surgeMin = Math.min(surgeArr)
+                        res.data.forEach((temp) => {
+                            const icon = new IconCirlePulsing({
+                                val: temp.surge,
+                                max: surgeMax,
+                                min: surgeMin
+                            })
+                            const iconSurgeMin = new StationSurge(
+                                temp.name,
+                                that.tyCode,
+                                that.timestampStr,
+                                that.forecastDt
+                            ).getImplements(that.zoom, {
+                                stationName: temp.station_code,
+                                surgeMax: temp.surge_max,
+                                surgeMin: temp.surge_min,
+                                surgeVal: temp.surge
+                            })
+                            iconArr.push(icon)
+                            iconSurgeMinArr.push(iconSurgeMin)
+                        })
+                        let index = 0
+                        // 批量添加至 map 中
+                        iconArr.forEach((temp) => {
+                            const stationDivIcon = L.divIcon({
+                                className: 'surge_pulsing_icon_default',
+                                html: temp.toHtml()
+                                // 目前需要此部分，因为会造成 位置的位移
+                                // 坐标，[相对于原点的水平位置（左加右减），相对原点的垂直位置（上加下减）]
+                                // iconAnchor: [-20, 30]
+                            })
+                            const stationSurgeMinDivICOn = L.divIcon({
+                                className: iconSurgeMinArr[index].getClassName(),
+                                html: iconSurgeMinArr[index].toHtml(),
+                                // 坐标，[相对于原点的水平位置（左加右减），相对原点的垂直位置（上加下减）]
+                                iconAnchor: [-20, 30]
+                            })
+                            L.marker([res.data[index].lat, res.data[index].lon], {
+                                icon: stationDivIcon
+                            }).addTo(mymap)
+                            L.marker([res.data[index].lat, res.data[index].lon], {
+                                icon: stationSurgeMinDivICOn
+                            }).addTo(mymap)
+                            index++
+                        })
+                    }
+                }
+            }
+        )
+    }
     testGetAddTyGroupPath2Map(tyId: number): void {
         const that = this
         const arrTyComplexGroupRealdata: Array<TyphoonComplexGroupRealDataMidModel> = []

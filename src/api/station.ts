@@ -20,4 +20,33 @@ const getStationListByGroupPath = (gpId: number, forecastDt: Date) => {
     })
 }
 
-export { getStationListByGroupPath }
+/**
+ * + 21-05-14 
+ * 根据 forecast | ts | ty_code 获取
+        tb:station_forecast_realdata 与 tb:station_info
+        获取预报范围值 和 当前中心路径的实际值
+ *
+ * @param {string} tyCode
+ * @param {Date} forecastDt
+ * @param {string} timestampStr
+ * @return {*} 
+ */
+const getStationSurgeRangeListByGroupPath = (
+    gpId: number,
+    tyCode: string,
+    forecastDt: Date,
+    timestampStr: string
+) => {
+    const url = `${host}${area}/station/realdata/range/list`
+    return axios.get(url, {
+        headers: authHeader(),
+        params: {
+            gp_id: gpId,
+            ty_code: tyCode,
+            forecast_dt: forecastDt,
+            timestamp: timestampStr
+        }
+    })
+}
+
+export { getStationListByGroupPath, getStationSurgeRangeListByGroupPath }
