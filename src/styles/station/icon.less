@@ -44,3 +44,67 @@
         background: rgb(233, 37, 37, 0.795);
     }
 }
+
+// 21-05-15 针对 IconFormStationDetialedMidModel 的样式
+#my_station_surge_div {
+    display: inline-block;
+    // background: rgba(0, 0, 255, 0.829);
+    text-align: center;
+    color: aliceblue;
+    box-shadow: 3px 7px 13px 1px #111111;
+    // box-shadow: 0 0 10px whitesmoke;
+    /* 边角圆滑处理 */
+    border-radius: 10px;
+    display: flex;
+    // 注意为了防止子容器的颜色超出了父容器设置的圆角
+    overflow: auto;
+    // 新加入的 text 的阴影
+    text-shadow: 1px 3px 4px black;
+    // div {
+    //   // margin: 10px;
+    //   padding: 10px;
+    // }
+    .station-min-div-title {
+      padding: 10px;
+      background: #32405c9e;
+      // 若存在剩余空间则填满
+      // flex-grow: 2;
+      flex-grow: 0.5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .station-min-div-content {
+      // padding: 10px;
+      flex-grow: 0.5;
+      .station-min-div-content-horizontal {
+        // padding-top: 3px;
+        // padding-left: ;
+        display: flex;
+        .station-min-div-content-field {
+          padding: 6px;
+          width: 50px;
+          flex-grow: 0.5;
+        }
+        .station-min-div-content-val {
+          padding: 6px;
+          flex-grow: 0.5;
+        }
+      }
+    }
+  }
+  .liner-cell-default{
+    background: #32405c9e;
+  }
+  .green {
+    background: rgba(26, 172, 13, 0.795);
+  }
+  .yellow {
+    background: rgb(226, 226, 13, 0.795);
+  }
+  .orange {
+    background: rgb(235, 159, 17, 0.795);
+  }
+  .red {
+    background: rgb(233, 37, 37, 0.795);
+  }

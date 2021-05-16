@@ -4,6 +4,7 @@
             <l-map
                 ref="basemap"
                 :zoom="zoom"
+                @update:zoom="zoomUpdated"
                 :center="center"
                 :options="mapOptions"
                 :maxZoom="mapOptions.maxZoom"
@@ -361,7 +362,7 @@ export default class OilSpillingMap extends mixins(
 ) {
     mydata: any = null
     code = DEFAULT
-    zoom = 6
+    zoom = 8
     center: number[] = [17.6, 131.6]
     // TODO:[-] 20-11-09 新加入的 map 相关的一些基础静态配置
     mapOptions: {} = {
@@ -526,6 +527,11 @@ export default class OilSpillingMap extends mixins(
     gpId = 1
     tyCode = '2022'
     timestampStr = '2021010416'
+    // + 21-05-15 脉冲 groupLayer
+    groupLayerSurgePulsing: L.LayerGroup = null
+
+    // + 21-05-15 台站 div groupLayer
+    groupLayerSurgeStationDivForm: L.LayerGroup = null
     tyGroupGaleRadiusRange: { max: number; min: number } = { max: 80, min: 31 }
     created() {
         this.startDate = new Date(
@@ -554,7 +560,7 @@ export default class OilSpillingMap extends mixins(
         this.testGetAddTyGroupPath2Map(testTyphoonId)
 
         // TODO:[*] 21-04-28 暂时加入的加载 海洋站位置的 测试
-        this.loadStationList()
+        this.loadStationList(this.zoom)
         // TODO:[*] 21-04-30 测试 加入的测试加载台风最大增水
         // TODO:[*] 21-05-07 暂时去掉增大增水
         // const raster = new RasterGeoLayer(1, forecastDt, AreaEnum.NORTHWEST)
@@ -651,13 +657,30 @@ export default class OilSpillingMap extends mixins(
         )
     }
 
-    loadStationList(): void {
-        const zoom = this.zoom
+    clearSurgeAllGroupLayers(): void {
+        const mymap: L.Map = this.$refs.basemap['mapObject']
+        if (this.groupLayerSurgePulsing) {
+            mymap.removeLayer(this.groupLayerSurgePulsing)
+        }
+        if (this.groupLayerSurgeStationDivForm) {
+            mymap.removeLayer(this.groupLayerSurgeStationDivForm)
+        }
+
+        this.groupLayerSurgePulsing = null
+        this.groupLayerSurgeStationDivForm = null
+    }
+
+    loadStationList(zoom: number): void {
+        // const zoom = this.zoom
         const that = this
         const mymap: L.Map = this.$refs.basemap['mapObject']
         const surgeArr: number[] = []
         const iconArr: IconCirlePulsing[] = []
         const iconSurgeMinArr: IconMinStationSurge[] = []
+
+        const surgePulsingMarkersList: L.Marker[] = []
+        const surgeDataFormMarkersList: L.Marker[] = []
+        this.clearSurgeAllGroupLayers()
         getStationSurgeRangeListByGroupPath(
             this.gpId,
             this.tyCode,
@@ -718,7 +741,7 @@ export default class OilSpillingMap extends mixins(
                                 that.tyCode,
                                 that.timestampStr,
                                 that.forecastDt
-                            ).getImplements(that.zoom, {
+                            ).getImplements(zoom, {
                                 stationName: temp.station_code,
                                 surgeMax: temp.surge_max,
                                 surgeMin: temp.surge_min,
@@ -730,6 +753,7 @@ export default class OilSpillingMap extends mixins(
                         let index = 0
                         // 批量添加至 map 中
                         iconArr.forEach((temp) => {
+                            // 1- 脉冲点 icon
                             const stationDivIcon = L.divIcon({
                                 className: 'surge_pulsing_icon_default',
                                 html: temp.toHtml()
@@ -737,20 +761,46 @@ export default class OilSpillingMap extends mixins(
                                 // 坐标，[相对于原点的水平位置（左加右减），相对原点的垂直位置（上加下减）]
                                 // iconAnchor: [-20, 30]
                             })
+                            // 2- 台站 station data form icon
                             const stationSurgeMinDivICOn = L.divIcon({
                                 className: iconSurgeMinArr[index].getClassName(),
                                 html: iconSurgeMinArr[index].toHtml(),
                                 // 坐标，[相对于原点的水平位置（左加右减），相对原点的垂直位置（上加下减）]
                                 iconAnchor: [-20, 30]
                             })
-                            L.marker([res.data[index].lat, res.data[index].lon], {
-                                icon: stationDivIcon
-                            }).addTo(mymap)
-                            L.marker([res.data[index].lat, res.data[index].lon], {
-                                icon: stationSurgeMinDivICOn
-                            }).addTo(mymap)
+
+                            const surgePulsingMarker = L.marker(
+                                [res.data[index].lat, res.data[index].lon],
+                                {
+                                    icon: stationDivIcon
+                                }
+                            )
+                            surgePulsingMarkersList.push(surgePulsingMarker)
+                            const stationSurgeIconMarker = L.marker(
+                                [res.data[index].lat, res.data[index].lon],
+                                {
+                                    icon: stationSurgeMinDivICOn
+                                }
+                            )
+
+                            stationSurgeIconMarker
+                                .on('mouseover', (e) => {
+                                    // todo:[-] 21-05-15 加入鼠标移入时置顶，移出时恢复之前的 zindex
+                                    stationSurgeIconMarker.setZIndexOffset(19999)
+                                })
+                                .on('mouseout', (e) => {
+                                    stationSurgeIconMarker.setZIndexOffset(1999)
+                                })
+                            surgeDataFormMarkersList.push(stationSurgeIconMarker)
                             index++
                         })
+                        // 批量生成 marker后统一添加至 map中
+                        that.groupLayerSurgePulsing = L.layerGroup(surgePulsingMarkersList).addTo(
+                            mymap
+                        )
+                        that.groupLayerSurgeStationDivForm = L.layerGroup(
+                            surgeDataFormMarkersList
+                        ).addTo(mymap)
                     }
                 }
             }
@@ -1379,11 +1429,17 @@ export default class OilSpillingMap extends mixins(
         // 使用此种方式实现对于平移触发 -> update:zoom 相同值的过滤
         // console.log(`new:${valNew}|old:${valOld}`)
         let level = 0
-        if (valNew > 5) {
+        // if (valNew > 8 && valOld <= 8) {
+        //     level = 9
+        // } else if (valNew <= 8 && valNew > 4 && valOld > 8 && valOld <= 4) {
+        //     level = 5
+        // }
+        if (valNew > 8) {
+            level = 9
+        } else if (valNew <= 8) {
             level = 5
-        } else if (valNew <= 5) {
-            level = 3
         }
+        this.loadStationList(level)
         // 修改对应的风力杆 -> windOptions
         // this.windOptions.level = level
     }

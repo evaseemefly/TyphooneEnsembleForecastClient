@@ -29,7 +29,7 @@ class IconFormStationDetialedMidModel implements IToHtml {
     stationName: string
     max: number
     min: number
-    surge?: number
+    surge: number
     constructor(stationName: string, surge: number, max: number, min: number) {
         this.stationName = stationName
         this.max = max
@@ -38,15 +38,21 @@ class IconFormStationDetialedMidModel implements IToHtml {
     }
     toHtml(): string {
         const divHtml = `<div id="my_station_surge_div">
-        <div class="station-min-div-title green">${this.stationName}</div>
+        <div class="station-min-div-title">${this.stationName}</div>
         <div class="station-min-div-content">
           <div class="station-min-div-content-horizontal">
-            <div class="station-min-div-content-field green">潮位</div>
-            <div class="station-min-div-content-val yellow">${this.surge}</div>
+            <div class="station-min-div-content-field liner-cell-default">潮位</div>
+            <div class="station-min-div-content-val ${this.getAlarmColor(this.surge)}">${
+            this.surge
+        }</div>
           </div>
           <div class="station-min-div-content-horizontal">
-            <div class="station-min-div-content-field yellow">${this.max}</div>
-            <div class="station-min-div-content-val red">${this.min}</div>
+            <div class="station-min-div-content-field ${this.getAlarmColor(this.max)}">${
+            this.max
+        }</div>
+            <div class="station-min-div-content-val ${this.getAlarmColor(this.min)}">${
+            this.min
+        }</div>
           </div>
         </div>
       </div>`
@@ -54,6 +60,26 @@ class IconFormStationDetialedMidModel implements IToHtml {
     }
     getClassName(): string {
         return 'station-surge-icon-default'
+    }
+
+    private getAlarmColor(val: number): string {
+        const surge = val
+        let colorStr = 'green'
+        switch (true) {
+            case surge <= -2:
+                colorStr = 'green'
+                break
+            case surge <= 40:
+                colorStr = 'yellow'
+                break
+            case surge <= 60:
+                colorStr = 'orange'
+                break
+            case surge > 60:
+                colorStr = 'red'
+                break
+        }
+        return colorStr
     }
 }
 
