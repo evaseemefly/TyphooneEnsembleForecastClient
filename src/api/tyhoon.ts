@@ -19,4 +19,14 @@ const getTargetTyGroupComplexModel = (tyId: number) => {
     })
 }
 
-export { getTargetTyGroupComplexModel }
+const getTargetTyGroupForecastDateRange = (tyCode: string, timestamp: string) => {
+    const url = `${host}${area}/tyComplex/group/realdata/list`
+    return axios.get(url, {
+        headers: authHeader(),
+        params: {
+            ty_id: tyId
+        }
+    })
+}
+
+export { getTargetTyGroupComplexModel, getTargetTyGroupForecastDateRange }
