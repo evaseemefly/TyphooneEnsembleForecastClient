@@ -19,4 +19,42 @@ const getTargetTyGroupComplexModel = (tyId: number) => {
     })
 }
 
-export { getTargetTyGroupComplexModel }
+/**
+ * + 21-05-18
+ * 根据 tyCode 与 timestamp -> tyGroupPath -> 预报的 forecastDate ->[start,end]
+ *
+ * @param {string} tyCode
+ * @param {string} timeStamp
+ * @return {*}
+ */
+const getTargetTyGroupDateRange = (tyCode?: string, timeStamp?: string) => {
+    const url = `${host}${area}/tyGroupPath/datarage`
+    return axios.get(url, {
+        headers: authHeader(),
+        params: {
+            ty_code: tyCode,
+            timestamp: timeStamp
+        }
+    })
+}
+
+/**
+ * + 21-05-18
+ * 根据 tyCode 与 timestamp -> tyGroupPath -> 预报的 forecastDate -> list_dist
+ *
+ * @param {string} tyCode
+ * @param {string} timeStamp
+ * @return {*}
+ */
+const getTargetTyGroupDistDate = (tyCode?: string, timeStamp?: string) => {
+    const url = `${host}${area}/tyGroupPath/dist/date`
+    return axios.get(url, {
+        headers: authHeader(),
+        params: {
+            ty_code: tyCode,
+            timestamp: timeStamp
+        }
+    })
+}
+
+export { getTargetTyGroupComplexModel, getTargetTyGroupDateRange, getTargetTyGroupDistDate }

@@ -292,6 +292,8 @@ import { WindArrow } from '@/views/content/oilspilling/arrow'
 // + 21-03-24 海浪等值线绘制类
 import { WaveContourLine, WaveArrow } from '@/views/content/oilspilling/wave'
 import { StationSurge, IToHtml } from './station'
+// + 21-05-18 新加入的关于 tyGroupPath 相关的 逻辑封装类
+import { TyGroupPath } from './typhoonGroup'
 // 引入枚举
 import { DictEnum } from '@/enum/dict'
 import { LayerTypeEnum } from '@/enum/map'
@@ -555,7 +557,7 @@ export default class OilSpillingMap extends mixins(
         // 由于是测试，页面加载完成后先加载当前 code 的平均轨迹
         // TODO:[*] 20-01-23 暂时去掉页面加载后读取平均轨迹的步骤(暂时去掉)
         // TODO：[-] 21-05-10 注意 mac 的tyId=1 | 5750 tyId=3
-        const testTyphoonId = 3
+        const testTyphoonId = 1
 
         this.testGetAddTyGroupPath2Map(testTyphoonId)
 
@@ -573,6 +575,12 @@ export default class OilSpillingMap extends mixins(
         //         })
         //     }
         // )
+        // + 21-05-18 在页面加载后首先加载当前的 start_dt 与 end_dt
+        const tyGroupPath = new TyGroupPath()
+        tyGroupPath.getTargetTyGroupDateRange().then((res) => {
+            this.finishDate = new Date(Math.max(...res))
+            this.startDate = new Date(Math.min(...res))
+        })
     }
 
     // 加载海洋站风暴潮增水
