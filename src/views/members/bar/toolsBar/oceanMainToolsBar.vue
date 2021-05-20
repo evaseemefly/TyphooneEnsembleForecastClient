@@ -78,28 +78,6 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         this.getToolsBar()
     }
     toolsBar: IExpandModel[] = [
-        // TODO:[-] 20-11-11 暂时备份
-        // {
-        //     isExpanded: false,
-        //     html: 'OilShowTypeSelect',
-        //     iconClass: 'fas fa-desktop',
-        //     title: '显示模式',
-        //     hasChildren: false,
-        //     isChildren: false,
-        //     toolType: ToolTypeEnum.OPTION,
-        //     val: ''
-        // },
-        // {
-        //     isExpanded: false,
-        //     html: 'OilFactorSelect',
-        //     iconClass: 'fas fa-lightbulb',
-        //     title: '权重',
-        //     hasChildren: false,
-        //     isChildren: false,
-        //     toolType: ToolTypeEnum.OPTION,
-        //     val: '',
-        //     checked: false
-        // },
         {
             isExpanded: false,
             html: 'MakePointBtn',
@@ -128,59 +106,59 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     isExpanded: false,
                     html: '',
                     iconClass: 'fas fa-wind',
-                    title: '海浪-等值线',
+                    title: '台风-集合预报路径',
                     hasChildren: false,
                     isChildren: true,
                     toolType: ToolTypeEnum.LAYER,
-                    layerType: LayerTypeEnum.WAVE_CONTOUR,
+                    layerType: LayerTypeEnum.GROUP_PATH_LAYER,
                     val: '',
                     checked: false
                 },
-                {
-                    isExpanded: false,
-                    html: '',
-                    iconClass: 'fas fa-wind',
-                    title: '海浪-高度栅格',
-                    hasChildren: false,
-                    isChildren: true,
-                    toolType: ToolTypeEnum.LAYER,
-                    layerType: LayerTypeEnum.WAVE_WVE_RASTER,
-                    val: '',
-                    checked: false
-                },
-                {
-                    isExpanded: false,
-                    html: '',
-                    iconClass: 'fas fa-wind',
-                    title: '风场-风力',
-                    hasChildren: false,
-                    isChildren: true,
-                    toolType: ToolTypeEnum.LAYER,
-                    layerType: LayerTypeEnum.WIND_BAR_LAYER,
-                    val: '',
-                    checked: false
-                },
-                {
-                    isExpanded: false,
-                    html: '',
-                    iconClass: 'fab fa-cloudversify',
-                    title: '风场-栅格',
-                    hasChildren: false,
-                    isChildren: true,
-                    toolType: ToolTypeEnum.LAYER,
-                    layerType: LayerTypeEnum.WIND_RASTER_LAYER,
-                    val: '',
-                    checked: false
-                },
+                // {
+                //     isExpanded: false,
+                //     html: '',
+                //     iconClass: 'fas fa-wind',
+                //     title: '海浪-高度栅格',
+                //     hasChildren: false,
+                //     isChildren: true,
+                //     toolType: ToolTypeEnum.LAYER,
+                //     layerType: LayerTypeEnum.WAVE_WVE_RASTER,
+                //     val: '',
+                //     checked: false
+                // },
+                // {
+                //     isExpanded: false,
+                //     html: '',
+                //     iconClass: 'fas fa-wind',
+                //     title: '风场-风力',
+                //     hasChildren: false,
+                //     isChildren: true,
+                //     toolType: ToolTypeEnum.LAYER,
+                //     layerType: LayerTypeEnum.WIND_BAR_LAYER,
+                //     val: '',
+                //     checked: false
+                // },
+                // {
+                //     isExpanded: false,
+                //     html: '',
+                //     iconClass: 'fab fa-cloudversify',
+                //     title: '风场-栅格',
+                //     hasChildren: false,
+                //     isChildren: true,
+                //     toolType: ToolTypeEnum.LAYER,
+                //     layerType: LayerTypeEnum.WIND_RASTER_LAYER,
+                //     val: '',
+                //     checked: false
+                // },
                 {
                     isExpanded: false,
                     html: '',
                     iconClass: 'fas fa-water',
-                    title: '流场-流速',
+                    title: '风暴增水-逐时场',
                     hasChildren: false,
                     isChildren: true,
                     toolType: ToolTypeEnum.LAYER,
-                    layerType: LayerTypeEnum.CURRENT_FLOW_LAYER,
+                    layerType: LayerTypeEnum.RASTER_HOURLY_SURGE_LAYER,
                     val: '',
                     checked: false
                 },
@@ -189,11 +167,11 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     isExpanded: false,
                     html: '',
                     iconClass: 'fas fa-globe-asia',
-                    title: '流场-栅格',
+                    title: '潮位站-增水',
                     hasChildren: false,
                     isChildren: true,
                     toolType: ToolTypeEnum.LAYER,
-                    layerType: LayerTypeEnum.CURRENT_RASTER_LAYER,
+                    layerType: LayerTypeEnum.STATION_ICON_LAYER,
                     val: '',
                     checked: false
                 }

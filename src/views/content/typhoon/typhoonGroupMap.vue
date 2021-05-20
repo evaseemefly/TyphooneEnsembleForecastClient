@@ -122,7 +122,7 @@
                 :days="days"
                 :startDate="startDate"
                 :interval="interval"
-                :targetDate="current"
+                :targetDate="targetDate"
                 :numsData="processOptions.num"
                 :oilModelData="targetOilModelData"
             ></OilRightBar>
@@ -321,8 +321,14 @@ import { DEFAULT_LAYER_ID } from '@/const/common'
 import { RADIUSUNIT } from '@/const/typhoon'
 import { ArrayPropsDefinition } from 'vue/types/options'
 import { SET_CURRENT_LATLNG } from '@/store/types'
-
-import { IVelocityOptions, IPolyLine, IRasterOptions } from './types'
+import {
+    IVelocityOptions,
+    IPolyLine,
+    IRasterOptions,
+    ITyGroupPathOptions,
+    DefaultTyGroupPathOptions,
+    ILayerDisplayOptions
+} from './types'
 
 const DEFAULT = 'DEFAULT'
 // 21-01-04 分页读取散点的页面散点数
@@ -365,11 +371,11 @@ export default class OilSpillingMap extends mixins(
     mydata: any = null
     code = DEFAULT
     zoom = 8
-    center: number[] = [17.6, 131.6]
+    center: number[] = [22.45, 113.8833]
     // TODO:[-] 20-11-09 新加入的 map 相关的一些基础静态配置
     mapOptions: {} = {
         preferCanvas: true,
-        minZoom: 3,
+        minZoom: 6,
         // 可缩放的最大 level
         maxZoom: 11,
         // 目前已经使用了 canvas 渲染
@@ -535,6 +541,22 @@ export default class OilSpillingMap extends mixins(
     // + 21-05-15 台站 div groupLayer
     groupLayerSurgeStationDivForm: L.LayerGroup = null
     tyGroupGaleRadiusRange: { max: number; min: number } = { max: 80, min: 31 }
+
+    // + 21-05-19 BottomMainBar -> ForecastAreaBar 需要传入的 currentCaseCoverageList
+    currentCaseCoverageList: CoverageMin[] = []
+
+    // + 21-05-19 TyGroupPathOptions
+    tyGroupOptions: ITyGroupPathOptions = {
+        tyCode: this.tyCode,
+        timeStamp: this.timestampStr,
+        forecastDt: DefaultTyGroupPathOptions.forecastDt,
+        isShow: DefaultTyGroupPathOptions.isShow,
+        layerType: DefaultTyGroupPathOptions.layerType
+    }
+    stationSurgeIconOptions: ILayerDisplayOptions = {
+        isShow: false,
+        layerType: LayerTypeEnum.STATION_ICON_LAYER
+    }
     created() {
         this.startDate = new Date(
             this.now.getFullYear(),
@@ -557,7 +579,7 @@ export default class OilSpillingMap extends mixins(
         // 由于是测试，页面加载完成后先加载当前 code 的平均轨迹
         // TODO:[*] 20-01-23 暂时去掉页面加载后读取平均轨迹的步骤(暂时去掉)
         // TODO：[-] 21-05-10 注意 mac 的tyId=1 | 5750 tyId=3
-        const testTyphoonId = 1
+        const testTyphoonId = 3
 
         this.testGetAddTyGroupPath2Map(testTyphoonId)
 
@@ -577,7 +599,7 @@ export default class OilSpillingMap extends mixins(
         // )
         // + 21-05-18 在页面加载后首先加载当前的 start_dt 与 end_dt
         const tyGroupPath = new TyGroupPath()
-        tyGroupPath.getTargetTyGroupDateRange().then((res) => {
+        tyGroupPath.getTargetTyGroupDateRange(this.tyCode, this.timestampStr).then((res) => {
             this.finishDate = new Date(Math.max(...res))
             this.startDate = new Date(Math.min(...res))
         })
@@ -665,6 +687,7 @@ export default class OilSpillingMap extends mixins(
         )
     }
 
+    // 清除掉所有 station 潮位站 divIcon
     clearSurgeAllGroupLayers(): void {
         const mymap: L.Map = this.$refs.basemap['mapObject']
         if (this.groupLayerSurgePulsing) {
@@ -677,6 +700,18 @@ export default class OilSpillingMap extends mixins(
         this.groupLayerSurgePulsing = null
         this.groupLayerSurgeStationDivForm = null
     }
+
+    // + 21-05-20 清除掉 逐时的风暴潮增水栅格图层
+    clearSurgeHourlyRasterLayer(): void {
+        const that = this
+        const mymap: L.Map = this.$refs.basemap['mapObject']
+        if (this.fieldSurgeRasterLayer) {
+            mymap.removeLayer(that.fieldSurgeRasterLayer)
+            this.fieldSurgeRasterLayer = null
+        }
+    }
+
+    // clear
 
     loadStationList(zoom: number): void {
         // const zoom = this.zoom
@@ -691,9 +726,9 @@ export default class OilSpillingMap extends mixins(
         this.clearSurgeAllGroupLayers()
         getStationSurgeRangeListByGroupPath(
             this.gpId,
-            this.tyCode,
-            this.forecastDt,
-            this.timestampStr
+            this.tyGroupOptions.tyCode,
+            this.tyGroupOptions.forecastDt,
+            this.tyGroupOptions.timeStamp
         ).then(
             (res: {
                 status: number
@@ -1395,14 +1430,80 @@ export default class OilSpillingMap extends mixins(
     // TODO:[*] 20-02-20 监听 store->map->mutations->GET_MAP_NOW
     // @Mutation(GET_MAP_NOW, { namespace: 'map' }) getcurrent
 
-    @Getter('getNow', { namespace: 'map' }) getcurrent
+    @Getter(GET_MAP_NOW, { namespace: 'map' }) getcurrent
 
     // @Debounce(2000)
     @Watch('getcurrent')
     async onCurrent(valNew: Date): Promise<void> {
         const mymap: L.Map = this.$refs.basemap['mapObject']
         const that = this
-        // TODO:[-] 21-01-27 将异步时间锁锁住
+        // 修改当前 的 targetDate
+        this.targetDate = valNew
+        this.tyGroupOptions.forecastDt = valNew
+    }
+
+    // TODO:[-] 21-05-19 根据监听当前的 tyGroupOptions 来确定 指定 tyGroupPath(center) 对应的时间与 tyCode,timeStamp
+    @Watch('tyGroupOptions', { immediate: true, deep: true })
+    onTyGroupOptions(val: ITyGroupPathOptions): void {
+        const that = this
+        const mymap: any = this.$refs.basemap['mapObject']
+        // if(val)
+        if (this.checkTyGroupOptions(val)) {
+            // 当 tyGroupOptions 发生变更, tyCode | forecastDt | timeStamp 中一个或多个
+            // 执行 loadStationList
+            // 执行 load wms 服务
+            // 点击向后台发送 获取逐时风暴增水场的请求
+            // 请求参数包含 ty_code | ty_timestamp | forecast_dt
+            const fieldSurgeGeoLayer = new FieldSurgeGeoLayer(
+                val.tyCode,
+                val.timeStamp,
+                val.forecastDt
+            )
+            // if (this.fieldSurgeRasterLayer) {
+            //     mymap.removeLayer(that.fieldSurgeRasterLayer)
+            //     this.fieldSurgeRasterLayer = null
+            // }
+            // 以上注释部分封装至
+            this.clearSurgeHourlyRasterLayer()
+            // 加载对应时刻的 潮位站数据
+            this.loadStationList(this.zoom)
+            // ERROR：
+            //  'await' expressions are only allowed within async functions and at the top levels of modules.
+            fieldSurgeGeoLayer
+                .add2map(mymap, () => {})
+                .then((res) => {
+                    console.log(res)
+                    that.fieldSurgeRasterLayer = res
+                })
+        } else {
+            // 若未通过则清除 tyGroup layer
+            // if(this.)
+        }
+    }
+
+    @Watch('stationSurgeIconOptions', { immediate: true, deep: true })
+    onStationSurgeIconOptions(val: ILayerDisplayOptions): void {
+        if (val.isShow) {
+            console.log(val)
+        } else {
+            this.clearSurgeAllGroupLayers()
+        }
+    }
+
+    checkTyGroupOptions(val: ITyGroupPathOptions): boolean {
+        let isOk = false
+        if (
+            val.tyCode === DefaultTyGroupPathOptions.tyCode ||
+            val.forecastDt === DefaultTyGroupPathOptions.forecastDt ||
+            val.timeStamp === DefaultTyGroupPathOptions.timeStamp
+        ) {
+            isOk = false
+        } else if (val.isShow === false) {
+            isOk = false
+        } else {
+            isOk = true
+        }
+        return isOk
     }
 
     // TODO:[-] 20-04-16 注意此处的 Getter -> geo.ts -> getters 而不是 actions!
@@ -1432,6 +1533,46 @@ export default class OilSpillingMap extends mixins(
     @Getter(GET_MAP_LAYERS, { namespace: 'map' })
     getLayers: LayerTypeEnum[]
 
+    @Watch('getLayers')
+    OnLayers(layers: LayerTypeEnum[]): void {
+        const mymap = this.$refs.basemap['mapObject']
+        // 大致流程:
+        // 1- 遍历当前的 valNew (layers)
+        //  1-1 先判断当前的 this.windLayer 是否为当前的layers中的layer
+        //  1-2 将监听道德layers 放在 this.layers 数组中
+        //  1-3 之后每次再加载进行将当前的传入 layers(vuex中的) 与 this.layers 进行对比，去掉没有的layers(from map)
+        // 2- 加载当前 layers 至map
+        const loseWindLayer = false
+        const loseCurrentLayer = false
+        // 记录一下上一次操作时的 layer 种类数组(不可修改)
+        const lastExistLayers: LayerTypeEnum[] = this.existLayers
+        // 20-07-27 新加入的步骤是对于上一次的 layer type 本次缺失的进行剔除操作
+        lastExistLayers.forEach((lastLayer) => {
+            if (layers.findIndex((temp) => temp === lastLayer) < 0) {
+                // 说明没有
+                if (lastLayer === LayerTypeEnum.GROUP_PATH_LAYER) {
+                    this.tyGroupOptions.isShow = false
+                } else if (lastLayer === LayerTypeEnum.STATION_ICON_LAYER) {
+                    this.stationSurgeIconOptions.isShow = false
+                }
+            }
+        })
+        // 先清除 this.existLayers
+        this.existLayers = []
+        layers.forEach((tempLayerType) => {
+            switch (tempLayerType) {
+                case LayerTypeEnum.GROUP_PATH_LAYER:
+                    this.existLayers.push(tempLayerType)
+                    this.tyGroupOptions.isShow = true
+                    break
+                case LayerTypeEnum.STATION_ICON_LAYER:
+                    this.existLayers.push(tempLayerType)
+                    this.stationSurgeIconOptions.isShow = true
+                    break
+            }
+        })
+    }
+
     @Watch('zoom')
     OnZoom(valNew: number, valOld: number): void {
         // 使用此种方式实现对于平移触发 -> update:zoom 相同值的过滤
@@ -1447,7 +1588,13 @@ export default class OilSpillingMap extends mixins(
         } else if (valNew <= 8) {
             level = 5
         }
-        this.loadStationList(level)
+        // TODO:[-] 21-05-20 只有 level的变化超出之前的范围才会触发更新的操作
+        if ((valNew > 8 && valOld <= 8) || (valNew <= 8 && valOld > 8)) {
+            if (this.checkTyGroupOptions(this.tyGroupOptions)) {
+                this.loadStationList(level)
+            }
+        }
+
         // 修改对应的风力杆 -> windOptions
         // this.windOptions.level = level
     }

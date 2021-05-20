@@ -124,6 +124,9 @@ const getters = {
     getNow: (state: State) => {
         return state.now
     },
+    [GET_MAP_NOW](state: State): Date {
+        return state.now
+    },
     [GET_CREATE_OIL_CASE_MODAL]: (state: State): boolean => {
         return state.isShowCreateOilCaseModal
     },

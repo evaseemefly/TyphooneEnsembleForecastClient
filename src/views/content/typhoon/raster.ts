@@ -285,6 +285,12 @@ class SurgeRasterGeoLayer {
     }
 }
 
+/**
+ * 逐时风暴潮增水场
+ *
+ * @class FieldSurgeGeoLayer
+ * @extends {SurgeRasterGeoLayer}
+ */
 class FieldSurgeGeoLayer extends SurgeRasterGeoLayer {
     public async add2map(
         map: L.Map,

@@ -1,4 +1,5 @@
 import { ProductEnum } from '@/enum/dict'
+import { LayerTypeEnum } from '@/enum/map'
 import { AreaEnum } from '@/enum/area'
 
 export interface IVelocityOptions {
@@ -6,6 +7,17 @@ export interface IVelocityOptions {
     current: Date
     isShow: boolean
     productType: ProductEnum
+}
+
+/**
+ * layer 显示参数
+ *
+ * @export
+ * @interface ILayerDisplayOptions
+ */
+export interface ILayerDisplayOptions {
+    isShow: boolean
+    layerType: LayerTypeEnum
 }
 
 /**
@@ -43,4 +55,33 @@ export interface IPolyLine {
     }
 }
 
-// export { IVelocityOptions }
+/**
+ *
+ * 加入了 ILayerDisplayOptions
+ *
+ * @export
+ * @interface ITyGroupPathOptions
+ * @extends {ILayerDisplayOptions}
+ */
+export interface ITyGroupPathOptions extends ILayerDisplayOptions {
+    tyCode: string
+    forecastDt: Date
+    timeStamp: string
+}
+
+/**
+ *
+ * ITyGroupPathOptions 的默认实现
+ * + 21-05-20
+ * 加入了 ILayerDisplayOptions
+ * @type {*}
+ *
+ * */
+const DefaultTyGroupPathOptions: ITyGroupPathOptions = {
+    tyCode: '',
+    forecastDt: new Date(1970, 1, 1),
+    timeStamp: '',
+    isShow: false,
+    layerType: LayerTypeEnum.GROUP_PATH_LAYER
+}
+export { DefaultTyGroupPathOptions }
