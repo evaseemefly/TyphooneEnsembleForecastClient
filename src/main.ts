@@ -22,7 +22,7 @@ import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import 'element-ui/lib/theme-chalk/index.css'
 // 引入echarts
-import 'echarts'
+import echarts from 'echarts'
 // 引入moment
 // import moment from "vue-moment";
 import moment from 'moment'
@@ -61,6 +61,8 @@ Vue.use(LoadScript)
 Vue.prototype.moment = moment
 // 引入 underscore
 Vue.prototype._ = underscore
+// 引入 echarts
+Vue.prototype.$echarts = echarts
 // 20-09-0 引入 leaflet-windbarb.js
 // Vue.loadScript('@/common/leaflet-windbarb')
 // Vue.loadScript('./common/leaflet-windbarb.js')

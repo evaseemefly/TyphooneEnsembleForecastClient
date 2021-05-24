@@ -146,6 +146,8 @@
         <div class="dialog-create-case">
             <CreatedCaseForm ref="caseForm"></CreatedCaseForm>
         </div>
+        <!-- TODO:[-] 21-05-24 加入右侧 station bar -->
+        <!-- <RightStationBar></RightStationBar> -->
         <!-- <div class="">
             <GridDetailForm ref="gridForm"></GridDetailForm>
         </div> -->
@@ -228,6 +230,8 @@ import RightOptToolsBar from '@/views/members/bar/rightOptToolsBar.vue'
 import BottomMainBar from '@/views/members/bar/bottomMainBar.vue'
 // + 21-03-07 新加入的 grid_charts 模块
 import GridDetailForm from '@/views/members/form/grid_form/GridDetailForm.vue'
+import RightStationBar from '@/views/members/bar/rightStationBar.vue'
+// -----
 // 各api
 import { loadOilSpillingAvgRealData, getTargetCodeDateRange } from '@/api/api'
 import { loadFieldSurgeTif } from '@/api/geo'
@@ -352,7 +356,9 @@ const DEFAULT_SCATTER_PAGE_COUNT = 1000
         // MakePointBtn,
         OceanMainToolsBar,
         RightOptToolsBar,
-        BottomMainBar
+        BottomMainBar,
+        // + 21-05-24 新加入的 右侧显示 测站历史数据曲线的 charts
+        RightStationBar
         // GridDetailForm
         // LeafletHeatmap
     }
