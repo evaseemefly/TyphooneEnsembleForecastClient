@@ -1,0 +1,128 @@
+@import '../base-form.less';
+@base_font: {
+    text-shadow: 2px 2px 8px rgb(33, 32, 32);
+};
+// TODO:[-] 21-05-25 此处覆盖了 /src/styles/base-form.less 中的变量，主要是加入了透明度
+@form-header-background-color-start: {
+    background: #16a084a9;
+};
+@form-header-background-color-end: {
+    background-color: rgba(49, 159, 178, 0.733);
+};
+.right-station-surge-form {
+    border-radius: 5px;
+    position: absolute;
+    right: 10px;
+    // background: linear-gradient(
+    //     to right,
+    //     rgba(77, 142, 124, 0.986) 40%,
+    //     rgba(74, 145, 148, 0.726),
+    //     #34495e
+    // );
+    box-shadow: 2px 3px 8px black;
+    // padding: 8px;
+    display: flex;
+    border-top-left-radius: 15px;
+    border-bottom-left-radius: 15px;
+    // 20-07-22 新加入的阴影效果
+    box-shadow: 2px 3px 8px black;
+    margin-bottom: 8px;
+    cursor: pointer;
+    .my-detail-title {
+        @form-header-text-color();
+        writing-mode: vertical-lr;
+        // margin: 2em;
+        text-shadow: 0 0 4px black;
+        font-size: 20px;
+        // margin: 5px;
+        margin-left: 5px;
+        margin-right: 5px;
+        width: 30px;
+    }
+    .my-detail-form {
+        // width: 290px;
+        @base_font();
+        padding: 8px;
+        font-size: 0.7em;
+        margin-bottom: 0px !important;
+        //   @formbox();
+        // 加入四个角的圆角+阴影
+        border-top-left-radius: 15px;
+        border-top-right-radius: 10px;
+        border-bottom-right-radius: 10px;
+        border-bottom-left-radius: 10px;
+        // box-shadow: 2px 2px 10px rgb(109, 96, 96);
+        box-shadow: 2px 2px 10px rgba(41, 101, 141, 0.863);
+        background: linear-gradient(rgba(50, 157, 150, 0.685), rgba(49, 59, 89, 0.733));
+    }
+}
+
+// 展开的过渡动画
+// 未展开
+.mybar-right-out {
+    // position: absolute;
+    // /* right:0px; */
+    // height: 400px;
+    // width: 450px;
+    /* background: #adff2f; */
+
+    // transition: my-bar-right-out 1.5s linear forwards;
+
+    animation: transform-bar-right-out 1s ease-in forwards;
+    // transform: translateX(260px);
+
+    // animation: my-bar-right-out 1.5s linear;
+
+    // animation-name: move-out;
+    // /*动画名称*/
+    // animation-duration: 2s;
+    // /* 设定动画完成后的状态 */
+    // animation-fill-mode: forwards;
+}
+
+// 展开
+.mybar-right-in {
+    // position: absolute;
+    // /* right:0px;  */
+    // height: 400px;
+    // width: 450px;
+    /* background: #adff2f; */
+    // background-color: #adff2f;
+    // transition: my-bar-right-int 2s;
+    // transition: transform 2s;
+    // transform: translateX(0px);
+    // 指定 执行 my-bar-right-in 动画效果，持续1.5s,线性,动画结束时保持结束状态
+    animation: transform-bar-right-in 1s ease-in forwards;
+    // animation-name: move-in;
+    // /*动画名称*/
+    // animation-duration: 1.5s;
+    // /* 设定动画完成后的状态 */
+    // animation-fill-mode: forwards;
+}
+
+@keyframes transform-bar-right-out {
+    0% {
+        transform: translateX(0px);
+        // background-color: rgb(49, 159, 178);
+        @form-header-background-color-end();
+    }
+    100% {
+        transform: translateX(525px);
+        @form-header-background-color-start ();
+        // background-color: rgb(49, 59, 89);;
+    }
+}
+
+// 建议所有的transform以 transform 开头
+@keyframes transform-bar-right-in {
+    0% {
+        transform: translateX(556px);
+        @form-header-background-color-start ()
+        // background-color: rgb(49, 59, 89);;
+    }
+    100% {
+        transform: translateX(0px);
+        // background-color: rgb(49, 159, 178);
+        @form-header-background-color-end();
+    }
+}

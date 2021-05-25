@@ -1,5 +1,14 @@
 <template>
-    <div id="station_charts"></div>
+    <div
+        class="right-station-surge-form"
+        :class="isExpanded ? 'mybar-right-in' : 'mybar-right-out'"
+        @click="isExpanded = !isExpanded"
+    >
+        <div class="my-detail-title">潮位数据</div>
+        <div class="my-detail-form">
+            <div id="station_charts"></div>
+        </div>
+    </div>
 </template>
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
@@ -8,6 +17,8 @@ import * as echarts from 'echarts'
 @Component({})
 export default class StationCharts extends Vue {
     mydata: any = null
+    // 是否展开窗口| false:未展开, true:展开了|默认未展开
+    isExpanded = false
     mounted() {
         const nodeDiv = document.getElementById('station_charts')
         if (nodeDiv) {
@@ -320,19 +331,36 @@ export default class StationCharts extends Vue {
 }
 </script>
 <style scoped lang="less">
+@import '../../../styles/station/surge-chart';
+// .right-station-surge-form {
+//     border-radius: 5px;
+//     position: absolute;
+//     right: 10px;
+//     background: linear-gradient(
+//         to right,
+//         rgba(77, 142, 124, 0.726) 40%,
+//         rgba(74, 145, 148, 0.726),
+//         #34495e
+//     );
+//     box-shadow: 2px 3px 8px black;
+// }
 #station_charts {
-    border-radius: 5px;
-    position: absolute;
-    right: 10px;
     width: 500px;
     height: 300px;
-    background: linear-gradient(
-        to right,
-        rgba(77, 142, 124, 0.726) 40%,
-        rgba(74, 145, 148, 0.726),
-        #34495e
-    );
-    box-shadow: 2px 3px 8px black;
-    // background: #f8f8f7;
 }
+// #station_charts {
+//     border-radius: 5px;
+//     position: absolute;
+//     right: 10px;
+//     width: 500px;
+//     height: 300px;
+//     background: linear-gradient(
+//         to right,
+//         rgba(77, 142, 124, 0.726) 40%,
+//         rgba(74, 145, 148, 0.726),
+//         #34495e
+//     );
+//     box-shadow: 2px 3px 8px black;
+//     // background: #f8f8f7;
+// }
 </style>
