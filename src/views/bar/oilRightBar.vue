@@ -1,7 +1,8 @@
 <template>
     <div id="container">
         <oilModelDetial :oilModelData="oilModelData"></oilModelDetial>
-        <oilData :oilRealData="oilRealData"></oilData>
+        <!-- <oilData :oilRealData="oilRealData"></oilData> -->
+        <StationCharts></StationCharts>
         <RangePie :leftNum="scatterLeftNum" :currentNum="numsData.current"></RangePie>
         <!-- <timeBar :step="step" :index="index" :startDate="startDate" :count="count"></timeBar> -->
     </div>
@@ -12,6 +13,8 @@ import oilData from '@/views/oil/oilRealDataForm.vue'
 // TODO:[-] 20-01-28 此处修改了布局方式
 // import oilModelDetial from "@/views/oil/oilModelDetailForm.vue";
 import oilModelDetial from '@/views/oil/oilModelDetailForm2.vue'
+// TODO:[-] 21-05-25 加入的 历史潮位数据 charts
+import StationCharts from '@/views/members/charts/StationCharts.vue'
 // import timeBar from "@/views/timebar/DayCardV1/DayComp.vue";
 import timeBar from '@/views/members/timebar/DaysComp.vue'
 import RangePie from '@/views/members/pie/rangePie.vue'
@@ -21,7 +24,7 @@ import { OilEquation } from '@/enum/Equation'
 import { XYMidMode, PointMidModel } from '@/middle_model/coordinate'
 import moment from 'moment'
 // 组件引入
-@Component({ components: { oilModelDetial, oilData, timeBar, RangePie } })
+@Component({ components: { oilModelDetial, oilData, timeBar, RangePie, StationCharts } })
 export default class RightInfoBar extends Vue {
     public mydata: any = null
     // 时间 bar 的间隔
