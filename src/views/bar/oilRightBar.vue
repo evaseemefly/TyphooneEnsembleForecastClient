@@ -2,7 +2,11 @@
     <div id="container">
         <oilModelDetial :oilModelData="oilModelData"></oilModelDetial>
         <!-- <oilData :oilRealData="oilRealData"></oilData> -->
-        <StationCharts></StationCharts>
+        <StationCharts
+            :tyCode="tyCode"
+            :stationCode="stationCode"
+            :timeStamp="timeStamp"
+        ></StationCharts>
         <RangePie :leftNum="scatterLeftNum" :currentNum="numsData.current"></RangePie>
         <!-- <timeBar :step="step" :index="index" :startDate="startDate" :count="count"></timeBar> -->
     </div>
@@ -74,6 +78,12 @@ export default class RightInfoBar extends Vue {
     targetDate: Date
     @Prop(Object)
     numsData: { current: number; sum: number }
+    @Prop()
+    tyCode: string
+    @Prop()
+    stationCode: string
+    @Prop()
+    timeStamp: string
     // current: Date = this.targetDate;
     public mounted() {}
     get computedTest() {

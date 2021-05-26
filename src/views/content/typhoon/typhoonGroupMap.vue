@@ -125,6 +125,9 @@
                 :targetDate="targetDate"
                 :numsData="processOptions.num"
                 :oilModelData="targetOilModelData"
+                :tyCode="tyCode"
+                :stationCode="stationCode"
+                :timeStamp="timestampStr"
             ></OilRightBar>
 
             <!-- TODO:[-] 20-07-17 使用统一风格后的 右侧信息栏 -->
@@ -541,6 +544,7 @@ export default class OilSpillingMap extends mixins(
     gpId = 1
     tyCode = '2022'
     timestampStr = '2021010416'
+    stationCode = 'SHW'
     // + 21-05-15 脉冲 groupLayer
     groupLayerSurgePulsing: L.LayerGroup = null
 
