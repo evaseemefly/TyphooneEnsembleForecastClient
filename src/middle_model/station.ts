@@ -7,6 +7,7 @@
 export interface IToHtml {
     toHtml(): string
     getClassName(): string
+    getStationCode(): string
 }
 
 class IconFormDefaultMidModel implements IToHtml {
@@ -15,6 +16,9 @@ class IconFormDefaultMidModel implements IToHtml {
     }
     getClassName(): string {
         throw new Error('Method not implemented.')
+    }
+    getStationCode(): string {
+        return ''
     }
 }
 
@@ -27,11 +31,13 @@ class IconFormDefaultMidModel implements IToHtml {
  */
 class IconFormStationDetialedMidModel implements IToHtml {
     stationName: string
+    stationCode: string
     max: number
     min: number
     surge: number
-    constructor(stationName: string, surge: number, max: number, min: number) {
+    constructor(stationName: string, stationCode: string, surge: number, max: number, min: number) {
         this.stationName = stationName
+        this.stationCode = stationCode
         this.max = max
         this.min = min
         this.surge = surge
@@ -61,6 +67,9 @@ class IconFormStationDetialedMidModel implements IToHtml {
     getClassName(): string {
         return 'station-surge-icon-default'
     }
+    getStationCode(): string {
+        return this.stationCode
+    }
 
     private getAlarmColor(val: number): string {
         const surge = val
@@ -85,10 +94,12 @@ class IconFormStationDetialedMidModel implements IToHtml {
 
 class IconFormMinStationSurgeMidModel implements IToHtml {
     stationName: string
+    stationCode: string
     surge: number
     productTypeStr: string
-    constructor(stationName: string, surge: number, productTypeStr = '潮位') {
+    constructor(stationName: string, stationCode: string, surge: number, productTypeStr = '潮位') {
         this.stationName = stationName
+        this.stationCode = stationCode
         this.surge = surge
         this.productTypeStr = productTypeStr
     }
@@ -102,6 +113,9 @@ class IconFormMinStationSurgeMidModel implements IToHtml {
     }
     getClassName(): string {
         return 'station-surge-icon-default'
+    }
+    getStationCode(): string {
+        return this.stationCode
     }
     private getAlarmColor(): string {
         const surge = this.surge

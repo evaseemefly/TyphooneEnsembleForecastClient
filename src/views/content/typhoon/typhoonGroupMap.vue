@@ -791,11 +791,13 @@ export default class OilSpillingMap extends mixins(
                             })
                             const iconSurgeMin = new StationSurge(
                                 temp.name,
+                                temp.station_code,
                                 that.tyCode,
                                 that.timestampStr,
                                 that.forecastDt
                             ).getImplements(zoom, {
-                                stationName: temp.station_code,
+                                stationName: temp.name,
+                                stationCode: temp.station_code,
                                 surgeMax: temp.surge_max,
                                 surgeMin: temp.surge_min,
                                 surgeVal: temp.surge
@@ -832,7 +834,8 @@ export default class OilSpillingMap extends mixins(
                             const stationSurgeIconMarker = L.marker(
                                 [res.data[index].lat, res.data[index].lon],
                                 {
-                                    icon: stationSurgeMinDivICOn
+                                    icon: stationSurgeMinDivICOn,
+                                    customData: { stationCode: res.data[index]['station_code'] }
                                 }
                             )
 
@@ -843,6 +846,12 @@ export default class OilSpillingMap extends mixins(
                                 })
                                 .on('mouseout', (e) => {
                                     stationSurgeIconMarker.setZIndexOffset(1999)
+                                })
+                                .on('click', (e) => {
+                                    // that.stationCode = iconSurgeMinArr[index].getStationCode()
+                                    // 通过 -> e -> target -> options -> customData -> stationCode
+                                    console.log(e)
+                                    that.stationCode = e.target.options.customData.stationCode
                                 })
                             surgeDataFormMarkersList.push(stationSurgeIconMarker)
                             index++
