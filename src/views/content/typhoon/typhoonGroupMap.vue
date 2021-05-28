@@ -84,7 +84,9 @@
                 :endDate="finishDate"
                 :interval="interval"
                 :days="days"
-                :currentCaseCoverageList="currentCaseCoverageList"
+                :tyCode="tyCode"
+                :timeStampStr="timestampStr"
+                :forecastDt="targetDate"
             ></BottomMainBar>
             <div id="process">
                 <!-- TODO:[-] 20-01-27 使用eu的进度条 -->

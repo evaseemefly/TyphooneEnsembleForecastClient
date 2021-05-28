@@ -1,7 +1,11 @@
 <template>
     <div id="bottom-right-main-bar">
         <ColorBar></ColorBar>
-        <ForecastAreaBar :currentCaseCoverageList="currentCaseCoverageList"></ForecastAreaBar>
+        <ForecastAreaBar
+            :tyCode="tyCode"
+            :timeStampStr="timeStampStr"
+            :forecastDt="forecastDt"
+        ></ForecastAreaBar>
     </div>
 </template>
 <script lang="ts">
@@ -20,8 +24,12 @@ import CoverageMin from '@/views/content/oilspilling/coverage.vue'
 })
 export default class BottomRightMainBar extends Vue {
     mydata: any = null
-    @Prop(Array)
-    currentCaseCoverageList!: CoverageMin[]
+    @Prop(String)
+    tyCode
+    @Prop(String)
+    timeStampStr
+    @Prop(Date)
+    forecastDt
     mounted() {}
     get computedTest() {
         return null
