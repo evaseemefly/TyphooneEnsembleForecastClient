@@ -25,4 +25,16 @@ const loadForecastArea = (coverageId?: number) => {
     })
 }
 
-export { loadForecastArea }
+const getLayerCheckStatus = (tyCode: string, timeStampStr: string, forecastDt: Date) => {
+    const url = `${host}${area}/layers/check`
+    return axios.get(url, {
+        headers: authHeader(),
+        params: {
+            ty_code: tyCode,
+            timestamp: timeStampStr,
+            forecast_dt: forecastDt
+        }
+    })
+}
+
+export { loadForecastArea, getLayerCheckStatus }

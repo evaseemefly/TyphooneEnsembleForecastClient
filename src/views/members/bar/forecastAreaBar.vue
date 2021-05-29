@@ -1,20 +1,28 @@
 <template>
     <div id="forecast-area-bar">
         <div class="subtitle">
-            <span>预报范围</span>
+            <span>可加载数据</span>
             <div class="color-bar-mini">
-                <div class=" my-primary">流场</div>
-                <div class="my-sub">风场</div>
+                <div class=" my-primary">不可加载</div>
+                <div class="my-sub">可加载</div>
             </div>
         </div>
         <div class="card-list-bar">
+            <!-- <div
+                class="card-info "
+                :class="[isActive(layer) ? 'active' : '', getCoverageType(layer)]"
+                :key="layer.code"
+                v-for="layer in showLayers"
+            >
+                {{ layer.desc }}
+            </div> -->
             <div
                 class="card-info "
-                :class="[isActive(area) ? 'active' : '', getCoverageType(area)]"
-                :key="area.code"
-                v-for="area in areas"
+                :class="[layer.isActive ? 'my-sub' : '', getCoverageType(layer)]"
+                :key="layer.code"
+                v-for="layer in showLayers"
             >
-                {{ area.desc }}
+                {{ layer.desc }}
             </div>
             <!-- <div class="card-info">东中国海</div>
             <div class="card-info">东中国海</div>
@@ -25,20 +33,73 @@
 </template>
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
-import { loadForecastArea } from '@/api/comm'
+import { loadForecastArea, getLayerCheckStatus } from '@/api/comm'
+import { LayerTypeEnum } from '@/enum/common'
 // 引入常量
 import { DictEnum } from '@/enum/dict'
 // 引入部分中间变量
 import { CoverageMin } from '@/views/content/oilspilling/coverage'
+const dictLayersType = [
+    {
+        code: LayerTypeEnum.TYPHOON_GROUPPATH_LAYER,
+        name: '台风路径',
+        val: '台风路径',
+        desc: '台风路径',
+        isActive: false
+    },
+    {
+        code: LayerTypeEnum.GEO_RASTER_LAYER,
+        name: '增水场',
+        val: '增水场',
+        desc: '增水场',
+        isActive: false
+    },
+    {
+        code: LayerTypeEnum.STATION_SURGE_ICON_LAYER,
+        name: '潮位站',
+        val: '潮位站',
+        desc: '潮位站',
+        isActive: false
+    }
+]
 @Component({})
 export default class ForecastAreaBar extends Vue {
     mydata: any = null
     areas: { code: number; name: string; val: string; desc: string }[] = []
-
+    showLayers: { code: number; name: string; val: string; desc: string; isActive: boolean }[] = [
+        {
+            code: LayerTypeEnum.TYPHOON_GROUPPATH_LAYER,
+            name: '台风路径',
+            val: '台风路径',
+            desc: '台风路径',
+            isActive: false
+        },
+        {
+            code: LayerTypeEnum.GEO_RASTER_LAYER,
+            name: '增水场',
+            val: '增水场',
+            desc: '增水场',
+            isActive: false
+        },
+        {
+            code: LayerTypeEnum.STATION_SURGE_ICON_LAYER,
+            name: '潮位站',
+            val: '潮位站',
+            desc: '潮位站',
+            isActive: false
+        }
+    ]
+    // showLayers: { layerType: number; layerName: string; isShow: boolean }[] = []
+    showLayersType: LayerTypeEnum[] = []
     // @Prop(Number)
     // currentArea?: number
-    @Prop(Array)
-    currentCaseCoverageList!: CoverageMin[]
+    @Prop(String)
+    tyCode
+    @Prop(String)
+    timeStampStr
+    @Prop(Date)
+    forecastDt
+
     mounted() {
         this.loadForecastAreaList()
     }
@@ -62,6 +123,8 @@ export default class ForecastAreaBar extends Vue {
                 }
             }
         })
+        // 以下暂时修改为加载的图层
+        this.areas = []
     }
 
     // @Watch('currentCaseCoverageList')
@@ -84,8 +147,53 @@ export default class ForecastAreaBar extends Vue {
         }
         return coverageList
     }
-    isActive(area: { code: number }): boolean {
-        if (this.areaList.indexOf(area.code) != -1) {
+
+    get getTyOptions(): { tyCode: string; forecastDt: Date; timeStampStr: string } {
+        const { tyCode, timeStampStr, forecastDt } = this
+        return { tyCode, timeStampStr, forecastDt }
+    }
+
+    @Watch('getTyOptions')
+    onGetTyOptions(val: { tyCode: string; forecastDt: Date; timeStampStr: string }): void {
+        // TODO:[-] 21-05-28 注意 es6 -> map 并不修改原数组本身
+        this.showLayers.forEach((temp) => {
+            temp.isActive = false
+        })
+        this.loadLayersCheckStatus()
+    }
+    loadLayersCheckStatus(): void {
+        const that = this
+        getLayerCheckStatus(this.tyCode, this.timeStampStr, this.forecastDt).then((res) => {
+            if (res.status === 200) {
+                // TODO:[-] 21-05-28 此处修改为返回当前存在的 layer 的 枚举 value
+                // eg: [1002,1001 ]
+                // geo_raster_status: false
+                // station_realdata_staus: true
+                // ty_group_path_status: true
+                console.log(res.data)
+                const layersType = res.data
+                layersType.forEach((item) => {
+                    // if (that.showLayers === item) {
+                    //     // that.showLayers.push()
+                    // }
+                    const matchLayer = that.showLayers.find((tempLayer) => {
+                        return tempLayer.code === item
+                    })
+                    console.log(matchLayer)
+                    // 尝试直接修改
+                    matchLayer.isActive = true
+                })
+            }
+        })
+    }
+    isActive(layer: {
+        code: number
+        name: string
+        val: string
+        desc: string
+        isActive: boolean
+    }): boolean {
+        if (this.areaList.indexOf(layer.code) != -1) {
             return true
         } else {
             return false

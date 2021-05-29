@@ -15,10 +15,18 @@ class StationSurge {
     timeStampStr: string
     forecastDt: Date
     stationName: string
+    stationCode: string
     // stationIcons: IconFormStationDetialedMidModel[] = []
 
-    constructor(stationName: string, tyCode: string, timeStampStr: string, forecastDt: Date) {
+    constructor(
+        stationName: string,
+        stationCode: string,
+        tyCode: string,
+        timeStampStr: string,
+        forecastDt: Date
+    ) {
         this.stationName = stationName
+        this.stationCode = stationCode
         this.tyCode = tyCode
         this.timeStampStr = timeStampStr
         this.forecastDt = forecastDt
@@ -32,7 +40,13 @@ class StationSurge {
      */
     private getStationIconImplements(
         zoom: number,
-        options: { stationName: string; surgeMax?: number; surgeMin?: number; surgeVal: number }
+        options: {
+            stationName: string
+            stationCode: string
+            surgeMax?: number
+            surgeMin?: number
+            surgeVal: number
+        }
     ): IToHtml {
         // const stationIcons: IconFormStationDetialedMidModel[] = []
         // 若放大的倍数大于五，则返回 详细的 station icon
@@ -41,6 +55,7 @@ class StationSurge {
         if (zoom >= 8) {
             iToHtml = new IconFormStationDetialedMidModel(
                 options.stationName,
+                options.stationCode,
                 options.surgeVal,
                 options.surgeMax,
                 options.surgeMin
@@ -84,7 +99,13 @@ class StationSurge {
 
     getImplements(
         zoom: number,
-        options: { stationName: string; surgeMax: number; surgeMin: number; surgeVal: number }
+        options: {
+            stationName: string
+            stationCode: string
+            surgeMax: number
+            surgeMin: number
+            surgeVal: number
+        }
     ): IToHtml {
         return this.getStationIconImplements(zoom, options)
     }

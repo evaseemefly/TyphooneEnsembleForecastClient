@@ -10,7 +10,9 @@
         <!-- <div class="color-bar"><ColorBar></ColorBar></div> -->
         <div class="color-bar">
             <BottomRightMainBar
-                :currentCaseCoverageList="currentCaseCoverageList"
+                :tyCode="tyCode"
+                :timeStampStr="timeStampStr"
+                :forecastDt="forecastDt"
             ></BottomRightMainBar>
         </div>
     </div>
@@ -43,8 +45,12 @@ export default class BottomMainBar extends Vue {
     interval!: number
     @Prop(Number)
     days!: number
-    @Prop(Array)
-    currentCaseCoverageList!: CoverageMin[]
+    @Prop(String)
+    tyCode
+    @Prop(String)
+    timeStampStr
+    @Prop(Date)
+    forecastDt
 }
 </script>
 

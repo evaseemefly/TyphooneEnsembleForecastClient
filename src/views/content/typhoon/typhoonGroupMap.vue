@@ -84,7 +84,9 @@
                 :endDate="finishDate"
                 :interval="interval"
                 :days="days"
-                :currentCaseCoverageList="currentCaseCoverageList"
+                :tyCode="tyCode"
+                :timeStampStr="timestampStr"
+                :forecastDt="targetDate"
             ></BottomMainBar>
             <div id="process">
                 <!-- TODO:[-] 20-01-27 使用eu的进度条 -->
@@ -125,6 +127,9 @@
                 :targetDate="targetDate"
                 :numsData="processOptions.num"
                 :oilModelData="targetOilModelData"
+                :tyCode="tyCode"
+                :stationCode="stationCode"
+                :timeStamp="timestampStr"
             ></OilRightBar>
 
             <!-- TODO:[-] 20-07-17 使用统一风格后的 右侧信息栏 -->
@@ -146,6 +151,8 @@
         <div class="dialog-create-case">
             <CreatedCaseForm ref="caseForm"></CreatedCaseForm>
         </div>
+        <!-- TODO:[-] 21-05-24 加入右侧 station bar -->
+        <!-- <RightStationBar></RightStationBar> -->
         <!-- <div class="">
             <GridDetailForm ref="gridForm"></GridDetailForm>
         </div> -->
@@ -228,6 +235,8 @@ import RightOptToolsBar from '@/views/members/bar/rightOptToolsBar.vue'
 import BottomMainBar from '@/views/members/bar/bottomMainBar.vue'
 // + 21-03-07 新加入的 grid_charts 模块
 import GridDetailForm from '@/views/members/form/grid_form/GridDetailForm.vue'
+import RightStationBar from '@/views/members/bar/rightStationBar.vue'
+// -----
 // 各api
 import { loadOilSpillingAvgRealData, getTargetCodeDateRange } from '@/api/api'
 import { loadFieldSurgeTif } from '@/api/geo'
@@ -352,7 +361,9 @@ const DEFAULT_SCATTER_PAGE_COUNT = 1000
         // MakePointBtn,
         OceanMainToolsBar,
         RightOptToolsBar,
-        BottomMainBar
+        BottomMainBar,
+        // + 21-05-24 新加入的 右侧显示 测站历史数据曲线的 charts
+        RightStationBar
         // GridDetailForm
         // LeafletHeatmap
     }
@@ -535,6 +546,7 @@ export default class OilSpillingMap extends mixins(
     gpId = 1
     tyCode = '2022'
     timestampStr = '2021010416'
+    stationCode = 'SHW'
     // + 21-05-15 脉冲 groupLayer
     groupLayerSurgePulsing: L.LayerGroup = null
 
@@ -781,11 +793,13 @@ export default class OilSpillingMap extends mixins(
                             })
                             const iconSurgeMin = new StationSurge(
                                 temp.name,
+                                temp.station_code,
                                 that.tyCode,
                                 that.timestampStr,
                                 that.forecastDt
                             ).getImplements(zoom, {
-                                stationName: temp.station_code,
+                                stationName: temp.name,
+                                stationCode: temp.station_code,
                                 surgeMax: temp.surge_max,
                                 surgeMin: temp.surge_min,
                                 surgeVal: temp.surge
@@ -822,7 +836,8 @@ export default class OilSpillingMap extends mixins(
                             const stationSurgeIconMarker = L.marker(
                                 [res.data[index].lat, res.data[index].lon],
                                 {
-                                    icon: stationSurgeMinDivICOn
+                                    icon: stationSurgeMinDivICOn,
+                                    customData: { stationCode: res.data[index]['station_code'] }
                                 }
                             )
 
@@ -833,6 +848,12 @@ export default class OilSpillingMap extends mixins(
                                 })
                                 .on('mouseout', (e) => {
                                     stationSurgeIconMarker.setZIndexOffset(1999)
+                                })
+                                .on('click', (e) => {
+                                    // that.stationCode = iconSurgeMinArr[index].getStationCode()
+                                    // 通过 -> e -> target -> options -> customData -> stationCode
+                                    console.log(e)
+                                    that.stationCode = e.target.options.customData.stationCode
                                 })
                             surgeDataFormMarkersList.push(stationSurgeIconMarker)
                             index++
