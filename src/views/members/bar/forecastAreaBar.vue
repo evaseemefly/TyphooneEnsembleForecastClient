@@ -3,7 +3,7 @@
         <div class="subtitle">
             <span>可加载数据</span>
             <div class="color-bar-mini">
-                <div class=" my-primary">不可加载</div>
+                <div class="my-primary">不可加载</div>
                 <div class="my-sub">可加载</div>
             </div>
         </div>
@@ -159,6 +159,7 @@ export default class ForecastAreaBar extends Vue {
         this.showLayers.forEach((temp) => {
             temp.isActive = false
         })
+        this.showLayersType = []
         this.loadLayersCheckStatus()
     }
     loadLayersCheckStatus(): void {
@@ -179,7 +180,8 @@ export default class ForecastAreaBar extends Vue {
                     const matchLayer = that.showLayers.find((tempLayer) => {
                         return tempLayer.code === item
                     })
-                    console.log(matchLayer)
+                    that.showLayersType.push(item)
+                    // console.log(matchLayer)
                     // 尝试直接修改
                     matchLayer.isActive = true
                 })
@@ -200,15 +202,8 @@ export default class ForecastAreaBar extends Vue {
         }
     }
     getCoverageType(area: { code: number }): string {
-        const coverageTemp = this.coverageTypeList.find((item) => {
-            return item.coverageArea == area.code
-        })
-        if (coverageTemp) {
-            if (coverageTemp.coverageType === DictEnum.COVERAGE_TYPE_CURRENT) {
-                return 'my-primary'
-            } else if (coverageTemp.coverageType === DictEnum.COVERAGE_TYPE_WIND) {
-                return 'my-sub'
-            }
+        if (this.showLayersType.length > 0) {
+            return 'my-primary'
         }
         return ''
     }
@@ -370,7 +365,11 @@ export default class ForecastAreaBar extends Vue {
 }
 
 .subtitle > .color-bar-mini > div {
-    width: 50px;
+    // +21-05-29 对于可加载数据提示框，加入了左右两边的内边距
+    padding-right: 10px;
+    padding-left: 10px;
+    // ---
+    // width: 50px;
     height: 30px;
     border-radius: 0.4em;
     box-shadow: 0 0 4px 0 rgb(151, 144, 144);
