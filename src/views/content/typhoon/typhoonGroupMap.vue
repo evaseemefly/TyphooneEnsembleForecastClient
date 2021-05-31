@@ -529,6 +529,8 @@ export default class OilSpillingMap extends mixins(
         latlngs: [],
         color: 'yellow'
     }
+    // TODO:[-] + 21-05-31 中间路径的 cirleLayers 集合
+    tyGroupCenterCirleLayers: L.Layer[] = []
     // TODO:[-] + 21-05-12 台风集合预报路径的概率半径集合 24: 60, 48:100,72:120,96:150,120:180
     tyGroupProPathCircles: { lat: number; lon: number; radius: number }[] = []
     // 当前的大风半径范围
@@ -1058,7 +1060,7 @@ export default class OilSpillingMap extends mixins(
                             -1 根据当前传入的 circle index 找到对应 group -> realdata
                             -2 根据对应的 realdata 获取当前的 radius
                             -3 根据经纬度画圆
-                    */
+                        */
                         // radius 单位为 m ，需要乘以系数 1000m = 1km 为基本单位
                         const radiusUnit = 1000
                         that.currentGaleRadius = L.circle(coords, {
@@ -1079,12 +1081,14 @@ export default class OilSpillingMap extends mixins(
                             opacity: 0.7
                             // weight: layer.options.weight / 1.25
                         })
-                        mymap.removeLayer(that.currentGaleRadius)
-                        // + 21-04-22 移除 当前的 tyDivIcon
-                        if (that.tyRealDataDivIcon) {
-                            mymap.removeLayer(that.tyRealDataDivIcon)
-                        }
-                        that.currentGaleRadius = null
+                        // TODO:[-] 21-05-31 此部分由 this.clearTyRealDataLayer 替代
+                        // mymap.removeLayer(that.currentGaleRadius)
+                        // // + 21-04-22 移除 当前的 tyDivIcon
+                        // if (that.tyRealDataDivIcon) {
+                        //     mymap.removeLayer(that.tyRealDataDivIcon)
+                        // }
+                        // that.currentGaleRadius = null
+                        that.clearTyRealDataLayer()
                     })
                     // + 21-05-07 加入鼠标click 事件
                     circleTemp.on('click', (e: any) => {
@@ -1143,25 +1147,6 @@ export default class OilSpillingMap extends mixins(
                 groupPolyLine.options['zIndexOffset'] = 19999
                 // groupPolyLine.setZIndexOffset(19999)
             }
-
-            // 设置 mouseover 的事件
-            // groupPolyLine.on('mouseover', (e: any) => {
-            //     // console.log(e)
-            //     const layer = e.target
-            //     layer.setStyle({
-            //         opacity: 1,
-            //         weight: 7
-            //     })
-            // })
-            // groupPolyLine.on('mouseout', (e: any) => {
-            //     // console.log(e)
-            //     const layer = e.target
-            //     layer.setStyle({
-            //         opacity: 0.7,
-            //         weight: 3
-            //     })
-            // })
-
             // TODO:[-] 21-04-21 此处尝试将同一个 集合路径的 折线 + points 统一 add -> groupLayer
             // 目前看均无法设置 折线的 zindex
             if (temp.tyPathType === 'c' && temp.tyPathMarking === 0 && temp.bp === 0) {
@@ -1186,6 +1171,11 @@ export default class OilSpillingMap extends mixins(
                 tempLayer.addTo(mymap)
                 groupPolyLine.addTo(mymap)
                 // console.log(tempLayer)
+            }
+
+            // TODO:[-] + 21-05-31 只有 center 路径 cirleLayers.length > 0,将 center 路径赋值给 this.tyGroupCenterCirleLayers
+            if (cirleLayers.length > 0) {
+                that.tyGroupCenterCirleLayers = cirleLayers
             }
         })
         this.addTyGroupProPathCircles()
@@ -1365,6 +1355,71 @@ export default class OilSpillingMap extends mixins(
         }
     }
 
+    // TODO:[-] + 21-05-31 找到当前时间对应的 tyGroup 对应的 realdata,信息,并添加至map
+    addTyTargetDtRealData2Map(targetDt: Date): void {
+        const that = this
+        const mymap: any = this.$refs.basemap['mapObject']
+        this.clearTyRealDataLayer()
+        const targetCircle: L.Layer = this.tyGroupCenterCirleLayers.find((temp) => {
+            return temp.options.customData.forecastDt - targetDt === 0
+        })
+        if (targetCircle) {
+            const galeRadiusScaleColor = new ScaleColor(
+                that.tyGroupGaleRadiusRange.min,
+                that.tyGroupGaleRadiusRange.max
+            )
+            galeRadiusScaleColor.setScale('Viridis')
+            const layer = targetCircle
+            layer.setStyle({
+                opacity: 1
+                // weight: layer.options.weight * 1.25
+                // radius:
+            })
+            const customData: { bp: number; radius: number; lat: number; lon: number } =
+                targetCircle.options.customData
+            // 获取半径
+            const targetRadius = customData.radius
+            const coords: L.LatLng = targetCircle.getLatLng()
+            /*
+                        大体逻辑:
+                            -1 根据当前传入的 circle index 找到对应 group -> realdata
+                            -2 根据对应的 realdata 获取当前的 radius
+                            -3 根据经纬度画圆
+                        */
+            // radius 单位为 m ，需要乘以系数 1000m = 1km 为基本单位
+            const radiusUnit = 1000
+            const typhoonStatus = new TyphoonCircleStatus(
+                customData.radius,
+                customData.bp,
+                targetDt,
+                customData.lat,
+                customData.lon
+            )
+            this.currentGaleRadius = L.circle(coords, {
+                radius: targetRadius * radiusUnit,
+                fillColor: galeRadiusScaleColor.getColor(targetRadius),
+                color: galeRadiusScaleColor.getColor(targetRadius),
+                weight: 2,
+                fillOpacity: 0.5
+            }).addTo(mymap)
+            // + 21-04-22 鼠标移入当前 circle 显示该 divIcon
+            that.addTyphoonRealDataDiv2Map(typhoonStatus)
+        }
+    }
+
+    // TODO:[-] + 21-05-31 去掉
+    clearTyRealDataLayer(): void {
+        const mymap: any = this.$refs.basemap['mapObject']
+        if (this.tyRealDataDivIcon) {
+            mymap.removeLayer(this.tyRealDataDivIcon)
+            this.tyRealDataDivIcon = undefined
+        }
+        if (this.currentGaleRadius) {
+            mymap.removeLayer(this.currentGaleRadius)
+            this.currentGaleRadius = undefined
+        }
+    }
+
     clearAllLayer(): void {}
 
     // 根据 leaflet_id -> map.removce(layer)
@@ -1461,6 +1516,8 @@ export default class OilSpillingMap extends mixins(
         // 修改当前 的 targetDate
         this.targetDate = valNew
         this.tyGroupOptions.forecastDt = valNew
+        // TODO:[-] 21-05-31 将 当前时间对应的台风信息form 添加至 map
+        this.addTyTargetDtRealData2Map(valNew)
     }
 
     // TODO:[-] 21-05-19 根据监听当前的 tyGroupOptions 来确定 指定 tyGroupPath(center) 对应的时间与 tyCode,timeStamp

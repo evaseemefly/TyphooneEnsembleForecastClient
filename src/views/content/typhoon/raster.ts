@@ -325,18 +325,18 @@ class FieldSurgeGeoLayer extends SurgeRasterGeoLayer {
             const min = georasterResponse.mins[0]
             const max = georasterResponse.maxs[0]
             const range = georasterResponse.ranges[0]
-            const scale = chroma.scale('Viridis')
-            // const scale = chroma.scale([
-            //     '#00429d',
-            //     '#4771b2',
-            //     '#73a2c6',
-            //     '#a5d5d8',
-            //     '#ffffe0',
-            //     '#ffbcaf',
-            //     '#f4777f',
-            //     '#cf3759',
-            //     '#93003a'
-            // ])
+            // const scale = chroma.scale('Viridis')
+            const scale = chroma.scale([
+                '#00429d',
+                '#4771b2',
+                '#73a2c6',
+                '#a5d5d8',
+                '#ffffe0',
+                '#ffbcaf',
+                '#f4777f',
+                '#cf3759',
+                '#93003a'
+            ])
 
             // TODO:[*] 21-02-10 此处当加载全球风场的geotiff时，y不在实际范围内，需要手动处理
             georasterResponse.ymax = georasterResponse.ymax
@@ -347,9 +347,8 @@ class FieldSurgeGeoLayer extends SurgeRasterGeoLayer {
                 opacity: 0.6,
                 pixelValuesToColorFn: function(pixelValues) {
                     const pixelValue = pixelValues[0] // there's just one band in this raster
-
-                    // if there's zero wind, don't return a color
-                    if (pixelValue === 0 || Number.isNaN(pixelValue)) return null
+                    // TODO:[-] 21-05-31 修改了原始数据，陆地部分采用 Nan，所以不需要将 0 值填充为 null
+                    if (Number.isNaN(pixelValue) || pixelValue === -32767) return null
 
                     // scale to 0 - 1 used by chroma
                     const scaledPixelValue = (pixelValue - min) / range
