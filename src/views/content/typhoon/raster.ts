@@ -322,9 +322,13 @@ class FieldSurgeGeoLayer extends SurgeRasterGeoLayer {
             // at Function.fromSource (e2c99254-e67c-4422-be5d-01e0b254a36b:10)
 
             const georasterResponse = await parseGeoraster(arrayBuffer)
-            const min = georasterResponse.mins[0]
-            const max = georasterResponse.maxs[0]
-            const range = georasterResponse.ranges[0]
+            // TODO:[*] 21-05-31 将 风暴潮的范围写成固定值
+            // const min = georasterResponse.mins[0]
+            // const max = georasterResponse.maxs[0]
+            // const range = georasterResponse.ranges[0]
+            const min = 0
+            const max = 0.5
+            const range = max - min
             // const scale = chroma.scale('Viridis')
             const scale = chroma.scale([
                 '#00429d',
@@ -341,6 +345,8 @@ class FieldSurgeGeoLayer extends SurgeRasterGeoLayer {
             // TODO:[*] 21-02-10 此处当加载全球风场的geotiff时，y不在实际范围内，需要手动处理
             georasterResponse.ymax = georasterResponse.ymax
             georasterResponse.ymin = georasterResponse.ymin
+            // georasterResponse.ymax = max
+            // georasterResponse.ymin = min
 
             const layer = new GeoRasterLayer({
                 georaster: georasterResponse,
@@ -351,7 +357,16 @@ class FieldSurgeGeoLayer extends SurgeRasterGeoLayer {
                     if (Number.isNaN(pixelValue) || pixelValue === -32767) return null
 
                     // scale to 0 - 1 used by chroma
-                    const scaledPixelValue = (pixelValue - min) / range
+                    // TODO:[-] 21-05-31 注意若设置固定范围的色标，则此处的scaledPiexelValue 是一个 0-1 的值，也就是 当前值 / range
+                    let scaledPixelValue = min
+                    if (pixelValue > max) {
+                        scaledPixelValue = max / range
+                    } else if (pixelValue < min) {
+                        scaledPixelValue = min / range
+                    } else {
+                        scaledPixelValue = (pixelValue - min) / range
+                    }
+                    // const scaledPixelValue = (pixelValue - min) / range
 
                     const color = scale(scaledPixelValue).hex()
 
