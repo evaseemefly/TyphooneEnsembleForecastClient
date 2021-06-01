@@ -60,8 +60,12 @@ class StationSurge {
                 options.surgeMax,
                 options.surgeMin
             )
-        } else if ((zoom >= 3, zoom < 8)) {
-            iToHtml = new IconFormMinStationSurgeMidModel(that.stationName, options.surgeVal)
+        } else if (zoom >= 3 && zoom < 8) {
+            iToHtml = new IconFormMinStationSurgeMidModel(
+                that.stationName,
+                that.stationCode,
+                options.surgeVal
+            )
         }
         return iToHtml
     }
