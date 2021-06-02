@@ -27,6 +27,10 @@ const iconPlusingDefaultOptions = {
  * @class IconCirlePulsing
  */
 class IconCirlePulsing {
+    // radiusUnit:number=
+    // x 与 y 的偏移量
+    shiftX = 4
+    shiftY = 4
     val: number
     max: number
     min: number
@@ -44,11 +48,59 @@ class IconCirlePulsing {
         return divHtml
     }
 
+    /**
+     * 获取当前 surge 在 min - max 的百分位数
+     *
+     * @returns {number}
+     * @memberof IconCirlePulsing
+     */
     getRadius(): number {
         const val =
             Math.abs(this.config.val - this.config.min) /
             Math.abs(this.config.max - this.config.min)
         return val
+    }
+
+    /**
+     * + 21-06-02 获取当前的 surge 的 脉冲icon的绝对半径
+     *
+     * @returns {number}
+     * @memberof IconCirlePulsing
+     */
+    getPlusingIconAbsRadius(): number {
+        // 半径的最大 px
+        const radiusMaxVal = 15
+        // 半径的最小 px
+        const radiusMinVal = 6
+        // 半径最大与最小的差值 px
+        const radiusDiffVal = radiusMaxVal - radiusMinVal
+        // 半径差值的绝对值
+        const radiusDiffAbsVal = radiusDiffVal * this.getRadius()
+        return radiusMinVal + radiusDiffAbsVal
+    }
+
+    /**
+     * + 21-06-02 获取当前 surge 的 脉冲icon矩形的 width 与 height
+     *
+     * @returns {number[]}
+     * @memberof IconCirlePulsing
+     */
+    getPlusingIconRectangle(): number[] {
+        const width = 2 * (this.getPlusingIconAbsRadius() + this.shiftX)
+        const height = 2 * (this.getPlusingIconAbsRadius() + this.shiftY)
+        return [width, height]
+    }
+
+    getPlusingIconBorderAbsRadius(): number {
+        // 半径的最大 px
+        const radiusMaxVal = 19
+        // 半径的最小 px
+        const radiusMinVal = 10
+        // 半径最大与最小的差值 px
+        const radiusDiffVal = radiusMaxVal - radiusMinVal
+        // 半径差值的绝对值
+        const radiusDiffAbsVal = radiusDiffVal * this.getRadius()
+        return radiusMinVal + radiusDiffAbsVal
     }
 }
 
