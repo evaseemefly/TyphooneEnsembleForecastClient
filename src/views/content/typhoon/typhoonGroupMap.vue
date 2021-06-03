@@ -785,8 +785,8 @@ export default class OilSpillingMap extends mixins(
                             surgeArr.push(element.surge)
                         })
                         // 获取极值
-                        const surgeMax = Math.max(surgeArr)
-                        const surgeMin = Math.min(surgeArr)
+                        const surgeMax = Math.max(...surgeArr)
+                        const surgeMin = Math.min(...surgeArr)
                         res.data.forEach((temp) => {
                             const icon = new IconCirlePulsing({
                                 val: temp.surge,

@@ -38,12 +38,21 @@ class IconCirlePulsing {
     config: IIconPlusingOptions
     constructor(options: IIconPlusingOptions) {
         // Object.assign(this, { max: 10, min: 1, radius: 10 }, options)
-        this.config = { ...options, ...iconPlusingDefaultOptions }
+        this.config = { ...iconPlusingDefaultOptions, ...options }
     }
     toHtml(): string {
-        const divHtml = `<div class="my-leaflet-pulsing-marker">
-        <div class="my-leaflet-icon-border"></div>
-        <div class="my-leaflet-pulsing-icon"></div>
+        const that = this
+        //     const divHtml = `<div class="my-leaflet-pulsing-marker" >
+        //     <div class="my-leaflet-icon-border" style="width: ${that.getPlusingIconRectangle[0]}.px;height:${that.getPlusingIconRectangle[1]}.px;left:${that.shiftX}.px;top:${that.shiftY}.px"></div>
+        //     <div class="my-leaflet-pulsing-icon" style="width: ${that.getPlusingIconBorderRectangle[0]}.px;height:${that.getPlusingIconBorderRectangle[1]}.px;"></div>
+        //   </div>`
+        const iconBorderWidth = that.getPlusingIconRectangle()[0]
+        const iconBorderHeight = that.getPlusingIconRectangle()[1]
+        const iconPulsingWidth = that.getPlusingIconBorderRectangle()[0]
+        const iconPulsingHeight = that.getPlusingIconBorderRectangle()[1]
+        const divHtml = `<div class="my-leaflet-pulsing-marker" >
+        <div class="my-leaflet-icon-border" style="width: ${iconBorderWidth}px;height:${iconBorderHeight}px;left:${that.shiftX}px;top:${that.shiftY}px"></div>
+        <div class="my-leaflet-pulsing-icon" style="width: ${iconPulsingWidth}px;height:${iconPulsingHeight}px;"></div>
       </div>`
         return divHtml
     }
@@ -95,12 +104,19 @@ class IconCirlePulsing {
         // 半径的最大 px
         const radiusMaxVal = 19
         // 半径的最小 px
-        const radiusMinVal = 10
+        // const radiusMinVal = 10
+        const radiusMinVal = 8
         // 半径最大与最小的差值 px
         const radiusDiffVal = radiusMaxVal - radiusMinVal
         // 半径差值的绝对值
         const radiusDiffAbsVal = radiusDiffVal * this.getRadius()
         return radiusMinVal + radiusDiffAbsVal
+    }
+
+    getPlusingIconBorderRectangle(): number[] {
+        const width = 2 * this.getPlusingIconBorderAbsRadius()
+        const height = 2 * this.getPlusingIconBorderAbsRadius()
+        return [width, height]
     }
 }
 

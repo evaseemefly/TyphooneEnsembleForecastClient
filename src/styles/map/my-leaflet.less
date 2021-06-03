@@ -6,25 +6,29 @@
 }
 /* 中间的圆形icon */
 .my-leaflet-pulsing-icon {
-    width: 12px;
-    height: 12px;
     border-radius: 100%;
     /* -webkit-box-shadow: 1px 1px 8px 0 rgba(0, 0, 0, 0.75); */
     box-shadow: 1px 1px 8px 0 rgba(0, 0, 0, 0.75);
     background: #76eec6;
     position: absolute;
+    // TODO:[-] 21-06-02 暂时注释掉
+    width: 12px;
+    height: 12px;
     left: 4px;
     top: 4px;
 }
 /* 需要给border一个大小，不然是0*0 */
 .my-leaflet-icon-border {
     /* 最新的修改是外侧的border div 的长宽与兄弟 icon div 相同，这样不会再做偏移了 */
+    // TODO:[-] 21-06-02 暂时注释掉
     width: 20px;
     height: 20px;
-    border-radius: 100%;
-    position: absolute;
     left: 0px;
     top: 0px;
+    // ---
+    border-radius: 100%;
+    position: absolute;
+
     /* background:rgb(0, 87, 128);
     border: rgb(228, 33, 33) 2px solid; */
 

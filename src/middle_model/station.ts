@@ -138,4 +138,61 @@ class IconFormMinStationSurgeMidModel implements IToHtml {
     }
 }
 
-export { IconFormStationDetialedMidModel, IconFormDefaultMidModel, IconFormMinStationSurgeMidModel }
+/**
+ * + 21-06-03
+ * 潮位站 station form
+ * 只包含标题
+ *
+ * @class IconFormTitleStationSurgeMidModel
+ * @implements {IToHtml}
+ */
+class IconFormTitleStationSurgeMidModel implements IToHtml {
+    stationName: string
+    stationCode: string
+    surge: number
+    productTypeStr: string
+    constructor(stationName: string, stationCode: string, surge: number, productTypeStr = '潮位') {
+        this.stationName = stationName
+        this.stationCode = stationCode
+        this.surge = surge
+        this.productTypeStr = productTypeStr
+    }
+    toHtml(): string {
+        const divHtml = `<div class="my-station-title-surge-div">
+        <div class="station-title-div-title">${this.stationName}</div>
+        </div>`
+        return divHtml
+    }
+    getClassName(): string {
+        return 'station-surge-icon-onlytitle'
+    }
+    getStationCode(): string {
+        return this.stationCode
+    }
+    private getAlarmColor(): string {
+        const surge = this.surge
+        let colorStr = 'green'
+        switch (true) {
+            case surge <= -2:
+                colorStr = 'green'
+                break
+            case surge <= 40:
+                colorStr = 'yellow'
+                break
+            case surge <= 60:
+                colorStr = 'orange'
+                break
+            case surge > 60:
+                colorStr = 'red'
+                break
+        }
+        return colorStr
+    }
+}
+
+export {
+    IconFormStationDetialedMidModel,
+    IconFormDefaultMidModel,
+    IconFormMinStationSurgeMidModel,
+    IconFormTitleStationSurgeMidModel
+}

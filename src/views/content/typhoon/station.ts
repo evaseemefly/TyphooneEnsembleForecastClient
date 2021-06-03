@@ -3,7 +3,8 @@ import {
     IToHtml,
     IconFormStationDetialedMidModel,
     IconFormDefaultMidModel,
-    IconFormMinStationSurgeMidModel
+    IconFormMinStationSurgeMidModel,
+    IconFormTitleStationSurgeMidModel
 } from '@/middle_model/station'
 /*
  + 21-05-14 
@@ -52,7 +53,7 @@ class StationSurge {
         // 若放大的倍数大于五，则返回 详细的 station icon
         let iToHtml = new IconFormDefaultMidModel()
         const that = this
-        if (zoom >= 8) {
+        if (zoom > 8) {
             iToHtml = new IconFormStationDetialedMidModel(
                 options.stationName,
                 options.stationCode,
@@ -60,8 +61,14 @@ class StationSurge {
                 options.surgeMax,
                 options.surgeMin
             )
-        } else if (zoom >= 3 && zoom < 8) {
+        } else if (zoom > 7 && zoom <= 8) {
             iToHtml = new IconFormMinStationSurgeMidModel(
+                that.stationName,
+                that.stationCode,
+                options.surgeVal
+            )
+        } else {
+            iToHtml = new IconFormTitleStationSurgeMidModel(
                 that.stationName,
                 that.stationCode,
                 options.surgeVal
