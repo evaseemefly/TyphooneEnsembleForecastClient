@@ -62,20 +62,6 @@
                 ></l-polyline>
                 <!-- <l-marker :lat-lng="makerLatlng"></l-marker> -->
                 <l-circle :lat-lng="makerLatlng"></l-circle>
-                <!-- <LeafletHeatmap :lat-lng="oilHeatmapList" :radius="15"></LeafletHeatmap> -->
-                <!-- TODO:[*] 19-10-16 注意若动态的添加latlng的话会报错 -->
-                <!-- 参考的错误如下：
-        https://github.com/jurb/vue2-leaflet-heatmap/issues/2-->
-                <!-- 使用的插件：
-        https://github.com/jurb/vue2-leaflet-heatmap-->
-                <!-- <LeafletHeatmap
-        :lat-lng="oilHeatmapList"
-        :radius="60"
-        :min-opacity=".75"
-        :max-zoom="10"
-        :blur="60"
-        ></LeafletHeatmap>-->
-                <!-- <l-circle v-for="temp in oilScatterPointList" :key="temp.id" :lat-lng="temp" /> -->
             </l-map>
             <!-- TODO:[-] 20-07-20 新加入的 main bar 替换之前的 time bar -->
             <!-- <TimeBar :targetDate="startDate" :days="days" :interval="interval"></TimeBar> -->
@@ -820,6 +806,7 @@ export default class OilSpillingMap extends mixins(
                                 // 坐标，[相对于原点的水平位置（左加右减），相对原点的垂直位置（上加下减）]
                                 // iconAnchor: [-20, 30]
                             })
+
                             // 2- 台站 station data form icon
                             const stationSurgeMinDivICOn = L.divIcon({
                                 className: iconSurgeMinArr[index].getClassName(),
@@ -831,9 +818,18 @@ export default class OilSpillingMap extends mixins(
                             const surgePulsingMarker = L.marker(
                                 [res.data[index].lat, res.data[index].lon],
                                 {
-                                    icon: stationDivIcon
+                                    icon: stationDivIcon,
+                                    customData: {
+                                        name: res.data[index].name,
+                                        surge: res.data[index].surge,
+                                        surgeMax: res.data[index].surge_max,
+                                        surgeMin: res.data[index].surge_min
+                                    }
                                 }
                             )
+                            surgePulsingMarker.on('mouseover', (e) => {
+                                console.log(e)
+                            })
                             surgePulsingMarkersList.push(surgePulsingMarker)
                             const stationSurgeIconMarker = L.marker(
                                 [res.data[index].lat, res.data[index].lon],
