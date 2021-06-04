@@ -827,9 +827,37 @@ export default class OilSpillingMap extends mixins(
                                     }
                                 }
                             )
-                            surgePulsingMarker.on('mouseover', (e) => {
-                                console.log(e)
-                            })
+                            // TODO:[-] 21-06-04 鼠标移入脉冲点，显示 station 的 mini form
+                            surgePulsingMarker.on(
+                                'mouseover',
+                                (e: {
+                                    target: {
+                                        options: {
+                                            customData: {
+                                                name: string
+                                                surge: number
+                                                surgeMax: number
+                                                surgeMin: number
+                                            }
+                                        }
+                                    }
+                                }) => {
+                                    console.log(e)
+                                    // const iconSurgeMin = new StationSurge(
+                                    //     temp.name,
+                                    //     temp.station_code,
+                                    //     that.tyCode,
+                                    //     that.timestampStr,
+                                    //     that.forecastDt
+                                    // ).getImplements(zoom, {
+                                    //     stationName: temp.name,
+                                    //     stationCode: temp.station_code,
+                                    //     surgeMax: temp.surge_max,
+                                    //     surgeMin: temp.surge_min,
+                                    //     surgeVal: temp.surge
+                                    // })
+                                }
+                            )
                             surgePulsingMarkersList.push(surgePulsingMarker)
                             const stationSurgeIconMarker = L.marker(
                                 [res.data[index].lat, res.data[index].lon],
