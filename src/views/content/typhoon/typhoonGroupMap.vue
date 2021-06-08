@@ -823,7 +823,10 @@ export default class OilSpillingMap extends mixins(
                                         name: res.data[index].name,
                                         surge: res.data[index].surge,
                                         surgeMax: res.data[index].surge_max,
-                                        surgeMin: res.data[index].surge_min
+                                        surgeMin: res.data[index].surge_min,
+                                        stationCode: res.data[index].station_code,
+                                        lat: res.data[index].lat,
+                                        lon: res.data[index].lon
                                     }
                                 }
                             )
@@ -838,24 +841,44 @@ export default class OilSpillingMap extends mixins(
                                                 surge: number
                                                 surgeMax: number
                                                 surgeMin: number
+                                                stationCode: string
+                                                lat: number
+                                                lon: number
                                             }
                                         }
                                     }
                                 }) => {
-                                    console.log(e)
-                                    // const iconSurgeMin = new StationSurge(
-                                    //     temp.name,
-                                    //     temp.station_code,
-                                    //     that.tyCode,
-                                    //     that.timestampStr,
-                                    //     that.forecastDt
-                                    // ).getImplements(zoom, {
-                                    //     stationName: temp.name,
-                                    //     stationCode: temp.station_code,
-                                    //     surgeMax: temp.surge_max,
-                                    //     surgeMin: temp.surge_min,
-                                    //     surgeVal: temp.surge
-                                    // })
+                                    // console.log(e)
+                                    const customData = e.target.options.customData
+                                    const iconSurgeMin = new StationSurge(
+                                        customData.name,
+                                        customData.stationCode,
+                                        that.tyCode,
+                                        that.timestampStr,
+                                        that.forecastDt
+                                    ).getImplements(zoom, {
+                                        stationName: customData.name,
+                                        stationCode: customData.stationCode,
+                                        surgeMax: customData.surgeMax,
+                                        surgeMin: customData.surgeMin,
+                                        surgeVal: customData.surge
+                                    })
+                                    console.log(iconSurgeMin)
+                                    // TODO:[-] 21-06-08 将弹出的 mini form 放在该脉冲点的旁边位置
+                                    const stationSurgeMinDivICOn = L.divIcon({
+                                        className: iconSurgeMin.getClassName(),
+                                        html: iconSurgeMin.toHtml(),
+                                        // 坐标，[相对于原点的水平位置（左加右减），相对原点的垂直位置（上加下减）]
+                                        iconAnchor: [-20, 30]
+                                    })
+                                    const tempStationSurgeMarker = L.marker(
+                                        [customData.lat, customData.lon],
+                                        {
+                                            icon: stationSurgeMinDivICOn,
+                                            customData: customData
+                                        }
+                                    )
+                                    tempStationSurgeMarker.addTo(mymap)
                                 }
                             )
                             surgePulsingMarkersList.push(surgePulsingMarker)
