@@ -31,6 +31,12 @@ class IconCirlePulsing {
     // x 与 y 的偏移量
     shiftX = 4
     shiftY = 4
+    /**
+     * 当前 cirle 对应的 surge val
+     *
+     * @type {number}
+     * @memberof IconCirlePulsing
+     */
     val: number
     max: number
     min: number
@@ -51,8 +57,10 @@ class IconCirlePulsing {
         const iconPulsingWidth = that.getPlusingIconBorderRectangle()[0]
         const iconPulsingHeight = that.getPlusingIconBorderRectangle()[1]
         const divHtml = `<div class="my-leaflet-pulsing-marker" >
-        <div class="my-leaflet-icon-border" style="width: ${iconBorderWidth}px;height:${iconBorderHeight}px;left:${that.shiftX}px;top:${that.shiftY}px"></div>
-        <div class="my-leaflet-pulsing-icon" style="width: ${iconPulsingWidth}px;height:${iconPulsingHeight}px;"></div>
+        <div class="my-leaflet-icon-border ${this.getAlarmColor()}" style="width: ${iconBorderWidth}px;height:${iconBorderHeight}px;left:${
+            that.shiftX
+        }px;top:${that.shiftY}px"></div>
+        <div class="my-leaflet-pulsing-icon ${this.getAlarmColor()}" style="width: ${iconPulsingWidth}px;height:${iconPulsingHeight}px;"></div>
       </div>`
         return divHtml
     }
@@ -78,7 +86,7 @@ class IconCirlePulsing {
      */
     getPlusingIconAbsRadius(): number {
         // 半径的最大 px
-        const radiusMaxVal = 15
+        const radiusMaxVal = 10
         // 半径的最小 px
         const radiusMinVal = 6
         // 半径最大与最小的差值 px
@@ -95,14 +103,15 @@ class IconCirlePulsing {
      * @memberof IconCirlePulsing
      */
     getPlusingIconRectangle(): number[] {
-        const width = 2 * (this.getPlusingIconAbsRadius() + this.shiftX)
-        const height = 2 * (this.getPlusingIconAbsRadius() + this.shiftY)
+        const confficient = 1.5
+        const width = confficient * (this.getPlusingIconAbsRadius() + this.shiftX)
+        const height = confficient * (this.getPlusingIconAbsRadius() + this.shiftY)
         return [width, height]
     }
 
     getPlusingIconBorderAbsRadius(): number {
         // 半径的最大 px
-        const radiusMaxVal = 19
+        const radiusMaxVal = 16
         // 半径的最小 px
         // const radiusMinVal = 10
         const radiusMinVal = 8
@@ -114,9 +123,34 @@ class IconCirlePulsing {
     }
 
     getPlusingIconBorderRectangle(): number[] {
-        const width = 2 * this.getPlusingIconBorderAbsRadius()
-        const height = 2 * this.getPlusingIconBorderAbsRadius()
+        const confficient = 1.5
+        const width = confficient * this.getPlusingIconBorderAbsRadius()
+        const height = confficient * this.getPlusingIconBorderAbsRadius()
         return [width, height]
+    }
+
+    private getAlarmColor(): string {
+        // TODO:[-] 21-06-08 此处代码与 middle_model -> stations.ts -> IconFormMinStationSurgeMidModel -> getAlarmColor 重复
+        const surge = this.config.val
+        let colorStr = 'green'
+        if (surge) {
+            switch (true) {
+                case surge <= -2:
+                    colorStr = 'green'
+                    break
+                case surge <= 40:
+                    colorStr = 'yellow'
+                    break
+                case surge <= 60:
+                    colorStr = 'orange'
+                    break
+                case surge > 60:
+                    colorStr = 'red'
+                    break
+            }
+        }
+
+        return colorStr
     }
 }
 

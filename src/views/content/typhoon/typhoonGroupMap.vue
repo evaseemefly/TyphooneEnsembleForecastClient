@@ -236,6 +236,8 @@ import { OilMidModel } from '@/middle_model/oil'
 import { ICaseMin, CaseMinInfo, CaseOilModel } from '@/middle_model/case'
 // 20-10-30 引入 CanvasLayerMidModel
 import { CanvasLayerMidModel } from '@/middle_model/geo'
+// + 21-06-8 加入 station 的 Mid model
+import { IconFormMinStationSurgeMidModel } from '@/middle_model/station'
 import { getDaysNum } from '@/common/date'
 
 // 各类 DTO
@@ -557,6 +559,10 @@ export default class OilSpillingMap extends mixins(
         isShow: false,
         layerType: LayerTypeEnum.STATION_ICON_LAYER
     }
+
+    // TODO:[-] 21-06-08 临时的 潮位站 min marker
+    stationMinMarker: L.Marker = undefined
+
     created() {
         this.startDate = new Date(
             this.now.getFullYear(),
@@ -823,41 +829,63 @@ export default class OilSpillingMap extends mixins(
                                         name: res.data[index].name,
                                         surge: res.data[index].surge,
                                         surgeMax: res.data[index].surge_max,
-                                        surgeMin: res.data[index].surge_min
+                                        surgeMin: res.data[index].surge_min,
+                                        stationCode: res.data[index].station_code,
+                                        lat: res.data[index].lat,
+                                        lon: res.data[index].lon
                                     }
                                 }
                             )
                             // TODO:[-] 21-06-04 鼠标移入脉冲点，显示 station 的 mini form
-                            surgePulsingMarker.on(
-                                'mouseover',
-                                (e: {
-                                    target: {
-                                        options: {
-                                            customData: {
-                                                name: string
-                                                surge: number
-                                                surgeMax: number
-                                                surgeMin: number
+                            surgePulsingMarker
+                                .on(
+                                    'mouseover',
+                                    (e: {
+                                        target: {
+                                            options: {
+                                                customData: {
+                                                    name: string
+                                                    surge: number
+                                                    surgeMax: number
+                                                    surgeMin: number
+                                                    stationCode: string
+                                                    lat: number
+                                                    lon: number
+                                                }
                                             }
                                         }
+                                    }) => {
+                                        const customData = e.target.options.customData
+                                        const iconSurgeMin = new IconFormMinStationSurgeMidModel(
+                                            customData.name,
+                                            customData.stationCode,
+                                            customData.surge,
+                                            '潮位'
+                                        )
+                                        // TODO:[-] 21-06-08 将弹出的 mini form 放在该脉冲点的旁边位置
+                                        const stationSurgeMinDivICOn = L.divIcon({
+                                            className: iconSurgeMin.getClassName(),
+                                            html: iconSurgeMin.toHtml(),
+                                            // 坐标，[相对于原点的水平位置（左加右减），相对原点的垂直位置（上加下减）]
+                                            iconAnchor: [-20, 30]
+                                        })
+                                        const tempStationSurgeMarker = L.marker(
+                                            [customData.lat, customData.lon],
+                                            {
+                                                icon: stationSurgeMinDivICOn,
+                                                customData: customData
+                                            }
+                                        )
+                                        that.stationMinMarker = tempStationSurgeMarker
+                                        tempStationSurgeMarker.addTo(mymap)
                                     }
-                                }) => {
-                                    console.log(e)
-                                    const iconSurgeMin = new StationSurge(
-                                        e.target.options.customData.name,
-                                        '',
-                                        '',
-                                        '',
-                                        ''
-                                    ).getImplements(zoom, {
-                                        stationName: e.target.options.customData.name,
-                                        stationCode: temp.station_code,
-                                        surgeMax: e.target.options.customData.surgeMax,
-                                        surgeMin: e.target.options.customData.surgeMin,
-                                        surgeVal: e.target.options.customData.surge
-                                    })
-                                }
-                            )
+                                )
+                                .on('mouseout', (e) => {
+                                    if (that.stationMinMarker) {
+                                        mymap.removeLayer(that.stationMinMarker)
+                                        that.stationMinMarker = undefined
+                                    }
+                                })
                             surgePulsingMarkersList.push(surgePulsingMarker)
                             const stationSurgeIconMarker = L.marker(
                                 [res.data[index].lat, res.data[index].lon],
