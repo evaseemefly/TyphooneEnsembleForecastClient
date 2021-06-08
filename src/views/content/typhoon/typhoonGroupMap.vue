@@ -843,19 +843,19 @@ export default class OilSpillingMap extends mixins(
                                     }
                                 }) => {
                                     console.log(e)
-                                    // const iconSurgeMin = new StationSurge(
-                                    //     temp.name,
-                                    //     temp.station_code,
-                                    //     that.tyCode,
-                                    //     that.timestampStr,
-                                    //     that.forecastDt
-                                    // ).getImplements(zoom, {
-                                    //     stationName: temp.name,
-                                    //     stationCode: temp.station_code,
-                                    //     surgeMax: temp.surge_max,
-                                    //     surgeMin: temp.surge_min,
-                                    //     surgeVal: temp.surge
-                                    // })
+                                    const iconSurgeMin = new StationSurge(
+                                        e.target.options.customData.name,
+                                        '',
+                                        '',
+                                        '',
+                                        ''
+                                    ).getImplements(zoom, {
+                                        stationName: e.target.options.customData.name,
+                                        stationCode: temp.station_code,
+                                        surgeMax: e.target.options.customData.surgeMax,
+                                        surgeMin: e.target.options.customData.surgeMin,
+                                        surgeVal: e.target.options.customData.surge
+                                    })
                                 }
                             )
                             surgePulsingMarkersList.push(surgePulsingMarker)
