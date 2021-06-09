@@ -1703,30 +1703,26 @@ export default class OilSpillingMap extends mixins(
         })
     }
 
+    // TODO:[-] 21-06-09
     @Watch('zoom')
     OnZoom(valNew: number, valOld: number): void {
         // 使用此种方式实现对于平移触发 -> update:zoom 相同值的过滤
-        // console.log(`new:${valNew}|old:${valOld}`)
-        let level = 0
-        // if (valNew > 8 && valOld <= 8) {
-        //     level = 9
-        // } else if (valNew <= 8 && valNew > 4 && valOld > 8 && valOld <= 4) {
-        //     level = 5
-        // }
-        if (valNew > 8) {
-            level = 9
+        if (valNew > 9) {
+            this.zoomLevel = 10
         } else if (valNew <= 8) {
-            level = 5
+            this.zoomLevel = 5
         }
         // TODO:[-] 21-05-20 只有 level的变化超出之前的范围才会触发更新的操作
-        if ((valNew > 8 && valOld <= 8) || (valNew <= 8 && valOld > 8)) {
-            if (this.checkTyGroupOptions(this.tyGroupOptions)) {
-                this.loadStationList(level)
-            }
+        if ((valNew > 9 && valOld <= 9) || (valNew <= 9 && valOld > 9)) {
+            this.zoomLevel = 11
         }
+    }
 
-        // 修改对应的风力杆 -> windOptions
-        // this.windOptions.level = level
+    @Watch('zoomLevel')
+    onZoomLevel(val: number): void {
+        if (this.checkTyGroupOptions(this.tyGroupOptions)) {
+            this.loadStationList(val)
+        }
     }
 
     zoomUpdated(valNew: number, valOld: number): void {

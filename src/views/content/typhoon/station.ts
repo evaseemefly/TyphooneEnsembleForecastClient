@@ -53,7 +53,7 @@ class StationSurge {
         // 若放大的倍数大于五，则返回 详细的 station icon
         let iToHtml = new IconFormDefaultMidModel()
         const that = this
-        if (zoom > 9) {
+        if (zoom > 10) {
             iToHtml = new IconFormStationDetialedMidModel(
                 options.stationName,
                 options.stationCode,
@@ -61,13 +61,14 @@ class StationSurge {
                 options.surgeMax,
                 options.surgeMin
             )
-        } else if (zoom > 8 && zoom <= 9) {
+        } else if (zoom === 10) {
             iToHtml = new IconFormMinStationSurgeMidModel(
                 that.stationName,
                 that.stationCode,
                 options.surgeVal
             )
         } else {
+            // zoom <10
             iToHtml = new IconFormTitleStationSurgeMidModel(
                 that.stationName,
                 that.stationCode,
