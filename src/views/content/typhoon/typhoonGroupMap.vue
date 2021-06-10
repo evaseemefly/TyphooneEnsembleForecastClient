@@ -1,6 +1,7 @@
 <template>
     <div id="rescue_map">
         <div id="map_content">
+            <div id="mybasemap"></div>
             <l-map
                 ref="basemap"
                 :zoom="zoom"
@@ -9,8 +10,11 @@
                 :options="mapOptions"
                 :maxZoom="mapOptions.maxZoom"
                 :minZoom="mapOptions.minZoom"
+                @ready="initMap()"
+                id="ceshimap"
             >
-                <l-tile-layer :url="url"></l-tile-layer>
+                <!-- <l-tile-layer :url="url"></l-tile-layer> -->
+                <!-- <l-tile-layer :tile-layer-class="getMapBoxLayerClass" /> -->
                 <!-- <l-tile-layer :url="coverageUrl"></l-tile-layer> -->
                 <!-- 加载 发布的岸线服务 -->
                 <!-- TODO:[-] 20-09-01 统一将岸线 wms 整合至全球国境线 wms 服务中，此处暂时注释掉 -->
@@ -178,7 +182,16 @@ import 'plotty/dist/plotty'
 //---
 // 20-09-07 引入了raster-marching-squares
 import * as rasterMarching from 'raster-marching-squares'
-
+// TODO:[-] 21-06-10 加入了自定义的地图 mapbox
+import 'mapbox'
+// import { mapboxgl } from 'mapbox-gl/dist/mapbox-gl'
+// const mapboxgl = require('mapbox-gl/dist/mapbox-gl.js')
+import mapboxgl from 'mapbox-gl'
+// import 'mapbox-gl-leaflet'
+import 'mapbox-gl/dist/mapbox-gl.css'
+import 'mapbox-gl/dist/mapbox-gl'
+// window.mapboxgl = mapboxgl
+//---
 import {
     LMap,
     LTileLayer,
@@ -562,7 +575,20 @@ export default class OilSpillingMap extends mixins(
 
     // TODO:[-] 21-06-08 临时的 潮位站 min marker
     stationMinMarker: L.Marker = undefined
+    mapBoxlayerOptions: {
+        accessToken: 'pk.eyJ1IjoiZXZhc2VlbWVmbHkxIiwiYSI6ImNrcHE4OHJsejBobnoyb3BhOTkwb3MzbGwifQ.5ThyBJrIccBpeVi9pUdJnw'
+        style: '/static/mapbox/style/style_210610/style.json'
+    }
+    // TODO:[-] 21-06-10 配合 mapbox 使用的 mymap
+    mymap: L.Map = undefined
 
+    getMapBoxLayerClass(url, options): any {
+        return L.mapboxGL({
+            accessToken:
+                'pk.eyJ1IjoiZXZhc2VlbWVmbHkxIiwiYSI6ImNrcHE4OHJsejBobnoyb3BhOTkwb3MzbGwifQ.5ThyBJrIccBpeVi9pUdJnw',
+            style: '/static/mapbox/style/style_210610/style.json'
+        })
+    }
     created() {
         this.startDate = new Date(
             this.now.getFullYear(),
@@ -579,6 +605,30 @@ export default class OilSpillingMap extends mixins(
 
         // TODO:[*] 19-11-05:页面加载时需要获取当前code对应的旗帜时间
         // this.loadDateRange()
+    }
+    initMap(): void {
+        const that = this
+        this.mymap = this.$refs.basemap.mapObject
+        // TODO:[-] 21-06-10 尝试引入 mapbox 中的自定义样式
+        // ERROR: Error: Container 'basemap' not found.
+        // 以上错误是由于 使用 vue-leaflet 这个 leaflet 的组件化工具引起的，若直接定义一个div的话不会出现此问题
+        const token =
+            'pk.eyJ1IjoiZXZhc2VlbWVmbHkxIiwiYSI6ImNrcHE4OHJsejBobnoyb3BhOTkwb3MzbGwifQ.5ThyBJrIccBpeVi9pUdJnw'
+        mapboxgl.accessToken = token
+
+        // const map = new mapboxgl.Map({
+        //     container: 'mybasemap',
+        //     // container: 'ceshimap',
+        //     style: '/static/mapbox/style/style_210610/style.json'
+        // })
+        const map = new mapboxgl.Map({
+            container: 'mybasemap',
+            style: '/static/mapbox/style/style_210610/style.json'
+        })
+        // const gl = L.mapboxGL({
+        //     accessToken: token,
+        //     style: '/static/mapbox/style/style_210610/style.json'
+        // }).addTo(that.mymap)
     }
 
     mounted() {
@@ -1741,6 +1791,12 @@ export default class OilSpillingMap extends mixins(
 
 // + 21-04-28 引入 针对 station surge div Icon 的样式
 @import '../../../styles/station//icon';
+
+// TODO:[-] 21-06-10 TEST 加入了关于 mybasemap 的测试样式
+#mybasemap {
+    height: 500px;
+    // width: 90%;
+}
 
 #rescue_map {
     /* height: 100%; */

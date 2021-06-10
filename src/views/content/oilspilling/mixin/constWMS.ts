@@ -61,6 +61,13 @@ class WMSMixin extends Vue {
     )
     // TODO:[-] 20-08-26 使用本地 nginx 映射的文件系统
     // http://localhost:8080/content/localhost/images/map/tdt-8level/5/31/11.png
-    url = 'http://localhost:82/images/map/tdt-8level/{z}/{x}/{y}.png'
+    // url = 'http://localhost:82/images/map/tdt-8level/{z}/{x}/{y}.png'
+    // TODO:[-] 21-06-10 尝试引入 mapbox
+    mapBoxToken =
+        'pk.eyJ1IjoiZXZhc2VlbWVmbHkxIiwiYSI6ImNrcHE4OHJsejBobnoyb3BhOTkwb3MzbGwifQ.5ThyBJrIccBpeVi9pUdJnw'
+
+    // url = `https://api.mapbox.com/styles/evaseemefly1/ckpq8ftgx0zhn17r0vidbxbwr/{z}/{x}/{y}.png?access_token=${this.mapBoxToken}`
+    url =
+        'https://api.mapbox.com/v4/mapbox.mapbox-streets-v8,mapbox.mapbox-terrain-v2/{z}/{x}/{y}.vector.pbf?sku=101Lu3RQbOAO0&access_token=pk.eyJ1IjoiZXZhc2VlbWVmbHkxIiwiYSI6ImNrcHE4OHJsejBobnoyb3BhOTkwb3MzbGwifQ.5ThyBJrIccBpeVi9pUdJnw'
 }
 export { WMSMixin }

@@ -52,11 +52,15 @@ import LoadScript from 'vue-plugin-load-script'
 // TODO:[-] 21-01-14 为 vue 引入 underscore
 import underscore from 'underscore'
 
+// TODO:[-] 21-06-10 加入了自定义的地图 mapbox
+// import MapBox from 'mapbox'
+
 Vue.config.productionTip = false
 Vue.use(ElementUI)
 Vue.use(BootstrapVue)
 Vue.use(IconsPlugin)
 Vue.use(LoadScript)
+// Vue.use(MapBox)
 // Vue.use(moment);
 Vue.prototype.moment = moment
 // 引入 underscore
