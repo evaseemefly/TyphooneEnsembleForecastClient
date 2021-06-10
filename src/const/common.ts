@@ -30,6 +30,9 @@ const DEFAULT_COVERAGE_AREA = -1
 /**  默认未选中的 coverage_type : wind | current @type {*} */
 const DEFAULT_COVERAGE_TYPE = -1
 
+/** map 的缩放默认等级 @type {*} */
+const DEFAULT_ZOOM_LEVEL = 8
+
 export {
     DEFAULT_SELECT_KEY,
     DEFAULT_SELECT_ITEM,
@@ -39,5 +42,6 @@ export {
     DEFAULT_COVERAGE_AREA,
     DEFAULT_LAYER_ID,
     DEFAULT_COVERAGE_TYPE,
-    USELESS_COVERAGE_ID
+    USELESS_COVERAGE_ID,
+    DEFAULT_ZOOM_LEVEL
 }

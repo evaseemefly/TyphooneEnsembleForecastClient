@@ -1,7 +1,7 @@
 <template>
     <div id="rescue_map">
         <div id="map_content">
-            <div id="mybasemap"></div>
+            <!-- <div id="mybasemap"></div> -->
             <l-map
                 ref="basemap"
                 :zoom="zoom"
@@ -10,10 +10,10 @@
                 :options="mapOptions"
                 :maxZoom="mapOptions.maxZoom"
                 :minZoom="mapOptions.minZoom"
-                @ready="initMap()"
                 id="ceshimap"
             >
-                <!-- <l-tile-layer :url="url"></l-tile-layer> -->
+                <!-- @ready="initMap()" -->
+                <l-tile-layer :url="url"></l-tile-layer>
                 <!-- <l-tile-layer :tile-layer-class="getMapBoxLayerClass" /> -->
                 <!-- <l-tile-layer :url="coverageUrl"></l-tile-layer> -->
                 <!-- 加载 发布的岸线服务 -->
@@ -183,13 +183,20 @@ import 'plotty/dist/plotty'
 // 20-09-07 引入了raster-marching-squares
 import * as rasterMarching from 'raster-marching-squares'
 // TODO:[-] 21-06-10 加入了自定义的地图 mapbox
-import 'mapbox'
+// import 'mapbox'
 // import { mapboxgl } from 'mapbox-gl/dist/mapbox-gl'
 // const mapboxgl = require('mapbox-gl/dist/mapbox-gl.js')
-import mapboxgl from 'mapbox-gl'
+// import mapboxgl from 'mapbox-gl'
 // import 'mapbox-gl-leaflet'
+// MapBox GL 库
 import 'mapbox-gl/dist/mapbox-gl.css'
 import 'mapbox-gl/dist/mapbox-gl'
+// npm i mapbox-gl-leaflet 的库
+// github:https://github.com/mapbox/mapbox-gl-leaflet
+// TODO:[-] WATCH!注意此处安装了 mapbox-gl-leaflet 不要参考 github 官网上的引入方式，该库名称为 mapbox-gl-leaflet
+import 'mapbox-gl-leaflet'
+// + mapbox的leaflet插件
+// import 'mapbox.js'
 // window.mapboxgl = mapboxgl
 //---
 import {
@@ -267,7 +274,12 @@ import { IVelocityDisplayOpt, IVelocityLayerOpt, ICoverageFlow, CoverageCurrentF
 import { TyphoonCircleStatus } from '@/common/circleStatus'
 // 引入常量
 import { optionsFactors, optionsShowTypes } from '@/const/Oil'
-import { DEFAULT_COVERAGE_ID, DEFAULT_NUMBER, USELESS_COVERAGE_ID } from '@/const/common'
+import {
+    DEFAULT_COVERAGE_ID,
+    DEFAULT_NUMBER,
+    USELESS_COVERAGE_ID,
+    DEFAULT_ZOOM_LEVEL
+} from '@/const/common'
 import { OilFactor, ShowType } from '@/enum/OilSelect'
 // 20-10-23 产品种类
 import { ProductEnum } from '@/enum/dict'
@@ -382,7 +394,7 @@ export default class OilSpillingMap extends mixins(
 ) {
     mydata: any = null
     code = DEFAULT
-    zoom = 8
+    zoom = DEFAULT_ZOOM_LEVEL
     center: number[] = [22.45, 113.8833]
     // TODO:[-] 20-11-09 新加入的 map 相关的一些基础静态配置
     mapOptions: {} = {
@@ -581,7 +593,6 @@ export default class OilSpillingMap extends mixins(
     }
     // TODO:[-] 21-06-10 配合 mapbox 使用的 mymap
     mymap: L.Map = undefined
-
     getMapBoxLayerClass(url, options): any {
         return L.mapboxGL({
             accessToken:
@@ -606,6 +617,15 @@ export default class OilSpillingMap extends mixins(
         // TODO:[*] 19-11-05:页面加载时需要获取当前code对应的旗帜时间
         // this.loadDateRange()
     }
+    testMapBoxLeaflet(): void {
+        const mymap = L.map('mybasemap').setView([51.505, -0.09], 9)
+        const token =
+            'pk.eyJ1IjoiZXZhc2VlbWVmbHkxIiwiYSI6ImNrcHE4OHJsejBobnoyb3BhOTkwb3MzbGwifQ.5ThyBJrIccBpeVi9pUdJnw'
+        const gl = new L.MapboxGL({
+            accessToken: token,
+            style: 'mapbox://styles/mapbox/dark-v10'
+        }).addTo(mymap)
+    }
     initMap(): void {
         const that = this
         this.mymap = this.$refs.basemap.mapObject
@@ -614,21 +634,27 @@ export default class OilSpillingMap extends mixins(
         // 以上错误是由于 使用 vue-leaflet 这个 leaflet 的组件化工具引起的，若直接定义一个div的话不会出现此问题
         const token =
             'pk.eyJ1IjoiZXZhc2VlbWVmbHkxIiwiYSI6ImNrcHE4OHJsejBobnoyb3BhOTkwb3MzbGwifQ.5ThyBJrIccBpeVi9pUdJnw'
-        mapboxgl.accessToken = token
-
+        // mapboxgl.accessToken = token
         // const map = new mapboxgl.Map({
-        //     container: 'mybasemap',
-        //     // container: 'ceshimap',
+        //     container: 'ceshimap',
         //     style: '/static/mapbox/style/style_210610/style.json'
         // })
-        const map = new mapboxgl.Map({
-            container: 'mybasemap',
-            style: '/static/mapbox/style/style_210610/style.json'
-        })
+        // 尝试使用 mapbox.js 中的 layers --- 失败
+        // const testLayer = L.mapbox.tileLayer()
+        // const layer = L.mapbox.tileLayer('/static/mapbox/style/style_210610/style.json')
+        // layer.addTo(this.mymap)
+        // 同样使用 leaflet-mapbox-gl
         // const gl = L.mapboxGL({
         //     accessToken: token,
         //     style: '/static/mapbox/style/style_210610/style.json'
         // }).addTo(that.mymap)
+        const gl = new L.MapboxGL({
+            accessToken: token,
+            // style: '/static/mapbox/style/style_210610/style.json'
+            style: 'mapbox://styles/mapbox/dark-v10'
+        }).addTo(that.mymap)
+        // 测试一下不用 leaflet-vue 直接定义一个div通过leaflet初始化map
+        // this.testMapBoxLeaflet()
     }
 
     mounted() {
@@ -1757,13 +1783,26 @@ export default class OilSpillingMap extends mixins(
     @Watch('zoom')
     OnZoom(valNew: number, valOld: number): void {
         // 使用此种方式实现对于平移触发 -> update:zoom 相同值的过滤
-        if (valNew > 9) {
-            this.zoomLevel = 10
-        } else if (valNew <= 8) {
-            this.zoomLevel = 5
-        }
+        // if (valNew > 9) {
+        //     this.zoomLevel = 10
+        // } else if (valNew <= 8) {
+        //     this.zoomLevel = 5
+        // }
         // TODO:[-] 21-05-20 只有 level的变化超出之前的范围才会触发更新的操作
-        if ((valNew > 9 && valOld <= 9) || (valNew <= 9 && valOld > 9)) {
+        // if ((valNew > 9 && valOld <= 9) || (valNew <= 9 && valOld > 9)) {
+        //     this.zoomLevel = 11
+        // }
+        if (valNew < 8 && valOld === DEFAULT_ZOOM_LEVEL) {
+            this.zoomLevel = 5
+        } else if (valNew === 8) {
+            this.zoomLevel = 5
+        } else if (valNew === 9) {
+            this.zoomLevel = 5
+        } else if (valNew === 10) {
+            this.zoomLevel = 10
+        } else if (valNew === 11) {
+            this.zoomLevel = 11
+        } else if (valNew > 10 && valOld === DEFAULT_ZOOM_LEVEL) {
             this.zoomLevel = 11
         }
     }
@@ -1793,10 +1832,9 @@ export default class OilSpillingMap extends mixins(
 @import '../../../styles/station//icon';
 
 // TODO:[-] 21-06-10 TEST 加入了关于 mybasemap 的测试样式
-#mybasemap {
-    height: 500px;
-    // width: 90%;
-}
+// #mybasemap {
+//     height: 1%;
+// }
 
 #rescue_map {
     /* height: 100%; */
