@@ -141,6 +141,7 @@
         <div class="dialog-create-case">
             <CreatedCaseForm ref="caseForm"></CreatedCaseForm>
         </div>
+        <CreateCaseForm :isShow="isShowCreateCaseForm"></CreateCaseForm>
         <!-- TODO:[-] 21-05-24 加入右侧 station bar -->
         <!-- <RightStationBar></RightStationBar> -->
         <!-- <div class="">
@@ -242,6 +243,9 @@ import BottomMainBar from '@/views/members/bar/bottomMainBar.vue'
 // + 21-03-07 新加入的 grid_charts 模块
 import GridDetailForm from '@/views/members/form/grid_form/GridDetailForm.vue'
 import RightStationBar from '@/views/members/bar/rightStationBar.vue'
+
+// + 21-07-01 加入了 createCaseForm
+import CreateCaseForm from '@/components/form/CreateCaseForm.vue'
 // -----
 // 各api
 import { loadOilSpillingAvgRealData, getTargetCodeDateRange } from '@/api/api'
@@ -376,7 +380,8 @@ const DEFAULT_SCATTER_PAGE_COUNT = 1000
         RightOptToolsBar,
         BottomMainBar,
         // + 21-05-24 新加入的 右侧显示 测站历史数据曲线的 charts
-        RightStationBar
+        RightStationBar,
+        CreateCaseForm
         // GridDetailForm
         // LeafletHeatmap
     }
@@ -593,6 +598,8 @@ export default class OilSpillingMap extends mixins(
     }
     // TODO:[-] 21-06-10 配合 mapbox 使用的 mymap
     mymap: L.Map = undefined
+    // + 21-07-01 新加入的用来控制是否显示 创建caseForm
+    isShowCreateCaseForm = false
     getMapBoxLayerClass(url, options): any {
         return L.mapboxGL({
             accessToken:
