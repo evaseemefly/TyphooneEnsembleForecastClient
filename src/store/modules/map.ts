@@ -17,7 +17,9 @@ import {
     SET_TIMER_LOCK,
     GET_TIMER_LOCK,
     SET_AUTO_PLAY,
-    GET_AUTO_PLAY
+    GET_AUTO_PLAY,
+    SET_CREATE_FORM,
+    GET_CREATE_FORM
 } from '../types'
 export interface State {
     // range:number,
@@ -25,6 +27,7 @@ export interface State {
     current: string
     now: Date
     isShowCreateOilCaseModal: boolean
+    isShowCreateForm: boolean
     currentLatlng: Array<number>
     layers: LayerTypeEnum[]
     // 21-01-05 + 当前点选位置的经纬度锁
@@ -43,6 +46,7 @@ const state: State = {
     current: '',
     now: new Date(),
     isShowCreateOilCaseModal: false,
+    isShowCreateForm: false,
     currentLatlng: [],
     layers: [],
     // 21-01-05 + 当前点选位置的经纬度锁
@@ -81,6 +85,20 @@ const mutations = {
     },
 
     /**
+     * + 21-07-11 是否在 map 页面 show -> 风暴潮 create form
+     *
+     * @param {State} state
+     * @return {*}  {boolean}
+     */
+    [GET_CREATE_FORM](state: State): boolean {
+        return state.isShowCreateForm
+    },
+
+    [SET_CREATE_FORM](state: State, isShow: boolean): void {
+        state.isShowCreateForm = isShow
+    },
+
+    /**
      * 当前选定位置的 经纬度 数组
      *
      * @param {State} state
@@ -116,7 +134,7 @@ const mutations = {
     }
 }
 
-// tslint:disable-next-line:typedef
+/** @type {*} */
 const getters = {
     getCurrent(state: State) {
         return state.current
@@ -157,6 +175,11 @@ const getters = {
     },
     [GET_AUTO_PLAY]: (state: State): boolean => {
         return state.autoPlay
+    },
+
+    // + 21-07-11 是否在 map 页面 show -> 风暴潮 create form
+    [GET_CREATE_FORM]: (state: State): boolean => {
+        return state.isShowCreateForm
     }
 }
 

@@ -141,7 +141,7 @@
         <div class="dialog-create-case">
             <CreatedCaseForm ref="caseForm"></CreatedCaseForm>
         </div>
-        <CreateCaseForm :isShow="isShowCreateCaseForm"></CreateCaseForm>
+        <CreateCaseForm></CreateCaseForm>
         <!-- TODO:[-] 21-05-24 加入右侧 station bar -->
         <!-- <RightStationBar></RightStationBar> -->
         <!-- <div class="">
@@ -333,6 +333,7 @@ import { getStationListByGroupPath, getStationSurgeRangeListByGroupPath } from '
 import {
     GET_MAP_NOW,
     GET_CREATE_OIL_CASE_MODAL,
+    GET_CREATE_FORM,
     GET_CURRENT_LATLNG,
     GET_GEO_COVERAGETYPE,
     GET_MAP_LAYERS,

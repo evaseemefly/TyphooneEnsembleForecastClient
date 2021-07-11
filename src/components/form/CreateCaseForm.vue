@@ -118,7 +118,10 @@
 </template>
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
+import { Getter, Mutation, State, namespace } from 'vuex-class'
 import { Draggable } from '@/directives/drag'
+// STORE 常量
+import { GET_CREATE_FORM } from '@/store/types'
 @Component({
     directives: {
         drag: Draggable
@@ -149,8 +152,8 @@ export default class CreateCaseForm extends Vue {
         sw: 0,
         se: 0
     }
-    @Prop()
-    isShow: boolean
+    // @Prop()
+    isShow = false
 
     // toClose = false
     isClosed = true
@@ -205,6 +208,14 @@ export default class CreateCaseForm extends Vue {
                 }
             }
         }
+    }
+
+    @Getter(GET_CREATE_FORM, { namespace: 'map' }) getIsShowForm
+
+    @Watch('getIsShowForm')
+    onIsShowForm(isShow: boolean): void {
+        console.log(`监听到vuex -> map -> is_show:${isShow}`)
+        this.isShow = isShow
     }
 
     get getDeviationRadiusNum(): number {

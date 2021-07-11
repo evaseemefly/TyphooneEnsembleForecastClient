@@ -44,6 +44,11 @@ export const GET_MAP_LAYERS = 'GET_MAP_LAYERS'
 // map - 修改是否显示创建 oil case model
 export const SET_CREATE_OIL_CASE_MODAL = 'SET_CREATE_OIL_CASE_MODAL'
 export const GET_CREATE_OIL_CASE_MODAL = 'GET_CREATE_OIL_CASE_MODAL'
+
+// map - 修改是否显示 创建 form (风暴潮)
+export const SET_CREATE_FORM = 'SET_CREATE_FORM'
+export const GET_CREATE_FORM = 'GET_CREATE_FORM'
+
 // map - 选中的经纬度位置
 export const SET_CURRENT_LATLNG = 'SET_CURRENT_LATLNG'
 export const GET_CURRENT_LATLNG = 'GET_CURRENT_LATLNG'

@@ -11,6 +11,7 @@
                 @click.native="isExpanded = !isExpanded"
             ></InfoBox>
             <!-- <transition-group name="fade"> -->
+            <!-- + 21-07-11 风暴潮的 create form -->
             <transition name="fade">
                 <InfoBox
                     v-show="isExpanded"
@@ -19,7 +20,7 @@
                     :iconstyle="'fa-edit'"
                     :levelstyle="'my-opt-btn'"
                     :showsize="'small'"
-                    @click.native="isCaseDialogVisible = !isCaseDialogVisible"
+                    @click.native="isShowCreateForm = !isShowCreateForm"
                 ></InfoBox>
             </transition>
             <transition name="fade">
@@ -66,7 +67,7 @@ import JobListUser from '@/views/members/table/JobListByUser.vue'
 import JobList from '@/views/members/table/JobListMin.vue'
 import CoverageSearchForm from '@/views/members/form/search_form/CoverageSearchForm.vue'
 import { ICaseMin, CaseMinInfo } from '@/middle_model/case'
-import { SET_CREATE_OIL_CASE_MODAL } from '@/store/types'
+import { SET_CREATE_OIL_CASE_MODAL, SET_CREATE_FORM } from '@/store/types'
 import { Mutation } from 'vuex-class'
 @Component({
     components: { InfoBox, JobListUser, JobList, CoverageSearchForm }
@@ -88,11 +89,18 @@ export default class CurdBtn extends Vue {
         // console.log('被点击了')
     }
 
-    @Mutation(SET_CREATE_OIL_CASE_MODAL, { namespace: 'map' }) setIsShow
+    // @Mutation(SET_CREATE_OIL_CASE_MODAL, { namespace: 'map' }) setIsShow
+
+    @Mutation(SET_CREATE_FORM, { namespace: 'map' }) setIsShow
 
     @Watch('isCaseDialogVisible')
     onIsShow(isShow: boolean): void {
         // console.log(`is show被切换了${isShow}`)
+        this.setIsShow(isShow)
+    }
+
+    @Watch('isShowCreateForm')
+    onIsShowCreateForm(isShow: boolean): void {
         this.setIsShow(isShow)
     }
 
