@@ -181,6 +181,9 @@ import { GET_CURRENT_LATLNG } from '@/store/types'
 
 // 常量
 import { DEFAULT_SELECT_KEY, DEFAULT_SELECT_ITEM, DEFAULT_DICT_KEY } from '@/const/common'
+
+// --- 加入的 vue 自定义指令
+// import { drag } from '@/directives/drag'
 // TODO:[-] 20-02-16 此处放在 ./select.ts中
 // export interface IFormOilCaseInfo {
 //     caseName: string

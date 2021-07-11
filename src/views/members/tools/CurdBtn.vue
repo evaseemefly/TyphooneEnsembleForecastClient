@@ -76,6 +76,7 @@ export default class CurdBtn extends Vue {
     isShowByList = false
     isShowByCoverageSearch = false
     isCaseDialogVisible = false
+    isShowCreateForm = false // + 21-07-11 创建case form (风暴潮)
     // 已经展开
     isExpanded = false
     @Prop()

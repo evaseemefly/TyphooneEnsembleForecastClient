@@ -1,5 +1,5 @@
 <template>
-    <div id="base_form_createcast" style="visibility: hidden;">
+    <div id="base_form_createcast" v-drag style="visibility: hidden;">
         <div class="base-card">
             <div class="base-card-title"><h4>台风信息</h4></div>
             <div class="base-card-content">
@@ -36,39 +36,94 @@
         </div>
         <div class="base-card">
             <div class="base-card-title">
-                <h4>高级</h4>
+                <h4>预报区域</h4>
             </div>
             <div class="base-card-content">
                 <div class="base-card-row">
-                    成员数量
-                    <el-input-number
-                        v-model="membersNum"
-                        :min="1"
-                        label="描述文字"
-                    ></el-input-number>
+                    西北
+                    <el-input
+                        v-model="forecastScope.nw"
+                        placeholder="请输入内容"
+                        style="width:30%"
+                    ></el-input>
+                    东北
+                    <el-input
+                        v-model="forecastScope.ne"
+                        placeholder="请输入内容"
+                        style="width:30%"
+                    ></el-input>
                 </div>
                 <div class="base-card-row">
-                    误差半径增减
-                    <el-input-number
-                        v-model="deviationRadiusNum"
-                        :min="deviationRadiusLenMin"
-                        label="描述文字"
-                        @change="deviationChange"
-                    ></el-input-number>
-                </div>
-                <div class="base-card-row">
-                    <div class="cell" :key="item.key" v-for="item in deviationRadiusList">
-                        <p>{{ item.hours }}h</p>
-                        <el-input v-model="item.radius" placeholder="请输入内容"></el-input>
-                    </div>
+                    西南
+                    <el-input
+                        v-model="forecastScope.sw"
+                        placeholder="请输入内容"
+                        style="width:30%"
+                    ></el-input>
+                    东南
+                    <el-input
+                        v-model="forecastScope.se"
+                        placeholder="请输入内容"
+                        style="width:30%"
+                    ></el-input>
                 </div>
             </div>
+        </div>
+        <div class="base-card">
+            <div
+                class="base-card-title clickable"
+                @click="isShowAdvancedCard = !isShowAdvancedCard"
+            >
+                <h4>高级</h4>
+            </div>
+            <el-collapse-transition>
+                <div
+                    v-show="isShowAdvancedCard"
+                    class="base-card-content overflowable advanced-card "
+                >
+                    <div class="base-card-row">
+                        成员数量
+                        <el-input-number
+                            v-model="membersNum"
+                            :min="1"
+                            label="描述文字"
+                        ></el-input-number>
+                    </div>
+                    <div class="base-card-row">
+                        误差半径增减
+                        <el-input-number
+                            v-model="deviationRadiusNum"
+                            :min="deviationRadiusLenMin"
+                            :max="deviationRadiusLenMax"
+                            label="描述文字"
+                            @change="deviationChange"
+                        ></el-input-number>
+                    </div>
+                    <div class="base-card-row">
+                        <div class="cell" :key="item.key" v-for="item in deviationRadiusList">
+                            <p>{{ item.hours }}h</p>
+                            <el-input v-model="item.radius" placeholder="请输入内容"></el-input>
+                        </div>
+                    </div>
+                </div>
+            </el-collapse-transition>
+        </div>
+        <div class="form-footer">
+            <button type="button" class="el-button el-button--default" @click="isClosed = false">
+                取消
+            </button>
+            <button type="button" class="el-button el-button--primary">确定</button>
         </div>
     </div>
 </template>
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
-@Component({})
+import { Draggable } from '@/directives/drag'
+@Component({
+    directives: {
+        drag: Draggable
+    }
+})
 export default class CreateCaseForm extends Vue {
     tyCodeOptions: { label: string; value: string }[] = [
         { label: '101', value: '101' },
@@ -82,11 +137,27 @@ export default class CreateCaseForm extends Vue {
         { hours: 96, radius: 150 }
     ]
     deviationRadiusLenMin = 4
+    deviationRadiusLenMax = 8
     tyCode = ''
     membersNum = 0
     deviationRadiusNum = 4
+    isShowAdvancedCard = false // + 21-07-10 是否显示高级选项
+    // + 21-07-10 预报范围(西北，东北，西南，东南)
+    forecastScope: { nw: number; ne: number; sw: number; se: number } = {
+        nw: 0,
+        ne: 0,
+        sw: 0,
+        se: 0
+    }
     @Prop()
     isShow: boolean
+
+    // toClose = false
+    isClosed = true
+
+    mounted() {
+        this.isClosed = !this.isShow
+    }
 
     deviationChange(num: number, oldNum: number): void {
         const hoursInterval = 24
@@ -94,11 +165,13 @@ export default class CreateCaseForm extends Vue {
         const lastDeviation = this.deviationRadiusList.slice(-1)[0]
         if (num > oldNum) {
             // +
-            const newDeviationHours = lastDeviation.hours + hoursInterval
-            const newDeviationRadius = lastDeviation.radius + radiusInterval
-            const newDeviation = { hours: newDeviationHours, radius: newDeviationRadius }
-            this.deviationRadiusList.push(newDeviation)
-            console.log(newDeviation)
+            if (this.deviationRadiusList.length <= this.deviationRadiusLenMax - 1) {
+                const newDeviationHours = lastDeviation.hours + hoursInterval
+                const newDeviationRadius = lastDeviation.radius + radiusInterval
+                const newDeviation = { hours: newDeviationHours, radius: newDeviationRadius }
+                this.deviationRadiusList.push(newDeviation)
+                console.log(newDeviation)
+            }
         } else if (num < oldNum) {
             if (this.deviationRadiusList.length > this.deviationRadiusLenMin) {
                 this.deviationRadiusList.pop()
@@ -109,6 +182,16 @@ export default class CreateCaseForm extends Vue {
 
     @Watch('isShow')
     onIsShow(val: boolean): void {
+        this.isClosed = !this.isShow
+        this.toShow(val)
+    }
+
+    @Watch('isClosed')
+    onIsClosed(val: boolean): void {
+        this.toShow(!val)
+    }
+
+    toShow(val: boolean): void {
         const divCreateForm = document.getElementById('base_form_createcast')
         if (divCreateForm) {
             if (divCreateForm.style) {
@@ -142,7 +225,7 @@ export default class CreateCaseForm extends Vue {
     width: 600px;
     // visibility: visible;
     position: absolute;
-    top: 50%;
+    top: 25%;
     left: 30%;
     z-index: 999;
     .base-card {
@@ -152,8 +235,10 @@ export default class CreateCaseForm extends Vue {
         padding: 15px;
         background: #34495e;
         color: white;
+        user-select: none;
     }
     .base-card-content {
+        // ---
         padding: 15px;
         font-size: larger;
         font-weight: 500;
@@ -165,9 +250,17 @@ export default class CreateCaseForm extends Vue {
             justify-content: space-around;
         }
     }
+    // 底部 footer
+    .form-footer {
+        padding: 10px 20px 20px;
+        text-align: right;
+    }
 }
 .base-card-row {
     display: flex;
+    flex-wrap: wrap;
+    padding: 10px;
+    // margin-bottom: 15px;
     .cell {
         display: flex;
         margin: 5px;
@@ -175,5 +268,17 @@ export default class CreateCaseForm extends Vue {
     .cell > p {
         margin-right: 8px;
     }
+}
+.overflowable {
+    // + 21-07-10 加入y轴滚动条
+    overflow-y: scroll;
+}
+.advanced-card {
+    // + 21-07-10 对于下面的内容设置固定高度
+    max-height: 400px;
+}
+// + 21-07-10 对于可点击的 加入 手型图标
+.clickable {
+    cursor: pointer;
 }
 </style>
