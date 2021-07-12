@@ -40,29 +40,29 @@
             </div>
             <div class="base-card-content">
                 <div class="base-card-row">
-                    西北
+                    北
                     <el-input
-                        v-model="forecastScope.nw"
+                        v-model="forecastScope.n"
                         placeholder="请输入内容"
                         style="width:30%"
                     ></el-input>
-                    东北
+                    东
                     <el-input
-                        v-model="forecastScope.ne"
+                        v-model="forecastScope.e"
                         placeholder="请输入内容"
                         style="width:30%"
                     ></el-input>
                 </div>
                 <div class="base-card-row">
-                    西南
+                    西
                     <el-input
-                        v-model="forecastScope.sw"
+                        v-model="forecastScope.w"
                         placeholder="请输入内容"
                         style="width:30%"
                     ></el-input>
-                    东南
+                    南
                     <el-input
-                        v-model="forecastScope.se"
+                        v-model="forecastScope.s"
                         placeholder="请输入内容"
                         style="width:30%"
                     ></el-input>
@@ -109,7 +109,7 @@
             </el-collapse-transition>
         </div>
         <div class="form-footer">
-            <button type="button" class="el-button el-button--default" @click="isClosed = false">
+            <button type="button" class="el-button el-button--default" @click="isShow = false">
                 取消
             </button>
             <button type="button" class="el-button el-button--primary">确定</button>
@@ -146,20 +146,24 @@ export default class CreateCaseForm extends Vue {
     deviationRadiusNum = 4
     isShowAdvancedCard = false // + 21-07-10 是否显示高级选项
     // + 21-07-10 预报范围(西北，东北，西南，东南)
-    forecastScope: { nw: number; ne: number; sw: number; se: number } = {
-        nw: 0,
-        ne: 0,
-        sw: 0,
-        se: 0
+    // w: 110
+    // e: 118
+    // s: 19
+    // n: 24
+    forecastScope: { n: number; e: number; w: number; s: number } = {
+        n: 26.0,
+        e: 123.0,
+        w: 105.0,
+        s: 15.0
     }
     // @Prop()
     isShow = false
 
     // toClose = false
-    isClosed = true
+    // isClosed = true
 
     mounted() {
-        this.isClosed = !this.isShow
+        // this.isClosed = !this.isShow
     }
 
     deviationChange(num: number, oldNum: number): void {
@@ -185,14 +189,14 @@ export default class CreateCaseForm extends Vue {
 
     @Watch('isShow')
     onIsShow(val: boolean): void {
-        this.isClosed = !this.isShow
+        // this.isClosed = !this.isShow
         this.toShow(val)
     }
 
-    @Watch('isClosed')
-    onIsClosed(val: boolean): void {
-        this.toShow(!val)
-    }
+    // @Watch('isClosed')
+    // onIsClosed(val: boolean): void {
+    //     this.toShow(!val)
+    // }
 
     toShow(val: boolean): void {
         const divCreateForm = document.getElementById('base_form_createcast')
