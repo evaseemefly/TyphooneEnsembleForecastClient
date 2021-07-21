@@ -31,7 +31,7 @@
                     :iconstyle="'fas fa-search '"
                     :levelstyle="'my-opt-btn'"
                     :showsize="'small'"
-                    @click.native="onClick"
+                    @click.native="isShowByList = !isShowByList"
                 ></InfoBox>
             </transition>
             <transition name="fade">
@@ -84,10 +84,6 @@ export default class CurdBtn extends Vue {
     caseList: CaseMinInfo[]
 
     mounted() {}
-    onClick() {
-        this.isShowByList = !this.isShowByList
-        // console.log('被点击了')
-    }
 
     // @Mutation(SET_CREATE_OIL_CASE_MODAL, { namespace: 'map' }) setIsShow
 

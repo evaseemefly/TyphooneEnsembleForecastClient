@@ -92,37 +92,6 @@ export default class JobListUser extends Vue {
             this.tableDataCount = res.count
             this.isLoading = false
         })
-        // TODO:[x] 以下为之前备份的，先重新封装至 ./case.ts 中
-        // const typeProduct: number = this.$store.state.common.productType
-        // loadCaseListByUser(typeProduct).then((res) => {
-        //     if (res.status === 200) {
-        //         res.data.forEach(
-        //             (temp: {
-        //                 rate: number
-        //                 date: string
-        //                 name: string
-        //                 state: StatueEnum
-        //                 tag: string
-        //                 area: AreaEnum
-        //                 code: string
-        //             }) => {
-        //                 // const caseTemp: CaseMinInfo = new CaseMinInfo()
-        //                 // Object.assign()
-        //                 const tempData = new CaseMinInfo(
-        //                     new Date(temp.date),
-        //                     temp.name,
-        //                     temp.code,
-        //                     temp.state,
-        //                     temp.tag,
-        //                     temp.rate,
-        //                     temp.area
-        //                 )
-        //                 // TODO:[*] 20-02-18 注意由后台返回的data建议使用接口声明，然后需要new成实现对象
-        //                 this.tableData.push(tempData)
-        //             }
-        //         )
-        //     }
-        // })
     }
 
     @Mutation(SET_CASE_CODE, { namespace: 'case' }) setCaseCode
