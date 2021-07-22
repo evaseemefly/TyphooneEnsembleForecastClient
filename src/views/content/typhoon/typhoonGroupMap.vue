@@ -564,8 +564,8 @@ export default class OilSpillingMap extends mixins(
     // + 21-05-14 当前的预报时间
     forecastDt = new Date('2020-09-15T18:00:00Z')
     // + 21-05-14 当前选定的 gpId
-    gpId = 1
-    tyCode = '2022'
+    gpId = 291
+    tyCode = '2107'
     timestampStr = '2021010416'
     stationCode = 'SHW'
     // + 21-05-15 脉冲 groupLayer
@@ -669,7 +669,7 @@ export default class OilSpillingMap extends mixins(
         // 由于是测试，页面加载完成后先加载当前 code 的平均轨迹
         // TODO:[*] 20-01-23 暂时去掉页面加载后读取平均轨迹的步骤(暂时去掉)
         // TODO：[-] 21-05-10 注意 mac 的tyId=1 | 5750 tyId=3
-        const testTyphoonId = 3
+        const testTyphoonId = 8
 
         this.testGetAddTyGroupPath2Map(testTyphoonId)
 
