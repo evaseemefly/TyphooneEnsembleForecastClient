@@ -8,3 +8,33 @@
 .coverage_filter_form .el-form-item .elf-form-item__content {
   width: 100%;
 }
+.base-card-title {
+  padding: 15px;
+  background: #34495e;
+  color: white;
+  user-select: none;
+}
+.base-card-content {
+  padding: 15px;
+  font-size: larger;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #212529;
+  text-align: left;
+}
+.base-card-content .base-card-row {
+  line-height: 2.5rem;
+  justify-content: space-around;
+}
+.base-card-row {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 10px;
+}
+.base-card-row .cell {
+  display: flex;
+  margin: 5px;
+}
+.base-card-row .cell > p {
+  margin-right: 8px;
+}

@@ -9,6 +9,22 @@ axios.defaults.headers = {}
 
 const area = '/typhoon'
 
+/**
+ * 获取指定年份的所有台风列表
+ *
+ * @param {number} year
+ * @returns
+ */
+const getTyListByYear = (year: number) => {
+    const url = `${host}${area}/ty/list`
+    return axios.get(url, {
+        headers: authHeader(),
+        params: {
+            year: year
+        }
+    })
+}
+
 const getTargetTyGroupComplexModel = (tyId: number) => {
     const url = `${host}${area}/tyComplex/group/realdata/list`
     return axios.get(url, {

@@ -31,7 +31,7 @@
                     :iconstyle="'fas fa-search '"
                     :levelstyle="'my-opt-btn'"
                     :showsize="'small'"
-                    @click.native="onClick"
+                    @click.native="isShowByList = !isShowByList"
                 ></InfoBox>
             </transition>
             <transition name="fade">
@@ -50,7 +50,8 @@
 
         <transition name="fade">
             <div class="user-caselist my-caselist" v-show="isShowByList">
-                <JobList :caseList="caseList"></JobList>
+                <!-- <JobList :caseList="caseList"></JobList> -->
+                <TyphoonSearch></TyphoonSearch>
             </div>
         </transition>
         <transition name="fade">
@@ -65,12 +66,13 @@ import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 import InfoBox from '@/views/members/form/InfoBox.vue'
 import JobListUser from '@/views/members/table/JobListByUser.vue'
 import JobList from '@/views/members/table/JobListMin.vue'
+import TyphoonSearch from '@/components/search/TyphoonSearch.vue'
 import CoverageSearchForm from '@/views/members/form/search_form/CoverageSearchForm.vue'
 import { ICaseMin, CaseMinInfo } from '@/middle_model/case'
 import { SET_CREATE_OIL_CASE_MODAL, SET_CREATE_FORM } from '@/store/types'
 import { Mutation } from 'vuex-class'
 @Component({
-    components: { InfoBox, JobListUser, JobList, CoverageSearchForm }
+    components: { InfoBox, JobListUser, JobList, CoverageSearchForm, TyphoonSearch }
 })
 export default class CurdBtn extends Vue {
     mydata: any = null
@@ -84,10 +86,6 @@ export default class CurdBtn extends Vue {
     caseList: CaseMinInfo[]
 
     mounted() {}
-    onClick() {
-        this.isShowByList = !this.isShowByList
-        // console.log('被点击了')
-    }
 
     // @Mutation(SET_CREATE_OIL_CASE_MODAL, { namespace: 'map' }) setIsShow
 
