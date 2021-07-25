@@ -16,6 +16,11 @@ const USELESS_COVERAGE_ID = -9999
 
 const DEFAULT_NUMBER = -1
 
+/** @type {*} 默认未赋值时的台风id */
+const DEFAULT_TYPHOON_ID = -1
+
+const DEFAULT_TYPHOON_CODE = 'DEFAULT_TY_CODE'
+
 // 默认的 leaflet layer id
 const DEFAULT_LAYER_ID = -1
 
@@ -46,5 +51,7 @@ export {
     DEFAULT_COVERAGE_TYPE,
     USELESS_COVERAGE_ID,
     DEFAULT_ZOOM_LEVEL,
-    DEFAULT_SELECT_VAL
+    DEFAULT_SELECT_VAL,
+    DEFAULT_TYPHOON_ID,
+    DEFAULT_TYPHOON_CODE
 }

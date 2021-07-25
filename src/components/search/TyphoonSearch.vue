@@ -47,15 +47,15 @@
                             </thead>
                             <tbody>
                                 <tr
-                                    v-for="(item, index) in coverageList"
+                                    v-for="(item, index) in tyGroupCaseList"
                                     :key="index"
-                                    @click="selectCoverage(item)"
+                                    :class="item.active ? 'active' : ''"
+                                    @click="selectTyGroup(item)"
                                 >
-                                    <th scope="row">{{ item.key }}</th>
-                                    <td>{{ item.name }}</td>
-                                    <td>{{ item.areaId }}</td>
-                                    <td>{{ item.typeId }}</td>
-                                    <td>{{ item.size }}</td>
+                                    <!-- <th scope="row">{{ item.key }}</th> -->
+                                    <td>{{ item.tyCode }}</td>
+                                    <td>{{ item.timestamp }}</td>
+                                    <td>{{ item.gmtCreated | fortmatData2YMDH }}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -68,10 +68,13 @@
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 import { Mutation, State, namespace, Action } from 'vuex-class'
-import { getTyListByYear } from '@/api/tyhoon'
+import { getTyListByYear, getTyCaseListByTyCode } from '@/api/tyhoon'
 import { DEFAULT_NUMBER, DEFAULT_SELECT_KEY, DEFAULT_SELECT_VAL } from '@/const/common'
-import { SET_TYPHOON_CODE } from '@/store/types'
-@Component({})
+import { SET_TYPHOON_CODE, SET_TYPHOON_ID } from '@/store/types'
+import { fortmatData2YMDH } from '@/common/filter'
+@Component({
+    filters: { fortmatData2YMDH }
+})
 export default class TyphoonSearch extends Vue {
     /* 
         此窗口主要用来显示台风的搜索form
@@ -83,7 +86,21 @@ export default class TyphoonSearch extends Vue {
         // { tyCode: '2016', tyName: 'xxx1' },
         // { tyCode: '2105', tyName: 'xxx2' }
     ]
+    tyGroupCaseList: {
+        gmtCreated: Date
+        timestamp: string
+        tyCode: string
+        tyId: number
+        activate: boolean
+    }[] = []
+    selectedTyGroupMid: {
+        gmtCreated: Date
+        timestamp: string
+        tyCode: string
+        tyId: number
+    } = { gmtCreated: new Date(), timestamp: '', tyCode: '', tyId: -1 }
     selectedTyCode: string = DEFAULT_SELECT_VAL
+    selectedTyId: number = DEFAULT_SELECT_KEY
     mounted() {
         const now = new Date()
         const nowYear = now.getUTCFullYear()
@@ -110,11 +127,95 @@ export default class TyphoonSearch extends Vue {
 
     @Watch('selectedTyCode')
     onSelectTyCode(val: string): void {
-        console.log(val)
+        // console.log(val)
+        this.typhoonList = []
         this.setTyphoonCode(val)
+        this.loadTyCaseListByTyCode(val)
     }
 
+    loadTyCaseListByTyCode(tyCode: string) {
+        const that = this
+        const tyCaseList: {
+            gmtCreated: Date
+            timestamp: string
+            tyCode: string
+            tyId: number
+            active: boolean
+        }[] = []
+        getTyCaseListByTyCode(tyCode)
+            .then(
+                (res: {
+                    status: number
+                    data: {
+                        gmt_created: string
+                        timestamp: string
+                        ty_code: string
+                        ty_id: number
+                    }[]
+                }) => {
+                    if (res.status === 200) {
+                        if (res.data.length > 0) {
+                            /*
+                        0:
+                            gmt_created: "2021-07-21T09:59:53.112045Z"
+                            timestamp: "2021072110"
+                            ty_code: "2107"
+                            ty_id: 6
+                    */
+                            // console.log(res.data)
+                            res.data.forEach((temp) => {
+                                tyCaseList.push({
+                                    gmtCreated: new Date(temp.gmt_created),
+                                    timestamp: temp.timestamp,
+                                    tyCode: temp.ty_code,
+                                    tyId: temp.ty_id,
+                                    active: false
+                                })
+                            })
+                        }
+                    }
+                }
+            )
+            .then(() => {
+                that.tyGroupCaseList = tyCaseList
+            })
+    }
+
+    selectTyGroup(val: {
+        gmtCreated: Date
+        timestamp: string
+        tyCode: string
+        tyId: number
+        active: boolean
+    }): void {
+        val.active = !val.active
+        if (val.active) {
+            this.selectedTyId = val.tyId
+            this.selectedTyCode = val.tyCode
+        } else {
+            this.selectedTyId = DEFAULT_SELECT_KEY
+            this.selectedTyCode = DEFAULT_SELECT_VAL
+        }
+    }
+
+    @Watch('selectedTyId')
+    onSelectTyId(tyId: number): void {
+        this.setTyphoonId(tyId)
+    }
+
+    // @Watch('selectedTyGroupMid')
+    // onSelectTyGroupMid(val: {
+    //     gmtCreated: Date
+    //     timestamp: string
+    //     tyCode: string
+    //     tyId: number
+    // }): void {
+    //     this.setTyphoonId(val.tyId)
+    // }
+
     @Mutation(SET_TYPHOON_CODE, { namespace: 'typhoon' }) setTyphoonCode
+
+    @Mutation(SET_TYPHOON_ID, { namespace: 'typhoon' }) setTyphoonId
 }
 </script>
 <style scoped lang="less">
@@ -123,6 +224,17 @@ export default class TyphoonSearch extends Vue {
 // TODO:[-] 21-07-24 使用 mt num 的方式来确定对应的宽度 px 数值
 .mt50 {
     width: 500px;
+}
+tbody {
+    color: white;
+    // 加入一个阴影效果
+    text-shadow: 2px 2px 8px #212020;
+    tr {
+        cursor: pointer;
+    }
+    tr.active {
+        background: #f39c12;
+    }
 }
 // .base-card {
 //     // padding: 10px;

@@ -343,9 +343,10 @@ import {
     // + 21-01-27 新加入的用来控制组件间触发异步时间造成的错位情况的 时间锁
     SET_TIMER_LOCK,
     GET_TIMER_LOCK,
-    GET_TYPHOON_CODE
+    GET_TYPHOON_CODE,
+    GET_TYPHOON_ID
 } from '@/store/types'
-import { DEFAULT_LAYER_ID } from '@/const/common'
+import { DEFAULT_LAYER_ID, DEFAULT_TYPHOON_CODE, DEFAULT_TYPHOON_ID } from '@/const/common'
 import { RADIUSUNIT } from '@/const/typhoon'
 import { ArrayPropsDefinition } from 'vue/types/options'
 import { SET_CURRENT_LATLNG } from '@/store/types'
@@ -602,6 +603,9 @@ export default class OilSpillingMap extends mixins(
     mymap: L.Map = undefined
     // + 21-07-01 新加入的用来控制是否显示 创建caseForm
     isShowCreateCaseForm = false
+
+    // + 21-07-25 当前选中的 typhoon id，给一个默认值
+    selectedTyId: number = DEFAULT_TYPHOON_ID
     getMapBoxLayerClass(url, options): any {
         return L.mapboxGL({
             accessToken:
@@ -670,30 +674,29 @@ export default class OilSpillingMap extends mixins(
         // 由于是测试，页面加载完成后先加载当前 code 的平均轨迹
         // TODO:[*] 20-01-23 暂时去掉页面加载后读取平均轨迹的步骤(暂时去掉)
         // TODO：[-] 21-05-10 注意 mac 的tyId=1 | 5750 tyId=3
-        const testTyphoonId = 8
-
-        this.testGetAddTyGroupPath2Map(testTyphoonId)
-
-        // TODO:[*] 21-04-28 暂时加入的加载 海洋站位置的 测试
-        this.loadStationList(this.zoom)
-        // TODO:[*] 21-04-30 测试 加入的测试加载台风最大增水
-        // TODO:[*] 21-05-07 暂时去掉增大增水
-        // const raster = new RasterGeoLayer(1, forecastDt, AreaEnum.NORTHWEST)
-        // raster.add2map(
-        //     mymap,
-        //     (opt = { message: `当前时间${forecastDt}没有对应的tif文件`, type: 'warning' }) => {
-        //         this.$message({
-        //             message: `当前时间${forecastDt}没有对应的tif文件`,
-        //             type: 'warning'
-        //         })
-        //     }
-        // )
-        // + 21-05-18 在页面加载后首先加载当前的 start_dt 与 end_dt
-        const tyGroupPath = new TyGroupPath()
-        tyGroupPath.getTargetTyGroupDateRange(this.tyCode, this.timestampStr).then((res) => {
-            this.finishDate = new Date(Math.max(...res))
-            this.startDate = new Date(Math.min(...res))
-        })
+        // + 21-07-25 暂时去掉 以下部分
+        // const testTyphoonId = 8
+        // this.testGetAddTyGroupPath2Map(testTyphoonId)
+        // // TODO:[*] 21-04-28 暂时加入的加载 海洋站位置的 测试
+        // this.loadStationList(this.zoom)
+        // // TODO:[*] 21-04-30 测试 加入的测试加载台风最大增水
+        // // TODO:[*] 21-05-07 暂时去掉增大增水
+        // // const raster = new RasterGeoLayer(1, forecastDt, AreaEnum.NORTHWEST)
+        // // raster.add2map(
+        // //     mymap,
+        // //     (opt = { message: `当前时间${forecastDt}没有对应的tif文件`, type: 'warning' }) => {
+        // //         this.$message({
+        // //             message: `当前时间${forecastDt}没有对应的tif文件`,
+        // //             type: 'warning'
+        // //         })
+        // //     }
+        // // )
+        // // + 21-05-18 在页面加载后首先加载当前的 start_dt 与 end_dt
+        // const tyGroupPath = new TyGroupPath()
+        // tyGroupPath.getTargetTyGroupDateRange(this.tyCode, this.timestampStr).then((res) => {
+        //     this.finishDate = new Date(Math.max(...res))
+        //     this.startDate = new Date(Math.min(...res))
+        // })
     }
 
     // 加载海洋站风暴潮增水
@@ -1705,6 +1708,25 @@ export default class OilSpillingMap extends mixins(
         }
     }
 
+    @Watch('selectedTyId')
+    onSelectedTyId(val: number): void {
+        if (val != DEFAULT_TYPHOON_ID) {
+            const testTyphoonId = val
+
+            this.testGetAddTyGroupPath2Map(testTyphoonId)
+
+            // TODO:[*] 21-04-28 暂时加入的加载 海洋站位置的 测试
+            this.loadStationList(this.zoom)
+
+            // + 21-05-18 在页面加载后首先加载当前的 start_dt 与 end_dt
+            const tyGroupPath = new TyGroupPath()
+            tyGroupPath.getTargetTyGroupDateRange(this.tyCode, this.timestampStr).then((res) => {
+                this.finishDate = new Date(Math.max(...res))
+                this.startDate = new Date(Math.min(...res))
+            })
+        }
+    }
+
     checkTyGroupOptions(val: ITyGroupPathOptions): boolean {
         let isOk = false
         if (
@@ -1727,10 +1749,17 @@ export default class OilSpillingMap extends mixins(
     @Watch('getCoverageId')
     onCoverageId(valNew: number): void {}
 
+    @Getter(GET_TYPHOON_ID, { namespace: 'typhoon' }) getTyphoonId
+
     @Getter('coverageType', { namespace: 'geo' }) getCoverageType
 
     @Watch('getCoverageType')
     onCoverageType(valNew: number): void {}
+
+    @Watch('getTyphoonId')
+    onTyphoonId(val: number): void {
+        this.selectedTyId = val
+    }
 
     // TODO:[*] 20-10-26 + 加入用来验证 风场|流场|流场raster opt 的变动情况
     verifyOpt(newvalNew: { coverageId: number; isShow: boolean }, unChechShow = true): boolean {

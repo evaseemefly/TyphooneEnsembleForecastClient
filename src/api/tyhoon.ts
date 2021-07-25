@@ -10,7 +10,7 @@ axios.defaults.headers = {}
 const area = '/typhoon'
 
 /**
- * 获取指定年份的所有台风列表
+ * + 21-07-22 获取指定年份的所有台风列表
  *
  * @param {number} year
  * @returns
@@ -21,6 +21,22 @@ const getTyListByYear = (year: number) => {
         headers: authHeader(),
         params: {
             year: year
+        }
+    })
+}
+
+/**
+ * + 21-07-25 根据指定code获取使用该台风code计算的台风集合预报路径
+ *
+ * @param {number} tyCode
+ * @return {*}
+ */
+const getTyCaseListByTyCode = (tyCode: string) => {
+    const url = `${host}${area}/ty/case/list`
+    return axios.get(url, {
+        headers: authHeader(),
+        params: {
+            ty_code: tyCode
         }
     })
 }
@@ -77,5 +93,6 @@ export {
     getTargetTyGroupComplexModel,
     getTargetTyGroupDateRange,
     getTargetTyGroupDistDate,
-    getTyListByYear
+    getTyListByYear,
+    getTyCaseListByTyCode
 }

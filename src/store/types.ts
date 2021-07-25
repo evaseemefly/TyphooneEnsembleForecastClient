@@ -81,4 +81,7 @@ export const GET_GEO_COVERAGETYPE = 'GET_GEO_COVERAGETYPE'
 // + 21-07-24 typhoon 相关
 export const SET_TYPHOON_CODE = 'SET_TYPHOON_CODE'
 export const GET_TYPHOON_CODE = 'GET_TYPHOON_CODE'
+
+export const SET_TYPHOON_ID = 'SET_TYPHOON_ID'
+export const GET_TYPHOON_ID = 'GET_TYPHOON_ID'
 // export { GET_MAP_LAYERS }
