@@ -73,4 +73,9 @@ const getTargetTyGroupDistDate = (tyCode?: string, timeStamp?: string) => {
     })
 }
 
-export { getTargetTyGroupComplexModel, getTargetTyGroupDateRange, getTargetTyGroupDistDate }
+export {
+    getTargetTyGroupComplexModel,
+    getTargetTyGroupDateRange,
+    getTargetTyGroupDistDate,
+    getTyListByYear
+}

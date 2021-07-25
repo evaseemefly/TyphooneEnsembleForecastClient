@@ -85,8 +85,6 @@ export default class CurdBtn extends Vue {
     @Prop()
     caseList: CaseMinInfo[]
 
-    mounted() {}
-
     // @Mutation(SET_CREATE_OIL_CASE_MODAL, { namespace: 'map' }) setIsShow
 
     @Mutation(SET_CREATE_FORM, { namespace: 'map' }) setIsShow

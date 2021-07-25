@@ -6,6 +6,8 @@ const DEFAULT_SELECT_KEY = -1
 // 对应 db: dict_base -> 默认的 code
 const DEFAULT_DICT_KEY = -1
 
+const DEFAULT_SELECT_VAL = 'UNSELECTED'
+
 const DEFAULT_COVERAGE_ID = -1
 
 // 默认的 无实际意义的 coverage id 但需要与 DEFAULT 区别的
@@ -43,5 +45,6 @@ export {
     DEFAULT_LAYER_ID,
     DEFAULT_COVERAGE_TYPE,
     USELESS_COVERAGE_ID,
-    DEFAULT_ZOOM_LEVEL
+    DEFAULT_ZOOM_LEVEL,
+    DEFAULT_SELECT_VAL
 }

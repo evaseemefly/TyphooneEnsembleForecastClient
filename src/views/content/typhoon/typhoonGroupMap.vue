@@ -342,7 +342,8 @@ import {
     GET_INITIAL_LATLNG,
     // + 21-01-27 新加入的用来控制组件间触发异步时间造成的错位情况的 时间锁
     SET_TIMER_LOCK,
-    GET_TIMER_LOCK
+    GET_TIMER_LOCK,
+    GET_TYPHOON_CODE
 } from '@/store/types'
 import { DEFAULT_LAYER_ID } from '@/const/common'
 import { RADIUSUNIT } from '@/const/typhoon'
@@ -665,7 +666,7 @@ export default class OilSpillingMap extends mixins(
         // this.testMapBoxLeaflet()
     }
 
-    mounted() {
+    mounted(): void {
         // 由于是测试，页面加载完成后先加载当前 code 的平均轨迹
         // TODO:[*] 20-01-23 暂时去掉页面加载后读取平均轨迹的步骤(暂时去掉)
         // TODO：[-] 21-05-10 注意 mac 的tyId=1 | 5750 tyId=3

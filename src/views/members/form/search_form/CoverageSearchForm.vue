@@ -276,44 +276,47 @@ export default class CoverageSearchForm extends Vue {
 
 <style lang="less" scoped>
 @import '../../../../styles/base-form';
-.card {
-    background-color: transparent !important;
-    // 新加一个每个card的底部空余
-    margin-bottom: 1rem;
-    @card-box-shadow();
-    /* 对于多条件搜索的card的一些样式 */
-    .card-my-header {
-        background: linear-gradient(to right, #1a6865 30%, rgba(4, 107, 114, 0.639));
-        font-size: 90%;
-        text-shadow: 2px 2px 8px rgb(33, 32, 32);
-        width: 100%;
-        color: white;
-    }
-    /* 自动以的card-body样式 */
-    .card-my-body {
-        background: linear-gradient(to right, #248e8a 30%, rgba(4, 107, 114, 0.639));
-        padding: 8px 8px 8px 8px;
-        width: 100%;
-        .form-row {
-            .form-group {
-                display: flex;
-                .smdiv {
-                    display: flex;
-                    max-width: 40%;
-                    flex: 4;
-                }
-                .el-select {
-                    display: flex;
-                    flex: 6;
-                    max-width: 60%;
-                }
-            }
-        }
-    }
-    .btn-my {
-        background: #2988d2;
-    }
-}
+@import '../../../../styles/base-card';
+// TODO:[-] 21-07-22 此处将 card 提取至 base-card.less 中，供TyphonSearch.vue 组件共同使用
+// .card {
+//     background-color: transparent !important;
+//     // 新加一个每个card的底部空余
+//     margin-bottom: 1rem;
+//     @card-box-shadow();
+//     /* 对于多条件搜索的card的一些样式 */
+//     .card-my-header {
+//         background: linear-gradient(to right, #1a6865 30%, rgba(4, 107, 114, 0.639));
+//         font-size: 90%;
+//         text-shadow: 2px 2px 8px rgb(33, 32, 32);
+//         width: 100%;
+//         color: white;
+//     }
+//     /* 自动以的card-body样式 */
+//     .card-my-body {
+//         background: linear-gradient(to right, #248e8a 30%, rgba(4, 107, 114, 0.639));
+//         padding: 8px 8px 8px 8px;
+//         width: 100%;
+//         .form-row {
+//             .form-group {
+//                 display: flex;
+//                 .smdiv {
+//                     display: flex;
+//                     max-width: 40%;
+//                     flex: 4;
+//                 }
+//                 .el-select {
+//                     display: flex;
+//                     flex: 6;
+//                     max-width: 60%;
+//                 }
+//             }
+//         }
+//     }
+//     .btn-my {
+//         background: #2988d2;
+//     }
+// }
+
 #data_list {
     margin-top: 5px;
     background: rgba(73, 115, 165, 0.701);

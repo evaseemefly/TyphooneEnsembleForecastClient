@@ -8,6 +8,7 @@ import auth from './modules/auth'
 import common from './modules/common'
 import Case from './modules/case'
 import geo from './modules/geo'
+import typhoon from './modules/typhoon'
 
 Vue.use(Vuex)
 
@@ -25,7 +26,8 @@ export default new Vuex.Store({
         auth: auth,
         common: common,
         case: Case,
-        geo: geo
+        geo: geo,
+        typhoon: typhoon
         // oilStore
     },
     // TODO:[*] 19-11-08 此部分先注释掉
