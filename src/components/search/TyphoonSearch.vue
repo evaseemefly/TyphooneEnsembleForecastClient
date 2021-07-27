@@ -18,12 +18,12 @@
                         <el-option
                             v-for="item in typhoonList"
                             :key="item.id"
-                            :label="item.tyName"
-                            :value="item.tyCode"
+                            :label="item.code"
+                            :value="item.code"
                         >
-                            <span style="float: left">{{ item.tyCode }}</span>
+                            <span style="float: left">{{ item.code }}</span>
                             <span style="float: right; color: #8492a6; font-size: 13px">{{
-                                item.tyName
+                                item.timestamp
                             }}</span>
                         </el-option>
                     </el-select>
@@ -81,7 +81,7 @@ export default class TyphoonSearch extends Vue {
     */
     years: number[] = [2021, 2020, 2019]
     selectedYear: number = DEFAULT_NUMBER
-    typhoonList: { tyCode: string; tyName: string }[] = [
+    typhoonList: { code: string; timestamp: string }[] = [
         // { tyCode: '2107', tyName: 'xxx' },
         // { tyCode: '2016', tyName: 'xxx1' },
         // { tyCode: '2105', tyName: 'xxx2' }
@@ -104,21 +104,22 @@ export default class TyphoonSearch extends Vue {
     mounted() {
         const now = new Date()
         const nowYear = now.getUTCFullYear()
-        console.log(this.selectedYear)
+        // console.log(this.selectedYear)
     }
     created() {
-        console.log(this.selectedYear)
+        // console.log(this.selectedYear)
         this.selectedYear = this.years[0]
     }
     @Watch('selectedYear')
     onSelectYear(val: number): void {
         const that = this
+        this.typhoonList = []
         getTyListByYear(val).then((res) => {
             if (res.status === 200) {
                 if (res.data.length > 0) {
-                    console.log(res.data)
+                    // console.log(res.data)
                     res.data.forEach((item) => {
-                        that.typhoonList.push({ tyCode: item.code, tyName: item.organ_code })
+                        that.typhoonList.push({ code: item.code, timestamp: item.timestamp })
                     })
                 }
             }
