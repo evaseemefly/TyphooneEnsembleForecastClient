@@ -10,6 +10,8 @@ const DEFAULT_SELECT_VAL = 'UNSELECTED'
 
 const DEFAULT_COVERAGE_ID = -1
 
+const DEFAULT_TYPHOON_GROUP_PATH_ID = -1
+
 // 默认的 无实际意义的 coverage id 但需要与 DEFAULT 区别的
 /** @type {number} 默认的 无实际意义的 coverage id 但需要与 DEFAULT 区别的*/
 const USELESS_COVERAGE_ID = -9999
@@ -53,5 +55,6 @@ export {
     DEFAULT_ZOOM_LEVEL,
     DEFAULT_SELECT_VAL,
     DEFAULT_TYPHOON_ID,
-    DEFAULT_TYPHOON_CODE
+    DEFAULT_TYPHOON_CODE,
+    DEFAULT_TYPHOON_GROUP_PATH_ID
 }

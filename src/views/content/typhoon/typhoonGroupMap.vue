@@ -119,7 +119,7 @@
                 :oilModelData="targetOilModelData"
                 :tyCode="tyCode"
                 :stationCode="stationCode"
-                :timeStamp="timestampStr"
+                :timeStamp="tyTimeStamp"
             ></OilRightBar>
 
             <!-- TODO:[-] 20-07-17 使用统一风格后的 右侧信息栏 -->
@@ -344,10 +344,17 @@ import {
     SET_TIMER_LOCK,
     GET_TIMER_LOCK,
     GET_TYPHOON_CODE,
-    GET_TYPHOON_ID
+    GET_TYPHOON_ID,
+    // + 21-07-28
+    GET_TYPHOON_TIMESTAMP
 } from '@/store/types'
-import { DEFAULT_LAYER_ID, DEFAULT_TYPHOON_CODE, DEFAULT_TYPHOON_ID } from '@/const/common'
-import { RADIUSUNIT } from '@/const/typhoon'
+import {
+    DEFAULT_LAYER_ID,
+    DEFAULT_TYPHOON_CODE,
+    DEFAULT_TYPHOON_ID,
+    DEFAULT_TYPHOON_GROUP_PATH_ID
+} from '@/const/common'
+import { RADIUSUNIT, DEFAULTTIMESTAMP, DEFAULTTYCODE } from '@/const/typhoon'
 import { ArrayPropsDefinition } from 'vue/types/options'
 import { SET_CURRENT_LATLNG } from '@/store/types'
 import {
@@ -391,7 +398,7 @@ const DEFAULT_SCATTER_PAGE_COUNT = 1000
     // + 21-01-27 新引入的 mixin
     // mixins: [WMSMixin, CommonOptMixin]
 })
-export default class OilSpillingMap extends mixins(
+export default class TyGroupMap extends mixins(
     WMSMixin,
     CommonOptMixin,
     TestMixin,
@@ -565,10 +572,11 @@ export default class OilSpillingMap extends mixins(
     fieldSurgeRasterLayer: L.Layer = null
     // + 21-05-14 当前的预报时间
     forecastDt = new Date('2020-09-15T18:00:00Z')
-    // + 21-05-14 当前选定的 gpId
-    gpId = 291
-    tyCode = '2107'
-    timestampStr = '2021010416'
+    // + 21-05-14 当前选定的
+    // TODO:[*] 21-07-28 将 gpId 放在 tyGroupOptions 中
+    // gpId = DEFAULT_TYPHOON_GROUP_PATH_ID
+    tyCode = DEFAULTTYCODE
+    tyTimeStamp = DEFAULTTIMESTAMP
     stationCode = 'SHW'
     // + 21-05-15 脉冲 groupLayer
     groupLayerSurgePulsing: L.LayerGroup = null
@@ -583,10 +591,11 @@ export default class OilSpillingMap extends mixins(
     // + 21-05-19 TyGroupPathOptions
     tyGroupOptions: ITyGroupPathOptions = {
         tyCode: this.tyCode,
-        timeStamp: this.timestampStr,
+        timeStamp: this.tyTimeStamp,
         forecastDt: DefaultTyGroupPathOptions.forecastDt,
         isShow: DefaultTyGroupPathOptions.isShow,
-        layerType: DefaultTyGroupPathOptions.layerType
+        layerType: DefaultTyGroupPathOptions.layerType,
+        gpId: DEFAULT_TYPHOON_GROUP_PATH_ID
     }
     stationSurgeIconOptions: ILayerDisplayOptions = {
         isShow: false,
@@ -693,7 +702,7 @@ export default class OilSpillingMap extends mixins(
         // // )
         // // + 21-05-18 在页面加载后首先加载当前的 start_dt 与 end_dt
         // const tyGroupPath = new TyGroupPath()
-        // tyGroupPath.getTargetTyGroupDateRange(this.tyCode, this.timestampStr).then((res) => {
+        // tyGroupPath.getTargetTyGroupDateRange(this.tyCode, this.tyTimeStamp).then((res) => {
         //     this.finishDate = new Date(Math.max(...res))
         //     this.startDate = new Date(Math.min(...res))
         // })
@@ -715,7 +724,7 @@ export default class OilSpillingMap extends mixins(
                 "lon": 115.3572
             },
         */
-        getStationListByGroupPath(this.gpId, this.forecastDt).then(
+        getStationListByGroupPath(this.tyGroupOptions.gpId, this.forecastDt).then(
             (res: {
                 status: number
                 data: {
@@ -819,7 +828,7 @@ export default class OilSpillingMap extends mixins(
         const surgeDataFormMarkersList: L.Marker[] = []
         this.clearSurgeAllGroupLayers()
         getStationSurgeRangeListByGroupPath(
-            this.gpId,
+            this.tyGroupOptions.gpId,
             this.tyGroupOptions.tyCode,
             this.tyGroupOptions.forecastDt,
             this.tyGroupOptions.timeStamp
@@ -877,7 +886,7 @@ export default class OilSpillingMap extends mixins(
                                 temp.name,
                                 temp.station_code,
                                 that.tyCode,
-                                that.timestampStr,
+                                that.tyTimeStamp,
                                 that.forecastDt
                             ).getImplements(zoom, {
                                 stationName: temp.name,
@@ -1099,6 +1108,15 @@ export default class OilSpillingMap extends mixins(
                         }
                     )
                 }
+                // TODO:[-] 21-07-28 此处需要通过将生成的 145 条集合预报路径，找到中心路径，并找到对应的 gp_id
+                const centerGroupPath = arrTyComplexGroupRealdata.find((temp) => {
+                    return temp.bp === 0 && temp.tyPathMarking === 0 && temp.tyPathType === 'c'
+                })
+                let centerGpId = DEFAULT_TYPHOON_GROUP_PATH_ID
+                if (centerGroupPath) {
+                    centerGpId = centerGroupPath.listRealdata[0].gpId
+                }
+                this.tyGroupOptions.gpId = centerGpId
                 that.tyGroupLineList = arrTyComplexGroupRealdata
                 // TODO:[*] ! WARNING 21-05-07 此处注意需要动态的获取 tyTimestamp 与 tyCode
                 that.loadTyphoonLine('2022', '2021010416')
@@ -1701,6 +1719,7 @@ export default class OilSpillingMap extends mixins(
 
     @Watch('stationSurgeIconOptions', { immediate: true, deep: true })
     onStationSurgeIconOptions(val: ILayerDisplayOptions): void {
+        this.tyGroupOptions.isShow = val.isShow
         if (val.isShow) {
             console.log(val)
         } else {
@@ -1719,8 +1738,29 @@ export default class OilSpillingMap extends mixins(
             this.loadStationList(this.zoom)
 
             // + 21-05-18 在页面加载后首先加载当前的 start_dt 与 end_dt
+            // const tyGroupPath = new TyGroupPath()
+            // TODO:[-] 21-07-28 将 读取指定台风集合路径的 读取 起止时间放到 监听 tyCode 与 tyTimestamp 中
+            // tyGroupPath.getTargetTyGroupDateRange(this.tyCode, this.tyTimeStamp).then((res) => {
+            //     this.finishDate = new Date(Math.max(...res))
+            //     this.startDate = new Date(Math.min(...res))
+            // })
+        }
+    }
+
+    get getTyOptions(): { tyCode: string; tyTimeStamp: string } {
+        const { tyCode, tyTimeStamp } = this
+        return { tyCode, tyTimeStamp }
+    }
+
+    @Watch('getTyOptions')
+    onTyOptions(val: { tyCode: string; tyTimeStamp: string }) {
+        console.log(`tyGroupPath组件监听到'tyCode'与'tyTimestamp'发生变化:${val}`)
+        if (val.tyCode !== DEFAULTTYCODE && val.tyTimeStamp !== DEFAULTTIMESTAMP) {
+            // TODO:[*] 21-07-28 此处还需要修改 tyGroupOptions
+            this.tyGroupOptions.tyCode = val.tyCode
+            this.tyGroupOptions.timeStamp = val.tyTimeStamp
             const tyGroupPath = new TyGroupPath()
-            tyGroupPath.getTargetTyGroupDateRange(this.tyCode, this.timestampStr).then((res) => {
+            tyGroupPath.getTargetTyGroupDateRange(this.tyCode, this.tyTimeStamp).then((res) => {
                 this.finishDate = new Date(Math.max(...res))
                 this.startDate = new Date(Math.min(...res))
             })
@@ -1729,10 +1769,12 @@ export default class OilSpillingMap extends mixins(
 
     checkTyGroupOptions(val: ITyGroupPathOptions): boolean {
         let isOk = false
+        // TODO:[*] !! 21-07-28 注意可以将 group path 默认id 统一放在 DefaultTyGroupPathOptions 中
         if (
             val.tyCode === DefaultTyGroupPathOptions.tyCode ||
             val.forecastDt === DefaultTyGroupPathOptions.forecastDt ||
-            val.timeStamp === DefaultTyGroupPathOptions.timeStamp
+            val.timeStamp === DefaultTyGroupPathOptions.timeStamp ||
+            val.gpId === DEFAULT_TYPHOON_GROUP_PATH_ID
         ) {
             isOk = false
         } else if (val.isShow === false) {
@@ -1755,6 +1797,22 @@ export default class OilSpillingMap extends mixins(
 
     @Watch('getCoverageType')
     onCoverageType(valNew: number): void {}
+
+    // + 21-07-28 监听 tyTimeStamp 台风时间戳
+    @Getter(GET_TYPHOON_TIMESTAMP, { namespace: 'typhoon' }) getTyTimeStamp
+
+    @Watch('getTyTimeStamp')
+    onTyTimeStamp(val: string): void {
+        this.tyTimeStamp = val
+    }
+
+    // + 21-07-28 监听 tyCode
+    @Getter(GET_TYPHOON_CODE, { namespace: 'typhoon' }) getTyCode
+
+    @Watch('getTyCode')
+    onTyCode(val: string): void {
+        this.tyCode = val
+    }
 
     @Watch('getTyphoonId')
     onTyphoonId(val: number): void {

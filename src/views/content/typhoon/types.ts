@@ -67,6 +67,7 @@ export interface ITyGroupPathOptions extends ILayerDisplayOptions {
     tyCode: string
     forecastDt: Date
     timeStamp: string
+    gpId: number
 }
 
 /**

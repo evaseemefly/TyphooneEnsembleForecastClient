@@ -16,6 +16,7 @@ import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 import * as echarts from 'echarts'
 import moment from 'moment'
 import { getStationSurgeRealDataListAndRange } from '@/api/station'
+import { DEFAULTTYCODE, DEFAULTTIMESTAMP } from '@/const/typhoon'
 @Component({})
 export default class StationCharts extends Vue {
     mydata: any = null
@@ -32,7 +33,7 @@ export default class StationCharts extends Vue {
     forecastSurgeValList: number[] = []
     forecastSurgeMaxList: number[] = []
     forecastSurgeMinList: number[] = []
-    mounted() {}
+
     loadStationSurgeRealDataListAndRange(tyCode: string, timeStamp: string, stationCode: string) {
         const that = this
         getStationSurgeRealDataListAndRange(tyCode, timeStamp, stationCode).then((res) => {
@@ -185,7 +186,9 @@ export default class StationCharts extends Vue {
             `options发生变化tyCode:${val.tyCode},stationCode:${val.stationCode},timeStamp:${val.timeStamp}发生变化`
         )
         this.clearForecastSurge()
-        this.loadStationSurgeRealDataListAndRange(val.tyCode, val.timeStamp, val.stationCode)
+        if (val.tyCode !== DEFAULTTYCODE && val.timeStamp !== DEFAULTTIMESTAMP) {
+            this.loadStationSurgeRealDataListAndRange(val.tyCode, val.timeStamp, val.stationCode)
+        }
     }
     get getOptions(): { tyCode: string; stationCode: string; timeStamp: string } {
         const { tyCode, stationCode, timeStamp } = this

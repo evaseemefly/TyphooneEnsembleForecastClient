@@ -70,13 +70,14 @@ import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 import { Mutation, State, namespace, Action } from 'vuex-class'
 import { getTyListByYear, getTyCaseListByTyCode } from '@/api/tyhoon'
 import { DEFAULT_NUMBER, DEFAULT_SELECT_KEY, DEFAULT_SELECT_VAL } from '@/const/common'
-import { SET_TYPHOON_CODE, SET_TYPHOON_ID } from '@/store/types'
+import { DEFAULTTIMESTAMP } from '@/const/typhoon'
+import { SET_TYPHOON_CODE, SET_TYPHOON_ID, SET_TYPHOON_TIMESTAMP } from '@/store/types'
 import { fortmatData2YMDH } from '@/common/filter'
 @Component({
     filters: { fortmatData2YMDH }
 })
 export default class TyphoonSearch extends Vue {
-    /* 
+    /*
         此窗口主要用来显示台风的搜索form
     */
     years: number[] = [2021, 2020, 2019]
@@ -101,6 +102,7 @@ export default class TyphoonSearch extends Vue {
     } = { gmtCreated: new Date(), timestamp: '', tyCode: '', tyId: -1 }
     selectedTyCode: string = DEFAULT_SELECT_VAL
     selectedTyId: number = DEFAULT_SELECT_KEY
+    selectedTyTimeStampStr: string = DEFAULTTIMESTAMP
     mounted() {
         const now = new Date()
         const nowYear = now.getUTCFullYear()
@@ -189,19 +191,27 @@ export default class TyphoonSearch extends Vue {
         tyId: number
         active: boolean
     }): void {
+        // TODO:[-] 21-07-28 选中指定的集合预报路径集，修改 tyId 与 tyCode + timestamp
         val.active = !val.active
         if (val.active) {
             this.selectedTyId = val.tyId
             this.selectedTyCode = val.tyCode
+            this.selectedTyTimeStampStr = val.timestamp
         } else {
             this.selectedTyId = DEFAULT_SELECT_KEY
             this.selectedTyCode = DEFAULT_SELECT_VAL
+            this.selectedTyTimeStampStr = DEFAULTTIMESTAMP
         }
     }
 
     @Watch('selectedTyId')
     onSelectTyId(tyId: number): void {
         this.setTyphoonId(tyId)
+    }
+
+    @Watch('selectedTyTimeStampStr')
+    onSelectTyTimeStamp(ts: string): void {
+        this.setTyTimeStamp(ts)
     }
 
     // @Watch('selectedTyGroupMid')
@@ -217,6 +227,8 @@ export default class TyphoonSearch extends Vue {
     @Mutation(SET_TYPHOON_CODE, { namespace: 'typhoon' }) setTyphoonCode
 
     @Mutation(SET_TYPHOON_ID, { namespace: 'typhoon' }) setTyphoonId
+
+    @Mutation(SET_TYPHOON_TIMESTAMP, { namespace: 'typhoon' }) setTyTimeStamp
 }
 </script>
 <style scoped lang="less">

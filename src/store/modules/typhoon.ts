@@ -1,13 +1,23 @@
-import { SET_TYPHOON_CODE, GET_TYPHOON_CODE, SET_TYPHOON_ID, GET_TYPHOON_ID } from './../types'
+import {
+    SET_TYPHOON_CODE,
+    GET_TYPHOON_CODE,
+    SET_TYPHOON_ID,
+    GET_TYPHOON_ID,
+    SET_TYPHOON_TIMESTAMP,
+    GET_TYPHOON_TIMESTAMP
+} from './../types'
 import { DEFAULT_TYPHOON_ID, DEFAULT_TYPHOON_CODE } from '@/const/common'
+import { DEFAULTTIMESTAMP } from '@/const/typhoon'
 export interface ITyphoon {
     tyCode?: string
     tyId: number
+    tyTimeStamp: string
 }
 
 const state: ITyphoon = {
     tyCode: DEFAULT_TYPHOON_CODE,
-    tyId: DEFAULT_TYPHOON_ID
+    tyId: DEFAULT_TYPHOON_ID,
+    tyTimeStamp: DEFAULTTIMESTAMP
 }
 
 const getters = {
@@ -16,6 +26,9 @@ const getters = {
     },
     [GET_TYPHOON_ID](state: ITyphoon): number {
         return state.tyId
+    },
+    [GET_TYPHOON_TIMESTAMP](state: ITyphoon): string {
+        return state.tyTimeStamp
     }
 }
 
@@ -25,6 +38,9 @@ const mutations = {
     },
     [SET_TYPHOON_ID](state: ITyphoon, tyId: number): void {
         state.tyId = tyId
+    },
+    [SET_TYPHOON_TIMESTAMP](state: ITyphoon, tyTS: string): void {
+        state.tyTimeStamp = tyTS
     }
 }
 
