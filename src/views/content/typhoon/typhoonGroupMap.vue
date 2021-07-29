@@ -690,16 +690,18 @@ export default class TyGroupMap extends mixins(
         // this.loadStationList(this.zoom)
         // // TODO:[*] 21-04-30 测试 加入的测试加载台风最大增水
         // // TODO:[*] 21-05-07 暂时去掉增大增水
-        // // const raster = new RasterGeoLayer(1, forecastDt, AreaEnum.NORTHWEST)
-        // // raster.add2map(
-        // //     mymap,
-        // //     (opt = { message: `当前时间${forecastDt}没有对应的tif文件`, type: 'warning' }) => {
-        // //         this.$message({
-        // //             message: `当前时间${forecastDt}没有对应的tif文件`,
-        // //             type: 'warning'
-        // //         })
-        // //     }
-        // // )
+        const mymap = this.$refs.basemap.mapObject
+        const testForecastDt = new Date()
+        const raster = new RasterGeoLayer(1, testForecastDt, AreaEnum.NORTHWEST)
+        raster.add2map(
+            mymap,
+            (opt = { message: `当前时间${testForecastDt}没有对应的tif文件`, type: 'warning' }) => {
+                this.$message({
+                    message: `当前时间${testForecastDt}没有对应的tif文件`,
+                    type: 'warning'
+                })
+            }
+        )
         // // + 21-05-18 在页面加载后首先加载当前的 start_dt 与 end_dt
         // const tyGroupPath = new TyGroupPath()
         // tyGroupPath.getTargetTyGroupDateRange(this.tyCode, this.tyTimeStamp).then((res) => {

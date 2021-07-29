@@ -98,8 +98,10 @@ class RasterGeoLayer implements IRaster {
         // const urlGeoTifUrl = tifResp.data
 
         // TODO:[*] 21-04-30 测试 暂时将 读取的 tif路径写死(最大增水)
+        // const urlGeoTifUrl =
+        //     'http://localhost:82/images/TY_GROUP_RESULT/TY2107_2021072110/maxSurge_TY2107_2021072110_c0_p00.tif'
         const urlGeoTifUrl =
-            'http://localhost:82/images/TEST/TYPHOONSURGE/maxSurge_TY2022_2021010416_c0_p00.tif'
+            'http://localhost:82/images/TY_GROUP_RESULT/TY2107_2021072110/maxSurge_TY2022_2021010416_c0_p00.tif'
         // 大体思路 获取 geotiff file 的路径，二进制方式读取 -> 使用 georaster 插件实现转换 -> 获取色标，
         // TODO:[-] 20-11-02 将之前的逻辑方式修改为 await 的方式
         // TODO:[-] 20-11-05 在 fetch 请求头中加入跨域的部分
@@ -123,16 +125,28 @@ class RasterGeoLayer implements IRaster {
         const max = georasterResponse.maxs[0]
         const range = georasterResponse.ranges[0]
         // const scale = chroma.scale('Viridis')
+        // TODO:[-] 21-07-29 之前的色标的备份
+        // const scale = chroma.scale([
+        //     '#00429d',
+        //     '#4771b2',
+        //     '#73a2c6',
+        //     '#a5d5d8',
+        //     '#ffffe0',
+        //     '#ffbcaf',
+        //     '#f4777f',
+        //     '#cf3759',
+        //     '#93003a'
+        // ])
+
+        //
         const scale = chroma.scale([
-            '#00429d',
-            '#4771b2',
-            '#73a2c6',
-            '#a5d5d8',
-            '#ffffe0',
-            '#ffbcaf',
-            '#f4777f',
-            '#cf3759',
-            '#93003a'
+            '#0d60dd',
+            '#3196fe',
+            '#31c5fe',
+            '#f8eb4b',
+            '#fabf3b',
+            '#ed4b3a',
+            '#ef1f09'
         ])
 
         // TODO:[*] 21-02-10 此处当加载全球风场的geotiff时，y不在实际范围内，需要手动处理
