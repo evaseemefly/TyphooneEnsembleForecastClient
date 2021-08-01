@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios, { AxiosResponse } from 'axios'
 import { host } from './common'
 import authHeader from './auth-header'
 import { DEFAULT_COVERAGE_AREA, DEFAULT_COVERAGE_TYPE } from '@/const/common'
@@ -215,6 +215,29 @@ const loadFieldSurgeTif = (tyCode: string, tyTimeStamp: string, forecastDt: Date
     })
 }
 
+/**
+ * + 21-08-01
+ * 根据 ty_code 与 时间戳，获取最大增水的tif路径
+ *
+ * @param {string} tyCode
+ * @param {string} tyTimeStamp
+ * @return {*}  {Promise<AxiosResponse<{ status: number; data: string }>>}
+ */
+// const loadMaxSurgeTif = (
+//     tyCode: string,
+//     tyTimeStamp: string
+// ): Promise<AxiosResponse<{ status: number; data: string }>> => {
+const loadMaxSurgeTif = (tyCode: string, tyTimeStamp: string) => {
+    const url = `${host}${area}/geotiff/surge/max/`
+    return axios.get(url, {
+        headers: authHeader(),
+        params: {
+            ty_code: tyCode,
+            ty_timestamp: tyTimeStamp
+        }
+    })
+}
+
 export {
     loadCoverageList,
     loadCoverageInfo,
@@ -226,5 +249,6 @@ export {
     loadCurrentTif,
     loadWindBarPaged,
     loadWaveBarPaged,
-    loadFieldSurgeTif
+    loadFieldSurgeTif,
+    loadMaxSurgeTif
 }

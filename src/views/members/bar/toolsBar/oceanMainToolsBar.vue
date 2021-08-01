@@ -114,18 +114,18 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     val: '',
                     checked: false
                 },
-                // {
-                //     isExpanded: false,
-                //     html: '',
-                //     iconClass: 'fas fa-wind',
-                //     title: '海浪-高度栅格',
-                //     hasChildren: false,
-                //     isChildren: true,
-                //     toolType: ToolTypeEnum.LAYER,
-                //     layerType: LayerTypeEnum.WAVE_WVE_RASTER,
-                //     val: '',
-                //     checked: false
-                // },
+                {
+                    isExpanded: false,
+                    html: '',
+                    iconClass: 'fas fa-wind',
+                    title: '最大增水场',
+                    hasChildren: false,
+                    isChildren: true,
+                    toolType: ToolTypeEnum.LAYER,
+                    layerType: LayerTypeEnum.RASTER_MAX_SURGE_LAYER,
+                    val: '',
+                    checked: false
+                },
                 // {
                 //     isExpanded: false,
                 //     html: '',
@@ -456,7 +456,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
     background-color: @sub-title-color;
     border-radius: @border-radius;
     margin: 0 0.4em;
-    width: 90px;
+    width: 150px;
     // margin: @margin;
     transition: background-color 0.8s;
     transition: width 0.8s;
@@ -505,7 +505,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
     }
     a > div.tools-font {
         // 20-11-09 修改了 font 的宽度，保证选中时的蓝色底色不会太窄
-        width: 103px;
+        width: 150px;
         position: float;
         position: absolute;
         float: rigth;

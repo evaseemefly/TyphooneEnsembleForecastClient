@@ -363,7 +363,8 @@ import {
     IRasterOptions,
     ITyGroupPathOptions,
     DefaultTyGroupPathOptions,
-    ILayerDisplayOptions
+    ILayerDisplayOptions,
+    ITySurgeLayerOptions
 } from './types'
 
 const DEFAULT = 'DEFAULT'
@@ -600,6 +601,14 @@ export default class TyGroupMap extends mixins(
     stationSurgeIconOptions: ILayerDisplayOptions = {
         isShow: false,
         layerType: LayerTypeEnum.STATION_ICON_LAYER
+    }
+
+    // TODO:[-] 21-08-01 新增的用来供监听的 最大增水 配置变量，tyCode 与 tyTS 由 this 中对应字段决定
+    tyMaxSurgeOptions: ITySurgeLayerOptions = {
+        isShow: false,
+        layerType: LayerTypeEnum.RASTER_MAX_SURGE_LAYER,
+        tyCode: this.tyCode,
+        tyTimeStamp: this.tyTimeStamp
     }
 
     // TODO:[-] 21-06-08 临时的 潮位站 min marker
@@ -1727,6 +1736,11 @@ export default class TyGroupMap extends mixins(
         } else {
             this.clearSurgeAllGroupLayers()
         }
+    }
+
+    @Watch('tyMaxSurgeOptions', { immediate: true, deep: true })
+    onTyMaxSurgeOptions(val: ITySurgeLayerOptions): void {
+        console.log(`监听到tyMaxSurgeOptions:${val}发生变化`)
     }
 
     @Watch('selectedTyId')

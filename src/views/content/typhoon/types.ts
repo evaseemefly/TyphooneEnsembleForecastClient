@@ -56,6 +56,18 @@ export interface IPolyLine {
 }
 
 /**
+ * + 潮位图层接口
+ *   台风编号
+ *   时间戳
+ * @export
+ * @interface ISurgeLayer
+ */
+export interface ISurgeLayer {
+    tyCode: string
+    tyTimeStamp: string
+}
+
+/**
  *
  * 加入了 ILayerDisplayOptions
  *
@@ -85,4 +97,15 @@ const DefaultTyGroupPathOptions: ITyGroupPathOptions = {
     isShow: false,
     layerType: LayerTypeEnum.GROUP_PATH_LAYER
 }
+
+/**
+ * 台风增水配置接口
+ *
+ * @export
+ * @interface ITySurgeOptions
+ * @extends {ILayerDisplayOptions}
+ * @extends {ISurgeLayer}
+ */
+export interface ITySurgeLayerOptions extends ILayerDisplayOptions, ISurgeLayer {}
+
 export { DefaultTyGroupPathOptions }

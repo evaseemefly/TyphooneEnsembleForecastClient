@@ -26,6 +26,7 @@ import 'georaster'
 // import * as georaster from 'georaster'
 import 'georaster-layer-for-leaflet'
 import { loadCurrentTif, loadFieldSurgeTif } from '@/api/geo'
+import { MaxSurge } from './surge'
 import { AreaEnum } from '@/enum/area'
 import { DictEnum, ProductEnum } from '@/enum/dict'
 import { USELESS_COVERAGE_ID } from '@/const/common'
@@ -101,7 +102,7 @@ class RasterGeoLayer implements IRaster {
         // const urlGeoTifUrl =
         //     'http://localhost:82/images/TY_GROUP_RESULT/TY2107_2021072110/maxSurge_TY2107_2021072110_c0_p00.tif'
         const urlGeoTifUrl =
-            'http://localhost:82/images/TY_GROUP_RESULT/TY2107_2021072110/maxSurge_TY2022_2021010416_c0_p00.tif'
+            'http://localhost:82/images/TY_GROUP_RESULT/TY2022_2021010416/maxSurge_TY2022_2021010416_c0_p00.tif'
         // 大体思路 获取 geotiff file 的路径，二进制方式读取 -> 使用 georaster 插件实现转换 -> 获取色标，
         // TODO:[-] 20-11-02 将之前的逻辑方式修改为 await 的方式
         // TODO:[-] 20-11-05 在 fetch 请求头中加入跨域的部分
@@ -139,14 +140,30 @@ class RasterGeoLayer implements IRaster {
         // ])
 
         //
+        // const scale = chroma.scale([
+        //     '#0d60dd',
+        //     '#3196fe',
+        //     '#31c5fe',
+        //     '#f8eb4b',
+        //     '#fabf3b',
+        //     '#ed4b3a',
+        //     '#ef1f09'
+        // ])
+
+        // + 21-07-30 参考 windy 的色标
         const scale = chroma.scale([
-            '#0d60dd',
-            '#3196fe',
-            '#31c5fe',
-            '#f8eb4b',
-            '#fabf3b',
-            '#ed4b3a',
-            '#ef1f09'
+            'rgb(50, 158, 186)',
+            'rgb(48, 128, 164)',
+            'rgb(48, 128, 164)',
+            'rgb(52, 101, 166)',
+            'rgb(56, 104, 192)',
+            'rgb(56, 83, 169)',
+            'rgb(57, 61, 143)',
+            'rgb(134, 48, 49)',
+            'rgb(194, 76, 91)',
+            'rgb(192, 118, 105)',
+            'rgb(192, 162, 157)',
+            'rgb(192, 162, 157)'
         ])
 
         // TODO:[*] 21-02-10 此处当加载全球风场的geotiff时，y不在实际范围内，需要手动处理
@@ -220,8 +237,13 @@ class SurgeRasterGeoLayer {
         // const urlGeoTifUrl = tifResp.data
 
         // TODO:[*] 21-04-30 测试 暂时将 读取的 tif路径写死(最大增水)
-        const urlGeoTifUrl =
-            'http://localhost:82/images/TEST/TYPHOONSURGE/maxSurge_TY2022_2021010416_c0_p00.tif'
+        let urlGeoTifUrl = ''
+        const maxSurge = new MaxSurge(this.tyCode, this.tyTimestamp)
+
+        const awaitUrl = await maxSurge.getGeoTifUrl(this.tyCode, this.tyTimestamp)
+        urlGeoTifUrl = awaitUrl
+        // const urlGeoTifUrl =
+        //     'http://localhost:82/images/TEST/TYPHOONSURGE/maxSurge_TY2022_2021010416_c0_p00.tif'
         // 大体思路 获取 geotiff file 的路径，二进制方式读取 -> 使用 georaster 插件实现转换 -> 获取色标，
         // TODO:[-] 20-11-02 将之前的逻辑方式修改为 await 的方式
         // TODO:[-] 20-11-05 在 fetch 请求头中加入跨域的部分
