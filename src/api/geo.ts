@@ -228,7 +228,7 @@ const loadFieldSurgeTif = (tyCode: string, tyTimeStamp: string, forecastDt: Date
 //     tyTimeStamp: string
 // ): Promise<AxiosResponse<{ status: number; data: string }>> => {
 const loadMaxSurgeTif = (tyCode: string, tyTimeStamp: string) => {
-    const url = `${host}${area}/geotiff/surge/max/`
+    const url = `${host}${area}/geotiff/surge/max`
     return axios.get(url, {
         headers: authHeader(),
         params: {

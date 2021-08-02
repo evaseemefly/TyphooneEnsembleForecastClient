@@ -264,6 +264,9 @@ import { CanvasLayerMidModel } from '@/middle_model/geo'
 import { IconFormMinStationSurgeMidModel } from '@/middle_model/station'
 import { getDaysNum } from '@/common/date'
 
+// 各类工具类
+import { clearRasterFromMap } from '@/util/map'
+
 // 各类 DTO
 import { CustomerMarker, CustomerGisFormMarker } from './marker'
 // 20-08-11 wms 相关的中间 model
@@ -310,7 +313,8 @@ import {
     WindRasterGeoLayer,
     WaveRasterGeoLayer,
     IRaster,
-    FieldSurgeGeoLayer
+    FieldSurgeGeoLayer,
+    SurgeRasterGeoLayer
 } from '@/views/content/typhoon/raster'
 // TODO:[*] 21-04-28 + 脉冲 icon 用来示意海洋站所在位置
 import { IconCirlePulsing, IconMinStationSurge } from '@/views/members/icon/pulsingIcon'
@@ -571,6 +575,9 @@ export default class TyGroupMap extends mixins(
 
     // + 21-05-10 当前的 逐时风暴增水场 layer，每次切换时会替换，且从 map 中清除
     fieldSurgeRasterLayer: L.Layer = null
+
+    // TODO:[-] + 21-08-02 加入的 风暴最大增水场 layer
+    maxSurgeRasterLayer: L.Layer = null
     // + 21-05-14 当前的预报时间
     forecastDt = new Date('2020-09-15T18:00:00Z')
     // + 21-05-14 当前选定的
@@ -607,6 +614,8 @@ export default class TyGroupMap extends mixins(
     tyMaxSurgeOptions: ITySurgeLayerOptions = {
         isShow: false,
         layerType: LayerTypeEnum.RASTER_MAX_SURGE_LAYER,
+        // tyCode: this.tyCode,
+        // tyTimeStamp: this.tyTimeStamp
         tyCode: this.tyCode,
         tyTimeStamp: this.tyTimeStamp
     }
@@ -1740,7 +1749,22 @@ export default class TyGroupMap extends mixins(
 
     @Watch('tyMaxSurgeOptions', { immediate: true, deep: true })
     onTyMaxSurgeOptions(val: ITySurgeLayerOptions): void {
-        console.log(`监听到tyMaxSurgeOptions:${val}发生变化`)
+        console.log(`监听到tyMaxSurgeOptions:tyCode:${val.tyCode},tyTS:${val.tyTimeStamp}发生变化`)
+        const mymap: any = this.$refs.basemap['mapObject']
+        if (val.isShow) {
+            const surgeRasterLayer = new SurgeRasterGeoLayer(
+                val.tyCode,
+                val.tyTimeStamp,
+                this.forecastDt
+            )
+            surgeRasterLayer
+                .add2map(mymap, () => {})
+                .then((layer) => {
+                    this.maxSurgeRasterLayer = layer
+                })
+        } else {
+            clearRasterFromMap(mymap, this.maxSurgeRasterLayer)
+        }
     }
 
     @Watch('selectedTyId')
@@ -1775,6 +1799,9 @@ export default class TyGroupMap extends mixins(
             // TODO:[*] 21-07-28 此处还需要修改 tyGroupOptions
             this.tyGroupOptions.tyCode = val.tyCode
             this.tyGroupOptions.timeStamp = val.tyTimeStamp
+            // TODO:[-] 21-08-02 此处手动加入家庭 到 tyCode 与 tyTS 变化后手动更新 tyMaxSurgeOptions 中的两个字段
+            this.tyMaxSurgeOptions.tyCode = val.tyCode
+            this.tyMaxSurgeOptions.tyTimeStamp = val.tyTimeStamp
             const tyGroupPath = new TyGroupPath()
             tyGroupPath.getTargetTyGroupDateRange(this.tyCode, this.tyTimeStamp).then((res) => {
                 this.finishDate = new Date(Math.max(...res))
@@ -1872,6 +1899,8 @@ export default class TyGroupMap extends mixins(
                     this.tyGroupOptions.isShow = false
                 } else if (lastLayer === LayerTypeEnum.STATION_ICON_LAYER) {
                     this.stationSurgeIconOptions.isShow = false
+                } else if (lastLayer === LayerTypeEnum.RASTER_MAX_SURGE_LAYER) {
+                    this.tyMaxSurgeOptions.isShow = false
                 }
             }
         })
@@ -1886,6 +1915,10 @@ export default class TyGroupMap extends mixins(
                 case LayerTypeEnum.STATION_ICON_LAYER:
                     this.existLayers.push(tempLayerType)
                     this.stationSurgeIconOptions.isShow = true
+                    break
+                case LayerTypeEnum.RASTER_MAX_SURGE_LAYER:
+                    this.existLayers.push(tempLayerType)
+                    this.tyMaxSurgeOptions.isShow = true
                     break
             }
         })
