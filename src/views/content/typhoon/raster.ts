@@ -124,6 +124,7 @@ class RasterGeoLayer implements IRaster {
         const georasterResponse = await parseGeoraster(arrayBuffer)
         const min = georasterResponse.mins[0]
         const max = georasterResponse.maxs[0]
+
         const range = georasterResponse.ranges[0]
         // const scale = chroma.scale('Viridis')
         // TODO:[-] 21-07-29 之前的色标的备份
@@ -336,7 +337,6 @@ class FieldSurgeGeoLayer extends SurgeRasterGeoLayer {
         const that = this
         const forecastDtStr = moment(this.forecastDt).format('YYYY-MM-DD HH')
         try {
-            // TODO:[*] 21-04-30 测试 暂时将 读取的 tif路径写死(最大增水)
             const tifResp = await loadFieldSurgeTif(that.tyCode, that.tyTimestamp, that.forecastDt)
             const urlGeoTifUrl = tifResp.data
             // 大体思路 获取 geotiff file 的路径，二进制方式读取 -> 使用 georaster 插件实现转换 -> 获取色标，
@@ -359,24 +359,52 @@ class FieldSurgeGeoLayer extends SurgeRasterGeoLayer {
 
             const georasterResponse = await parseGeoraster(arrayBuffer)
             // TODO:[*] 21-05-31 将 风暴潮的范围写成固定值
-            // const min = georasterResponse.mins[0]
-            // const max = georasterResponse.maxs[0]
+            const min = georasterResponse.mins[0]
+            const max = georasterResponse.maxs[0]
             // const range = georasterResponse.ranges[0]
-            const min = 0
-            const max = 0.5
+            // TODO:[*] 21-08-04 此处不使用写死的 range,因为增水实际有可能会是一个负值，所以还是将 min 与 max 设置为 georasterResponse 的 min - max
+            // const min = 0
+            // const max = 0.5
             const range = max - min
             // const scale = chroma.scale('Viridis')
+            // + 21-07-30 参考 windy 的色标
+            // const scale = chroma.scale([
+            //     'rgb(50, 158, 186)',
+            //     'rgb(48, 128, 164)',
+            //     'rgb(48, 128, 164)',
+            //     'rgb(52, 101, 166)',
+            //     'rgb(56, 104, 192)',
+            //     'rgb(56, 83, 169)',
+            //     'rgb(57, 61, 143)',
+            //     'rgb(134, 48, 49)',
+            //     'rgb(194, 76, 91)',
+            //     'rgb(192, 118, 105)',
+            //     'rgb(192, 162, 157)',
+            //     'rgb(192, 162, 157)'
+            // ])
+            // + 21-08-04 : https://colorbrewer2.org/#type=sequential&scheme=YlGnBu&n=9
             const scale = chroma.scale([
-                '#00429d',
-                '#4771b2',
-                '#73a2c6',
-                '#a5d5d8',
-                '#ffffe0',
-                '#ffbcaf',
-                '#f4777f',
-                '#cf3759',
-                '#93003a'
+                '#081d58',
+                '#253494',
+                '#225ea8',
+                '#1d91c0',
+                '#41b6c4',
+                '#7fcdbb',
+                '#c7e9b4',
+                '#edf8b1',
+                '#ffffd9'
             ])
+            // const scale = chroma.scale([
+            //     '#00429d',
+            //     '#4771b2',
+            //     '#73a2c6',
+            //     '#a5d5d8',
+            //     '#ffffe0',
+            //     '#ffbcaf',
+            //     '#f4777f',
+            //     '#cf3759',
+            //     '#93003a'
+            // ])
 
             // TODO:[*] 21-02-10 此处当加载全球风场的geotiff时，y不在实际范围内，需要手动处理
             georasterResponse.ymax = georasterResponse.ymax

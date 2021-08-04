@@ -197,6 +197,7 @@ const loadCurrentTif = (
 /**
  *
  * + 21-05-04
+ * + 21-08-04 修改 url 为 geotiff/surge/field
  * 根据 ty_code + timestamp +forecast_dt 获取对应的 tif url 地址
  * @param {string} tyCode
  * @param {string} tyTimeStamp
@@ -204,7 +205,7 @@ const loadCurrentTif = (
  * @return {*}
  */
 const loadFieldSurgeTif = (tyCode: string, tyTimeStamp: string, forecastDt: Date) => {
-    const url = `${host}${area}/geotiff/url`
+    const url = `${host}${area}/geotiff/surge/field`
     return axios.get(url, {
         headers: authHeader(),
         params: {
