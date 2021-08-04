@@ -5,8 +5,8 @@ enum LayerTypeEnum {
     // 潮位站-实时数据图层
     STATION_ICON_LAYER = 702,
     // 栅格-逐时增水图层
-    RASTER_HOURLY_SURGE_LAYER = 703,
+    RASTER_HOURLY_SURGE_LAYER = 1104,
     // + 21-08-01 最大增水图层
-    RASTER_MAX_SURGE_LAYER = 704
+    RASTER_MAX_SURGE_LAYER = 1102
 }
 export { LayerTypeEnum }

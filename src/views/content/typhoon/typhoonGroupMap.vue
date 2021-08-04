@@ -617,7 +617,17 @@ export default class TyGroupMap extends mixins(
         // tyCode: this.tyCode,
         // tyTimeStamp: this.tyTimeStamp
         tyCode: this.tyCode,
-        tyTimeStamp: this.tyTimeStamp
+        tyTimeStamp: this.tyTimeStamp,
+        forecastDt: new Date()
+    }
+
+    // TODO:[-] 21-08-04 新增的用来监听 逐时增水配置
+    tyFieldOptions: ITySurgeLayerOptions = {
+        isShow: false,
+        layerType: LayerTypeEnum.RASTER_HOURLY_SURGE_LAYER,
+        tyCode: this.tyCode,
+        tyTimeStamp: this.tyTimeStamp,
+        forecastDt: new Date()
     }
 
     // TODO:[-] 21-06-08 临时的 潮位站 min marker
@@ -1698,6 +1708,39 @@ export default class TyGroupMap extends mixins(
         this.addTyTargetDtRealData2Map(valNew)
     }
 
+    @Watch('stationSurgeIconOptions', { immediate: true, deep: true })
+    onStationSurgeIconOptions(val: ILayerDisplayOptions): void {
+        console.log(val)
+    }
+
+    @Watch('tyFieldOptions', { immediate: true, deep: true })
+    onTyFieldOptions(val: ITySurgeLayerOptions): void {
+        const that = this
+        const mymap: any = this.$refs.basemap['mapObject']
+        if (this.checkSurgeOptions(val)) {
+            // 当 tyGroupOptions 发生变更, tyCode | forecastDt | timeStamp 中一个或多个
+            // 执行 loadStationList
+            // 执行 load wms 服务
+            // 点击向后台发送 获取逐时风暴增水场的请求
+            // 请求参数包含 ty_code | ty_timestamp | forecast_dt
+            const fieldSurgeGeoLayer = new FieldSurgeGeoLayer(
+                val.tyCode,
+                val.tyTimeStamp,
+                val.forecastDt
+            )
+            this.clearSurgeHourlyRasterLayer()
+            fieldSurgeGeoLayer
+                .add2map(mymap, () => {})
+                .then((res) => {
+                    console.log(res)
+                    that.fieldSurgeRasterLayer = res
+                })
+        } else {
+            // 若未通过则清除 tyGroup layer
+            // if(this.)
+        }
+    }
+
     // TODO:[-] 21-05-19 根据监听当前的 tyGroupOptions 来确定 指定 tyGroupPath(center) 对应的时间与 tyCode,timeStamp
     @Watch('tyGroupOptions', { immediate: true, deep: true })
     onTyGroupOptions(val: ITyGroupPathOptions): void {
@@ -1802,6 +1845,9 @@ export default class TyGroupMap extends mixins(
             // TODO:[-] 21-08-02 此处手动加入家庭 到 tyCode 与 tyTS 变化后手动更新 tyMaxSurgeOptions 中的两个字段
             this.tyMaxSurgeOptions.tyCode = val.tyCode
             this.tyMaxSurgeOptions.tyTimeStamp = val.tyTimeStamp
+            // TODO:[-] 21-08-04 手动加入修改 tyFieldSurgeOptions 中相应的字段
+            this.tyFieldOptions.tyCode = val.tyCode
+            this.tyFieldOptions.tyTimeStamp = val.tyTimeStamp
             const tyGroupPath = new TyGroupPath()
             tyGroupPath.getTargetTyGroupDateRange(this.tyCode, this.tyTimeStamp).then((res) => {
                 this.finishDate = new Date(Math.max(...res))
@@ -1818,6 +1864,23 @@ export default class TyGroupMap extends mixins(
             val.forecastDt === DefaultTyGroupPathOptions.forecastDt ||
             val.timeStamp === DefaultTyGroupPathOptions.timeStamp ||
             val.gpId === DEFAULT_TYPHOON_GROUP_PATH_ID
+        ) {
+            isOk = false
+        } else if (val.isShow === false) {
+            isOk = false
+        } else {
+            isOk = true
+        }
+        return isOk
+    }
+
+    checkSurgeOptions(val: ITySurgeLayerOptions): boolean {
+        let isOk = false
+        // TODO:[*] !! 21-07-28 注意可以将 group path 默认id 统一放在 DefaultTyGroupPathOptions 中
+        if (
+            val.tyCode === DefaultTyGroupPathOptions.tyCode ||
+            val.forecastDt === DefaultTyGroupPathOptions.forecastDt ||
+            val.tyTimeStamp === DefaultTyGroupPathOptions.timeStamp
         ) {
             isOk = false
         } else if (val.isShow === false) {
@@ -1901,6 +1964,8 @@ export default class TyGroupMap extends mixins(
                     this.stationSurgeIconOptions.isShow = false
                 } else if (lastLayer === LayerTypeEnum.RASTER_MAX_SURGE_LAYER) {
                     this.tyMaxSurgeOptions.isShow = false
+                } else if (lastLayer === LayerTypeEnum.RASTER_HOURLY_SURGE_LAYER) {
+                    this.tyFieldOptions.isShow = false
                 }
             }
         })
@@ -1920,6 +1985,9 @@ export default class TyGroupMap extends mixins(
                     this.existLayers.push(tempLayerType)
                     this.tyMaxSurgeOptions.isShow = true
                     break
+                case LayerTypeEnum.RASTER_HOURLY_SURGE_LAYER:
+                    this.existLayers.push(tempLayerType)
+                    this.tyFieldOptions.isShow = true
             }
         })
     }

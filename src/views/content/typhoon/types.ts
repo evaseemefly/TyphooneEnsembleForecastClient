@@ -106,6 +106,8 @@ const DefaultTyGroupPathOptions: ITyGroupPathOptions = {
  * @extends {ILayerDisplayOptions}
  * @extends {ISurgeLayer}
  */
-export interface ITySurgeLayerOptions extends ILayerDisplayOptions, ISurgeLayer {}
+export interface ITySurgeLayerOptions extends ILayerDisplayOptions, ISurgeLayer {
+    forecastDt: Date
+}
 
 export { DefaultTyGroupPathOptions }
