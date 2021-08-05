@@ -1,6 +1,7 @@
 import { ProductEnum } from '@/enum/dict'
 import { LayerTypeEnum } from '@/enum/map'
 import { AreaEnum } from '@/enum/area'
+import { Layer } from 'leaflet'
 
 export interface IVelocityOptions {
     coverageId: number
@@ -98,6 +99,8 @@ const DefaultTyGroupPathOptions: ITyGroupPathOptions = {
     layerType: LayerTypeEnum.GROUP_PATH_LAYER
 }
 
+export interface ITyLayer extends ILayerDisplayOptions, ISurgeLayer {}
+
 /**
  * 台风增水配置接口
  *
@@ -106,8 +109,13 @@ const DefaultTyGroupPathOptions: ITyGroupPathOptions = {
  * @extends {ILayerDisplayOptions}
  * @extends {ISurgeLayer}
  */
-export interface ITySurgeLayerOptions extends ILayerDisplayOptions, ISurgeLayer {
+export interface ITySurgeLayerOptions extends ITyLayer {
     forecastDt: Date
+}
+
+export interface ITyStationLayerOptions extends ITyLayer {
+    forecastDt: Date
+    gpId: number
 }
 
 export { DefaultTyGroupPathOptions }

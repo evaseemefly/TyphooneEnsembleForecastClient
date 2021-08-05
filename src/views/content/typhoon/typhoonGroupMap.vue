@@ -368,7 +368,9 @@ import {
     ITyGroupPathOptions,
     DefaultTyGroupPathOptions,
     ILayerDisplayOptions,
-    ITySurgeLayerOptions
+    ITySurgeLayerOptions,
+    ITyStationLayerOptions,
+    ITyLayer
 } from './types'
 
 const DEFAULT = 'DEFAULT'
@@ -607,9 +609,13 @@ export default class TyGroupMap extends mixins(
         layerType: DefaultTyGroupPathOptions.layerType,
         gpId: DEFAULT_TYPHOON_GROUP_PATH_ID
     }
-    stationSurgeIconOptions: ILayerDisplayOptions = {
+    stationSurgeIconOptions: ITyStationLayerOptions = {
         isShow: false,
-        layerType: LayerTypeEnum.STATION_ICON_LAYER
+        layerType: LayerTypeEnum.STATION_ICON_LAYER,
+        tyCode: this.tyCode,
+        tyTimeStamp: this.tyTimeStamp,
+        forecastDt: DefaultTyGroupPathOptions.forecastDt,
+        gpId: DEFAULT_TYPHOON_GROUP_PATH_ID
     }
 
     // TODO:[-] 21-08-01 新增的用来供监听的 最大增水 配置变量，tyCode 与 tyTS 由 this 中对应字段决定
@@ -860,10 +866,10 @@ export default class TyGroupMap extends mixins(
         const surgeDataFormMarkersList: L.Marker[] = []
         this.clearSurgeAllGroupLayers()
         getStationSurgeRangeListByGroupPath(
-            this.tyGroupOptions.gpId,
-            this.tyGroupOptions.tyCode,
-            this.tyGroupOptions.forecastDt,
-            this.tyGroupOptions.timeStamp
+            this.stationSurgeIconOptions.gpId,
+            this.stationSurgeIconOptions.tyCode,
+            this.stationSurgeIconOptions.forecastDt,
+            this.stationSurgeIconOptions.tyTimeStamp
         ).then(
             (res: {
                 status: number
@@ -1149,6 +1155,7 @@ export default class TyGroupMap extends mixins(
                     centerGpId = centerGroupPath.listRealdata[0].gpId
                 }
                 this.tyGroupOptions.gpId = centerGpId
+                this.stationSurgeIconOptions.gpId = centerGpId
                 that.tyGroupLineList = arrTyComplexGroupRealdata
                 // TODO:[*] ! WARNING 21-05-07 此处注意需要动态的获取 tyTimestamp 与 tyCode
                 that.loadTyphoonLine('2022', '2021010416')
@@ -1708,13 +1715,23 @@ export default class TyGroupMap extends mixins(
         this.tyGroupOptions.forecastDt = valNew
         // TODO:[-] 21-08-05 加入对 this.tyFieldOptions.forecastDt 的修改
         this.tyFieldOptions.forecastDt = valNew
+        this.stationSurgeIconOptions.forecastDt = valNew
         // TODO:[-] 21-05-31 将 当前时间对应的台风信息form 添加至 map
         this.addTyTargetDtRealData2Map(valNew)
     }
 
     @Watch('stationSurgeIconOptions', { immediate: true, deep: true })
-    onStationSurgeIconOptions(val: ILayerDisplayOptions): void {
+    onStationSurgeIconOptions(val: ITyStationLayerOptions): void {
         console.log(val)
+        const that = this
+        const mymap: any = this.$refs.basemap['mapObject']
+        // if(val)
+        if (this.checkTyGroupOptions(val)) {
+            // 加载对应时刻的 潮位站数据
+            this.loadStationList(this.zoom)
+        } else {
+            this.clearSurgeAllGroupLayers()
+        }
     }
 
     @Watch('tyFieldOptions', { immediate: true, deep: true })
@@ -1750,52 +1767,7 @@ export default class TyGroupMap extends mixins(
 
     // TODO:[-] 21-05-19 根据监听当前的 tyGroupOptions 来确定 指定 tyGroupPath(center) 对应的时间与 tyCode,timeStamp
     @Watch('tyGroupOptions', { immediate: true, deep: true })
-    onTyGroupOptions(val: ITyGroupPathOptions): void {
-        const that = this
-        const mymap: any = this.$refs.basemap['mapObject']
-        // if(val)
-        if (this.checkTyGroupOptions(val)) {
-            // 当 tyGroupOptions 发生变更, tyCode | forecastDt | timeStamp 中一个或多个
-            // 执行 loadStationList
-            // 执行 load wms 服务
-            // 点击向后台发送 获取逐时风暴增水场的请求
-            // 请求参数包含 ty_code | ty_timestamp | forecast_dt
-            const fieldSurgeGeoLayer = new FieldSurgeGeoLayer(
-                val.tyCode,
-                val.timeStamp,
-                val.forecastDt
-            )
-            // if (this.fieldSurgeRasterLayer) {
-            //     mymap.removeLayer(that.fieldSurgeRasterLayer)
-            //     this.fieldSurgeRasterLayer = null
-            // }
-            // 以上注释部分封装至
-            this.clearSurgeHourlyRasterLayer()
-            // 加载对应时刻的 潮位站数据
-            this.loadStationList(this.zoom)
-            // ERROR：
-            //  'await' expressions are only allowed within async functions and at the top levels of modules.
-            fieldSurgeGeoLayer
-                .add2map(mymap, () => {})
-                .then((res) => {
-                    console.log(res)
-                    that.fieldSurgeRasterLayer = res
-                })
-        } else {
-            // 若未通过则清除 tyGroup layer
-            // if(this.)
-        }
-    }
-
-    @Watch('stationSurgeIconOptions', { immediate: true, deep: true })
-    onStationSurgeIconOptions(val: ILayerDisplayOptions): void {
-        this.tyGroupOptions.isShow = val.isShow
-        if (val.isShow) {
-            console.log(val)
-        } else {
-            this.clearSurgeAllGroupLayers()
-        }
-    }
+    onTyGroupOptions(val: ITyGroupPathOptions): void {}
 
     @Watch('tyMaxSurgeOptions', { immediate: true, deep: true })
     onTyMaxSurgeOptions(val: ITySurgeLayerOptions): void {
@@ -1859,6 +1831,9 @@ export default class TyGroupMap extends mixins(
             // TODO:[-] 21-08-04 手动加入修改 tyFieldSurgeOptions 中相应的字段
             this.tyFieldOptions.tyCode = val.tyCode
             this.tyFieldOptions.tyTimeStamp = val.tyTimeStamp
+            // TODO:[-] 21-08-05 手动加入更新 stationSurgeIconOptions 中的 tyCode 与 tyTS
+            this.stationSurgeIconOptions.tyCode = val.tyCode
+            this.stationSurgeIconOptions.tyTimeStamp = val.tyTimeStamp
             const tyGroupPath = new TyGroupPath()
             tyGroupPath.getTargetTyGroupDateRange(this.tyCode, this.tyTimeStamp).then((res) => {
                 this.finishDate = new Date(Math.max(...res))
