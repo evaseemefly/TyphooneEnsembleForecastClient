@@ -546,6 +546,8 @@ export default class TyGroupMap extends mixins(
     // 用于动态加载的 wms 的 ws 的str
     wmsWorkSpace = ''
     layerControl: any = null
+    // TODO:[-] + 21-08-05 新加入的全局唯一的 栅格layer
+    uniqueRasterLayer: L.Layer = null
     // 流场 layer (注意是一个矢量 layer 注意与上面的 风场的区分)
     velocityLayer: any = null
     // TODO:[*] 20-07-27 记录当前 add layers to map 时的 layers种类数组
@@ -1704,6 +1706,8 @@ export default class TyGroupMap extends mixins(
         // 修改当前 的 targetDate
         this.targetDate = valNew
         this.tyGroupOptions.forecastDt = valNew
+        // TODO:[-] 21-08-05 加入对 this.tyFieldOptions.forecastDt 的修改
+        this.tyFieldOptions.forecastDt = valNew
         // TODO:[-] 21-05-31 将 当前时间对应的台风信息form 添加至 map
         this.addTyTargetDtRealData2Map(valNew)
     }
@@ -1723,6 +1727,9 @@ export default class TyGroupMap extends mixins(
             // 执行 load wms 服务
             // 点击向后台发送 获取逐时风暴增水场的请求
             // 请求参数包含 ty_code | ty_timestamp | forecast_dt
+            if (this.uniqueRasterLayer) {
+                clearRasterFromMap(mymap, this.uniqueRasterLayer)
+            }
             const fieldSurgeGeoLayer = new FieldSurgeGeoLayer(
                 val.tyCode,
                 val.tyTimeStamp,
@@ -1732,12 +1739,12 @@ export default class TyGroupMap extends mixins(
             fieldSurgeGeoLayer
                 .add2map(mymap, () => {})
                 .then((res) => {
-                    console.log(res)
-                    that.fieldSurgeRasterLayer = res
+                    // console.log(res)
+                    that.uniqueRasterLayer = res
                 })
         } else {
             // 若未通过则清除 tyGroup layer
-            // if(this.)
+            clearRasterFromMap(mymap, this.uniqueRasterLayer)
         }
     }
 
@@ -1792,9 +1799,13 @@ export default class TyGroupMap extends mixins(
 
     @Watch('tyMaxSurgeOptions', { immediate: true, deep: true })
     onTyMaxSurgeOptions(val: ITySurgeLayerOptions): void {
-        console.log(`监听到tyMaxSurgeOptions:tyCode:${val.tyCode},tyTS:${val.tyTimeStamp}发生变化`)
+        const that = this
+        // console.log(`监听到tyMaxSurgeOptions:tyCode:${val.tyCode},tyTS:${val.tyTimeStamp}发生变化`)
         const mymap: any = this.$refs.basemap['mapObject']
         if (val.isShow) {
+            if (this.uniqueRasterLayer) {
+                clearRasterFromMap(mymap, this.uniqueRasterLayer)
+            }
             const surgeRasterLayer = new SurgeRasterGeoLayer(
                 val.tyCode,
                 val.tyTimeStamp,
@@ -1803,10 +1814,10 @@ export default class TyGroupMap extends mixins(
             surgeRasterLayer
                 .add2map(mymap, () => {})
                 .then((layer) => {
-                    this.maxSurgeRasterLayer = layer
+                    this.uniqueRasterLayer = layer
                 })
         } else {
-            clearRasterFromMap(mymap, this.maxSurgeRasterLayer)
+            clearRasterFromMap(mymap, this.uniqueRasterLayer)
         }
     }
 
