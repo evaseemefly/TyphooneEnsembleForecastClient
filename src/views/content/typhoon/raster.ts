@@ -98,11 +98,9 @@ class RasterGeoLayer implements IRaster {
         // TODO:[-] 20-11-04 暂时注释掉，调取远程的文件会出现错误
         // const urlGeoTifUrl = tifResp.data
 
-        // TODO:[*] 21-04-30 测试 暂时将 读取的 tif路径写死(最大增水)
-        // const urlGeoTifUrl =
-        //     'http://localhost:82/images/TY_GROUP_RESULT/TY2107_2021072110/maxSurge_TY2107_2021072110_c0_p00.tif'
+        // TODO:[-] 21-08-06 暂时加入概率场 tif文件
         const urlGeoTifUrl =
-            'http://localhost:82/images/TY_GROUP_RESULT/TY2022_2021010416/maxSurge_TY2022_2021010416_c0_p00.tif'
+            'http://localhost:82/images/nmefc_download/TY_GROUP_RESULT/maxSurge_TY2022_2021010416_c0_p00.tif'
         // 大体思路 获取 geotiff file 的路径，二进制方式读取 -> 使用 georaster 插件实现转换 -> 获取色标，
         // TODO:[-] 20-11-02 将之前的逻辑方式修改为 await 的方式
         // TODO:[-] 20-11-05 在 fetch 请求头中加入跨域的部分
@@ -168,8 +166,11 @@ class RasterGeoLayer implements IRaster {
         ])
 
         // TODO:[*] 21-02-10 此处当加载全球风场的geotiff时，y不在实际范围内，需要手动处理
-        georasterResponse.ymax = georasterResponse.ymax
-        georasterResponse.ymin = georasterResponse.ymin
+        // const ymax = georasterResponse.ymax
+        // georasterResponse.ymax = 26.00000012734953
+        // georasterResponse.ymin = 14.9999998726504717
+        // georasterResponse.xmin = 104.9999979636092462
+        // georasterResponse.xmax = 123.0000020363907538
 
         const layer = new GeoRasterLayer({
             georaster: georasterResponse,
@@ -178,7 +179,7 @@ class RasterGeoLayer implements IRaster {
                 const pixelValue = pixelValues[0] // there's just one band in this raster
 
                 // if there's zero wind, don't return a color
-                if (pixelValue === 0 || Number.isNaN(pixelValue)) return null
+                if (Number.isNaN(pixelValue)) return null
 
                 // scale to 0 - 1 used by chroma
                 const scaledPixelValue = (pixelValue - min) / range
