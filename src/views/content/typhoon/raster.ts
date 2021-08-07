@@ -99,8 +99,11 @@ class RasterGeoLayer implements IRaster {
         // const urlGeoTifUrl = tifResp.data
 
         // TODO:[-] 21-08-06 暂时加入概率场 tif文件
+        // const urlGeoTifUrl =
+        //     'http://localhost:82/images/nmefc_download/TY_GROUP_RESULT/test/maxSurge_TY2022_2021010416_c0_p00.tif'
+        // 测试使用的 原始 最大增水场 tif
         const urlGeoTifUrl =
-            'http://localhost:82/images/nmefc_download/TY_GROUP_RESULT/maxSurge_TY2022_2021010416_c0_p00.tif'
+            'http://localhost:82/images/nmefc_download/TY_GROUP_RESULT/test/proSurge_TY2022_2021010416_gt1_0m_desc_y.tif'
         // 大体思路 获取 geotiff file 的路径，二进制方式读取 -> 使用 georaster 插件实现转换 -> 获取色标，
         // TODO:[-] 20-11-02 将之前的逻辑方式修改为 await 的方式
         // TODO:[-] 20-11-05 在 fetch 请求头中加入跨域的部分
@@ -124,6 +127,11 @@ class RasterGeoLayer implements IRaster {
         const max = georasterResponse.maxs[0]
 
         const range = georasterResponse.ranges[0]
+
+        georasterResponse.ymax = 14.9999982459352719
+        georasterResponse.ymin = 26.00000012734953
+        georasterResponse.xmax = 123.00000203639075
+        georasterResponse.xmin = 104.9999979636092462
         // const scale = chroma.scale('Viridis')
         // TODO:[-] 21-07-29 之前的色标的备份
         // const scale = chroma.scale([
@@ -150,20 +158,82 @@ class RasterGeoLayer implements IRaster {
         // ])
 
         // + 21-07-30 参考 windy 的色标
-        const scale = chroma.scale([
-            'rgb(50, 158, 186)',
-            'rgb(48, 128, 164)',
-            'rgb(48, 128, 164)',
-            'rgb(52, 101, 166)',
-            'rgb(56, 104, 192)',
-            'rgb(56, 83, 169)',
-            'rgb(57, 61, 143)',
-            'rgb(134, 48, 49)',
-            'rgb(194, 76, 91)',
-            'rgb(192, 118, 105)',
-            'rgb(192, 162, 157)',
-            'rgb(192, 162, 157)'
-        ])
+        // const scale = chroma.scale([
+        //     // 'rgb(50, 158, 186)',
+        //     // 'rgb(48, 128, 164)',
+        //     'rgb(52, 101, 166)',
+        //     'rgb(56, 104, 192)',
+        //     'rgb(56, 83, 169)',
+        //     'rgb(57, 61, 143)',
+        //     '#f8eb4b',
+        //     '#fabf3b',
+        //     '#ed4b3a'
+        // ])
+        // 可接手的色标1
+        // const scale = chroma.scale('RdYlBu').domain([1, 0])
+        // 色标2:
+        // const scale = chroma
+        //     .scale(['yellow', 'navy'])
+        //     .mode('hsl')
+        //     .domain([1, 0])
+
+        // 色标3:
+        // const scale = chroma
+        //     .scale([
+        //         '#28005F',
+        //         '#0D0074',
+        //         '#001289',
+        //         '#00489E',
+        //         '#0089B1',
+        //         '#22BE9C',
+        //         '#44CA6F',
+        //         '#6CD666',
+        //         '#B5E088'
+        //     ])
+        //     .mode('hsl')
+        //     .domain([0, 1])
+
+        // 色标4:
+        // const scale = chroma
+        //     .scale([
+        //         '#ffffd9',
+        //         '#edf8b1',
+        //         '#c7e9b4',
+        //         '#7fcdbb',
+        //         '#41b6c4',
+        //         '#1d91c0',
+        //         '#225ea8',
+        //         '#253494',
+        //         '#081d58'
+        //     ])
+        //     .mode('hsl')
+        //     .domain([1, 0])
+
+        // 色标5:
+        // const scale = chroma
+        //     .scale(['#B8CAFF', '#A3BAFF', '#8FABFF', '#7A9CFF', '#527DFF', '#295FFF'])
+        //     .mode('hsl')
+        //     .domain([1, 0])
+
+        // const scale = chroma
+        //     .scale(['#07213A', '#0A2B4D', '#0C3660', '#0E4173', '#104C86'])
+        //     .mode('hsl')
+        //     .domain([0, 1])
+
+        const scale = chroma
+            .scale([
+                '#C8FAED',
+                '#93F5E3',
+                '#5BE1D5',
+                '#32C4C2',
+                '#01939E',
+                '#007387',
+                '#005771',
+                '#003E5B',
+                '#002D4B'
+            ])
+            .mode('hsl')
+            .domain([1, 0])
 
         // TODO:[*] 21-02-10 此处当加载全球风场的geotiff时，y不在实际范围内，需要手动处理
         // const ymax = georasterResponse.ymax
@@ -174,7 +244,7 @@ class RasterGeoLayer implements IRaster {
 
         const layer = new GeoRasterLayer({
             georaster: georasterResponse,
-            opacity: 0.6,
+            opacity: 0.7,
             pixelValuesToColorFn: function(pixelValues) {
                 const pixelValue = pixelValues[0] // there's just one band in this raster
 
