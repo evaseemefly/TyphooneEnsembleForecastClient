@@ -20,6 +20,17 @@
             <div class="tools-font" :class="{ checked: item.checked }" @click="onClick(item)">
                 {{ item.title }}
             </div>
+            <div class="child-options" v-show="item.showOptions">
+                <div class="child-options-title">概率</div>
+                <el-select v-model="coverageType" placeholder="请选择" @change="setOptions">
+                    <el-option
+                        v-for="tempOptions in item.options"
+                        :key="tempOptions.key"
+                        :label="tempOptions.val"
+                        :value="tempOptions.optionsType"
+                    ></el-option>
+                </el-select>
+            </div>
             <!-- TODO:[-] 20-11-14 将 is-show 放在组建中 以下暂时注释掉 采用动态添加组件的方式替代 -->
             <!-- <transition name="fade">
                 <div
@@ -31,6 +42,7 @@
                 </div>
             </transition> -->
         </a>
+
         <div id="insert-container">
             <div v-for="item in insertComponents" :key="item.key">
                 <component v-bind:is="item.html" v-if="item.isShow"></component>
@@ -126,30 +138,6 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     val: '',
                     checked: false
                 },
-                // {
-                //     isExpanded: false,
-                //     html: '',
-                //     iconClass: 'fas fa-wind',
-                //     title: '风场-风力',
-                //     hasChildren: false,
-                //     isChildren: true,
-                //     toolType: ToolTypeEnum.LAYER,
-                //     layerType: LayerTypeEnum.WIND_BAR_LAYER,
-                //     val: '',
-                //     checked: false
-                // },
-                // {
-                //     isExpanded: false,
-                //     html: '',
-                //     iconClass: 'fab fa-cloudversify',
-                //     title: '风场-栅格',
-                //     hasChildren: false,
-                //     isChildren: true,
-                //     toolType: ToolTypeEnum.LAYER,
-                //     layerType: LayerTypeEnum.WIND_RASTER_LAYER,
-                //     val: '',
-                //     checked: false
-                // },
                 {
                     isExpanded: false,
                     html: '',
@@ -157,10 +145,24 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     title: '逐时风暴增水',
                     hasChildren: false,
                     isChildren: true,
+                    hasOptions: true,
                     toolType: ToolTypeEnum.LAYER,
                     layerType: LayerTypeEnum.RASTER_HOURLY_SURGE_LAYER,
                     val: '',
-                    checked: false
+                    checked: false,
+                    showOptions: false,
+                    options: [
+                        {
+                            key: 0,
+                            val: '大于0.5m的概率',
+                            optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT05
+                        },
+                        {
+                            key: 1,
+                            val: '大于1.0m的概率',
+                            optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT10
+                        }
+                    ]
                 },
                 // 流场 的 masked 的 栅格
                 {
@@ -199,6 +201,11 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
 
     layers: LayerTypeEnum[] = []
 
+    // tempOptions?: { key: number; val: string }[] = [
+    //     { key: 0, val: '测试1' },
+    //     { key: 1, val: '测试2' }
+    // ]
+
     converToolsBar: {
         id: number
         // 只有 isChildren 才有 pid
@@ -215,6 +222,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         checked: boolean
         isRadio?: boolean
         optionsType?: ToolBarOptionsEnum
+        options?: { key: number; val: string }[]
     }[] = []
 
     // 将 toolsbar 转换 -> convertToolsBar
@@ -309,6 +317,24 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         }
     }
 
+    setOptions(item: LayerTypeEnum, tempOptions: any): void {
+        console.info(`监听到item发生变化:${item}`)
+        // console.info(`监听到tempOptions发生变化:${tempOptions}`)
+        this.insertLayers(item)
+    }
+
+    insertLayers(tempLayerType: LayerTypeEnum): void {
+        if (this.layers.indexOf(tempLayerType) === -1) {
+            this.layers.push(tempLayerType)
+        } else {
+            // 若已经存在则删除
+            const index = this.layers.findIndex((temp) => temp === tempLayerType)
+            if (index != -1) {
+                this.layers.splice(index, 1)
+            }
+        }
+    }
+
     @Mutation(SET_MAP_LAYERS, { namespace: 'map' }) setLayers
 
     // TODO:[-] 21-01-05
@@ -329,6 +355,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         checked?: boolean
         // 是否为单选按钮
         isRadio?: boolean
+        showOptions?: boolean
     }): void {
         // 1- 执行展开操作
         // s1- 注意此处有一个先导的判断，先判断是否为children，若为child则不用
@@ -343,16 +370,22 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
             }
         })
         // 2-1 若为 layer 则去执行修改layer的操作
-        if (item.toolType == ToolTypeEnum.LAYER) {
-            if (this.layers.indexOf(item.layerType) === -1) {
-                this.layers.push(item.layerType)
-            } else {
-                // 若已经存在则删除
-                const index = this.layers.findIndex((temp) => temp === item.layerType)
-                if (index != -1) {
-                    this.layers.splice(index, 1)
-                }
-            }
+        if (
+            item.toolType == ToolTypeEnum.LAYER &&
+            item['showOptions'] !== undefined &&
+            item.showOptions
+        ) {
+            // if (this.layers.indexOf(item.layerType) === -1) {
+            //     this.layers.push(item.layerType)
+            // } else {
+            //     // 若已经存在则删除
+            //     const index = this.layers.findIndex((temp) => temp === item.layerType)
+            //     if (index != -1) {
+            //         this.layers.splice(index, 1)
+            //     }
+            // }
+            // TODO:[-] 21-08-11 此处将以上方法封装至 insertLayers 中
+            this.insertLayers(item.layerType)
         }
         // TODO:[-] 20-11-11
         // 2-2 若为 SHOWTYPEOPTION -> optionsType
@@ -411,6 +444,10 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                 temp.isShow = !temp.isShow
                 this.setCurrentLatlngLock(!temp.isShow)
             })
+        }
+        // 2-3 TODO:[-] 21-08-11 若 存在 showOptions 属性，则对 showOptions 取反
+        if (item['showOptions'] !== undefined) {
+            item.showOptions = !item.showOptions
         }
     }
 
@@ -476,6 +513,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
     border-radius: @border-radius;
     // 加入了文字不可选
     user-select: none;
+    width: 40px;
     // 暂时未用
     .main-title {
         background: @main-title-color;
@@ -530,6 +568,27 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
     a > div.show-form:hover {
         color: #fff3e1;
     }
+
+    // TODO:[-] 21-08-11 加入的对于下拉框组件的样式
+    .child-options {
+        /* position: relative; */
+        display: flex;
+        /* float: left; */
+        width: 200px;
+        margin: 3px;
+        .child-options-title {
+            display: inline-block;
+            width: 50;
+            width: 100px;
+            color: white;
+            text-align: left;
+            font-size: 17px;
+            font-weight: bold;
+        }
+        .el-select {
+        }
+    }
+
     // show 的 动画
     .form-fade-in {
         animation: go_in 1s;

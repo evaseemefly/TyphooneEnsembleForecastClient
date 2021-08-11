@@ -18,6 +18,16 @@ interface IOptions {
     val: string
     key?: number
     optionsType?: ToolBarOptionsEnum
+    hasOptions?: boolean // + 21-08-11 新加入的 是否有可展开的 options
+    options?: IChildOptions[]
+    showOptions?: boolean
+}
+
+// 新加入了的 子级选项接口
+interface IChildOptions {
+    key: number
+    val: string
+    optionsType?: LayerTypeEnum
 }
 interface IExpand {
     // 是否展开
