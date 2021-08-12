@@ -314,7 +314,8 @@ import {
     WaveRasterGeoLayer,
     IRaster,
     FieldSurgeGeoLayer,
-    SurgeRasterGeoLayer
+    SurgeRasterGeoLayer,
+    ProSurgeGeoLayer
 } from '@/views/content/typhoon/raster'
 // TODO:[*] 21-04-28 + 脉冲 icon 用来示意海洋站所在位置
 import { IconCirlePulsing, IconMinStationSurge } from '@/views/members/icon/pulsingIcon'
@@ -370,7 +371,8 @@ import {
     ILayerDisplayOptions,
     ITySurgeLayerOptions,
     ITyStationLayerOptions,
-    ITyLayer
+    ITyLayer,
+    ITyProLayerOptions
 } from './types'
 
 const DEFAULT = 'DEFAULT'
@@ -637,6 +639,14 @@ export default class TyGroupMap extends mixins(
         tyTimeStamp: this.tyTimeStamp,
         forecastDt: new Date()
     }
+    // TODO:[-] 21-08-12 新增的 概率增水配置
+    tyProSurgeOptions: ITyProLayerOptions = {
+        isShow: false,
+        layerType: LayerTypeEnum.UN_LAYER,
+        tyCode: this.tyCode,
+        tyTimeStamp: this.tyTimeStamp,
+        pro: 0.5
+    }
 
     // TODO:[-] 21-06-08 临时的 潮位站 min marker
     stationMinMarker: L.Marker = undefined
@@ -726,18 +736,18 @@ export default class TyGroupMap extends mixins(
         // this.loadStationList(this.zoom)
         // // TODO:[*] 21-04-30 测试 加入的测试加载台风最大增水
         // // TODO:[*] 21-05-07 暂时去掉增大增水
-        const mymap = this.$refs.basemap.mapObject
-        const testForecastDt = new Date()
-        const raster = new RasterGeoLayer(1, testForecastDt, AreaEnum.NORTHWEST)
-        raster.add2map(
-            mymap,
-            (opt = { message: `当前时间${testForecastDt}没有对应的tif文件`, type: 'warning' }) => {
-                this.$message({
-                    message: `当前时间${testForecastDt}没有对应的tif文件`,
-                    type: 'warning'
-                })
-            }
-        )
+        // const mymap = this.$refs.basemap.mapObject
+        // const testForecastDt = new Date()
+        // const raster = new RasterGeoLayer(1, testForecastDt, AreaEnum.NORTHWEST)
+        // raster.add2map(
+        //     mymap,
+        //     (opt = { message: `当前时间${testForecastDt}没有对应的tif文件`, type: 'warning' }) => {
+        //         this.$message({
+        //             message: `当前时间${testForecastDt}没有对应的tif文件`,
+        //             type: 'warning'
+        //         })
+        //     }
+        // )
         // // + 21-05-18 在页面加载后首先加载当前的 start_dt 与 end_dt
         // const tyGroupPath = new TyGroupPath()
         // tyGroupPath.getTargetTyGroupDateRange(this.tyCode, this.tyTimeStamp).then((res) => {
@@ -1793,6 +1803,30 @@ export default class TyGroupMap extends mixins(
         }
     }
 
+    @Watch('tyProSurgeOptions', { immediate: true, deep: true })
+    onTyProSurgeOptions(val: ITySurgeLayerOptions): void {
+        const that = this
+        // console.log(`监听到tyMaxSurgeOptions:tyCode:${val.tyCode},tyTS:${val.tyTimeStamp}发生变化`)
+        const mymap: any = this.$refs.basemap['mapObject']
+        if (val.isShow) {
+            if (this.uniqueRasterLayer) {
+                clearRasterFromMap(mymap, this.uniqueRasterLayer)
+            }
+            const surgeRasterLayer = new ProSurgeGeoLayer(
+                val.tyCode,
+                val.tyTimeStamp,
+                this.forecastDt
+            )
+            surgeRasterLayer
+                .add2map(mymap, () => {}, 0.5, val.layerType)
+                .then((layer) => {
+                    this.uniqueRasterLayer = layer
+                })
+        } else {
+            clearRasterFromMap(mymap, this.uniqueRasterLayer)
+        }
+    }
+
     @Watch('selectedTyId')
     onSelectedTyId(val: number): void {
         if (val != DEFAULT_TYPHOON_ID) {
@@ -1831,6 +1865,9 @@ export default class TyGroupMap extends mixins(
             // TODO:[-] 21-08-04 手动加入修改 tyFieldSurgeOptions 中相应的字段
             this.tyFieldOptions.tyCode = val.tyCode
             this.tyFieldOptions.tyTimeStamp = val.tyTimeStamp
+            // TODO:[-] 21-08-12 加入了 概率增水场
+            this.tyProSurgeOptions.tyCode = val.tyCode
+            this.tyProSurgeOptions.tyTimeStamp = val.tyTimeStamp
             // TODO:[-] 21-08-05 手动加入更新 stationSurgeIconOptions 中的 tyCode 与 tyTS
             this.stationSurgeIconOptions.tyCode = val.tyCode
             this.stationSurgeIconOptions.tyTimeStamp = val.tyTimeStamp
@@ -1952,6 +1989,8 @@ export default class TyGroupMap extends mixins(
                     this.tyMaxSurgeOptions.isShow = false
                 } else if (lastLayer === LayerTypeEnum.RASTER_HOURLY_SURGE_LAYER) {
                     this.tyFieldOptions.isShow = false
+                } else if (lastLayer === LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT05) {
+                    this.tyFieldOptions.isShow = false
                 }
             }
         })
@@ -1974,6 +2013,12 @@ export default class TyGroupMap extends mixins(
                 case LayerTypeEnum.RASTER_HOURLY_SURGE_LAYER:
                     this.existLayers.push(tempLayerType)
                     this.tyFieldOptions.isShow = true
+                    break
+                case LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT05:
+                    this.existLayers.push(tempLayerType)
+                    this.tyProSurgeOptions.isShow = true
+                    this.tyProSurgeOptions.layerType = LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT05
+                    break
             }
         })
     }

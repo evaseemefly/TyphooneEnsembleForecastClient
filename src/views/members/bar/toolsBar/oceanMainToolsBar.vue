@@ -22,7 +22,7 @@
             </div>
             <div class="child-options" v-show="item.showOptions">
                 <div class="child-options-title">概率</div>
-                <el-select v-model="coverageType" placeholder="请选择" @change="setOptions">
+                <el-select v-model="proSurgeLayerVal" placeholder="请选择" @change="setOptions">
                     <el-option
                         v-for="tempOptions in item.options"
                         :key="tempOptions.key"
@@ -55,6 +55,8 @@ import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 import { Mutation, namespace } from 'vuex-class'
 import { mapMutations } from 'vuex'
 import moment, { parseTwoDigitYear } from 'moment'
+// leaflet 相关
+import * as L from 'leaflet'
 
 // 各类组件
 import OilShowTypeSelect from '@/views/members/select/oilShowTypeSelect.vue'
@@ -149,17 +151,30 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     toolType: ToolTypeEnum.LAYER,
                     layerType: LayerTypeEnum.RASTER_HOURLY_SURGE_LAYER,
                     val: '',
+                    checked: false
+                },
+                {
+                    isExpanded: false,
+                    html: '',
+                    iconClass: 'fas fa-water',
+                    title: '概率风暴增水',
+                    hasChildren: false,
+                    isChildren: true,
+                    hasOptions: true,
+                    toolType: ToolTypeEnum.LAYER,
+                    layerType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER,
+                    val: '',
                     checked: false,
                     showOptions: false,
                     options: [
                         {
                             key: 0,
-                            val: '大于0.5m的概率',
+                            val: '大于0.5m',
                             optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT05
                         },
                         {
                             key: 1,
-                            val: '大于1.0m的概率',
+                            val: '大于1.0m',
                             optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT10
                         }
                     ]
@@ -200,6 +215,9 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
     ]
 
     layers: LayerTypeEnum[] = []
+
+    proSurgeLayer: LayerTypeEnum = LayerTypeEnum.UN_LAYER
+    proSurgeLayerVal: LayerTypeEnum = LayerTypeEnum.UN_LAYER
 
     // tempOptions?: { key: number; val: string }[] = [
     //     { key: 0, val: '测试1' },
@@ -320,7 +338,20 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
     setOptions(item: LayerTypeEnum, tempOptions: any): void {
         console.info(`监听到item发生变化:${item}`)
         // console.info(`监听到tempOptions发生变化:${tempOptions}`)
-        this.insertLayers(item)
+        this.proSurgeLayer = item
+        // this.insertLayers(item)
+    }
+
+    @Watch('proSurgeLayer')
+    onProSurgeLayer(newLayer: LayerTypeEnum, oldLayer: LayerType): void {
+        // step: 若 oldLayer 存在则从当前 layers 中找到并去掉，若不存在则不执行以上操作
+        if (oldLayer !== LayerTypeEnum.UN_LAYER) {
+            const index = this.layers.findIndex((item) => item === oldLayer)
+            if (index >= 0) {
+                this.layers.splice(index, 1)
+            }
+        }
+        this.layers.push(newLayer)
     }
 
     insertLayers(tempLayerType: LayerTypeEnum): void {

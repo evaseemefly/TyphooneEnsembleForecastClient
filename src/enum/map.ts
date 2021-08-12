@@ -1,4 +1,5 @@
 enum LayerTypeEnum {
+    UN_LAYER = -1,
     // 更新至 tb:dict_base -> pid=700
     // 台风-集合预报路径图层
     GROUP_PATH_LAYER = 701,

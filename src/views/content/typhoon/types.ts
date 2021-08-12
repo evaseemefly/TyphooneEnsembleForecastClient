@@ -113,6 +113,17 @@ export interface ITySurgeLayerOptions extends ITyLayer {
     forecastDt: Date
 }
 
+/**
+ * 概率增水
+ *
+ * @export
+ * @interface ITyProLayerOptions
+ * @extends {ITyLayer}
+ */
+export interface ITyProLayerOptions extends ITyLayer {
+    pro: number
+}
+
 export interface ITyStationLayerOptions extends ITyLayer {
     forecastDt: Date
     gpId: number

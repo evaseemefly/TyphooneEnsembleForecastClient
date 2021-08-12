@@ -25,11 +25,12 @@ import 'georaster'
 // 以下方式引入不成功
 // import * as georaster from 'georaster'
 import 'georaster-layer-for-leaflet'
-import { loadCurrentTif, loadFieldSurgeTif } from '@/api/geo'
+import { loadCurrentTif, loadFieldSurgeTif, loadProSurgeTif } from '@/api/geo'
 import { MaxSurge } from './surge'
 import { AreaEnum } from '@/enum/area'
 import { DictEnum, ProductEnum } from '@/enum/dict'
 import { USELESS_COVERAGE_ID } from '@/const/common'
+import { LayerTypeEnum } from '@/enum/map'
 
 export interface IRaster {
     rasterLayer: L.Layer
@@ -523,6 +524,107 @@ class FieldSurgeGeoLayer extends SurgeRasterGeoLayer {
 }
 
 /**
+ * + 21-08-12
+ *  概率增水场
+ *
+ * @class ProSurgeGeoLayer
+ * @extends {SurgeRasterGeoLayer}
+ */
+class ProSurgeGeoLayer extends SurgeRasterGeoLayer {
+    public async add2map(
+        map: L.Map,
+        errorCallBackFun: (opt: { message: string; type: string }) => void,
+        pro: number,
+        coverageType: LayerTypeEnum
+    ): Promise<L.Layer> {
+        let addedLayer: L.Layer = null
+        const that = this
+        try {
+            const tifResp = await loadProSurgeTif(that.tyCode, that.tyTimestamp, pro, coverageType)
+            const urlGeoTifUrl = tifResp.data
+            // 大体思路 获取 geotiff file 的路径，二进制方式读取 -> 使用 georaster 插件实现转换 -> 获取色标，
+            // TODO:[-] 20-11-02 将之前的逻辑方式修改为 await 的方式
+            // TODO:[-] 20-11-05 在 fetch 请求头中加入跨域的部分
+            const fetchHeader = new Headers({
+                'Access-Control-Allow-Origin': '*',
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8,'
+            })
+            const response = await fetch(urlGeoTifUrl, {
+                method: 'GET',
+                // headers: fetchHeader,
+                mode: 'cors'
+            })
+            const arrayBuffer = await response.arrayBuffer()
+            // 使用 import 'georaster' 的方式引入会出现没有智能提示的问题
+            // TODO:[-] 20-11-04
+            // Uncaught (in promise) TypeError: Invalid byte order value.
+            // at Function.fromSource (e2c99254-e67c-4422-be5d-01e0b254a36b:10)
+
+            const georasterResponse = await parseGeoraster(arrayBuffer)
+            // TODO:[*] 21-05-31 将 风暴潮的范围写成固定值
+            const min = georasterResponse.mins[0]
+            const max = georasterResponse.maxs[0]
+            // const range = georasterResponse.ranges[0]
+            // TODO:[*] 21-08-04 此处不使用写死的 range,因为增水实际有可能会是一个负值，所以还是将 min 与 max 设置为 georasterResponse 的 min - max
+            // const min = 0
+            // const max = 0.5
+            const range = max - min
+            // + 21-08-04 : https://colorbrewer2.org/#type=sequential&scheme=YlGnBu&n=9
+            const scale = chroma.scale([
+                '#081d58',
+                '#253494',
+                '#225ea8',
+                '#1d91c0',
+                '#41b6c4',
+                '#7fcdbb',
+                '#c7e9b4',
+                '#edf8b1',
+                '#ffffd9'
+            ])
+
+            // TODO:[*] 21-02-10 此处当加载全球风场的geotiff时，y不在实际范围内，需要手动处理
+            georasterResponse.ymax = georasterResponse.ymax
+            georasterResponse.ymin = georasterResponse.ymin
+            // georasterResponse.ymax = max
+            // georasterResponse.ymin = min
+
+            const layer = new GeoRasterLayer({
+                georaster: georasterResponse,
+                opacity: 0.6,
+                pixelValuesToColorFn: function(pixelValues) {
+                    const pixelValue = pixelValues[0] // there's just one band in this raster
+                    // TODO:[-] 21-05-31 修改了原始数据，陆地部分采用 Nan，所以不需要将 0 值填充为 null
+                    if (Number.isNaN(pixelValue) || pixelValue === -32767) return null
+
+                    // scale to 0 - 1 used by chroma
+                    // TODO:[-] 21-05-31 注意若设置固定范围的色标，则此处的scaledPiexelValue 是一个 0-1 的值，也就是 当前值 / range
+                    let scaledPixelValue = min
+                    if (pixelValue > max) {
+                        scaledPixelValue = max / range
+                    } else if (pixelValue < min) {
+                        scaledPixelValue = min / range
+                    } else {
+                        scaledPixelValue = (pixelValue - min) / range
+                    }
+                    // const scaledPixelValue = (pixelValue - min) / range
+
+                    const color = scale(scaledPixelValue).hex()
+
+                    return color
+                },
+                resolution: 256
+            })
+            addedLayer = layer.addTo(map)
+            that.rasterLayer = addedLayer
+        } catch (error) {
+            console.warn(error.message)
+        }
+
+        return addedLayer
+    }
+}
+
+/**
  *  风场栅格 layer (继承自 RasterGeoLayer)
  *
  * @class WindRasterGeoLayer
@@ -776,5 +878,6 @@ export {
     WindRasterGeoLayer,
     WaveRasterGeoLayer,
     SurgeRasterGeoLayer,
-    FieldSurgeGeoLayer
+    FieldSurgeGeoLayer,
+    ProSurgeGeoLayer
 }

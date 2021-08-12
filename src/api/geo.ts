@@ -2,6 +2,7 @@ import axios, { AxiosResponse } from 'axios'
 import { host } from './common'
 import authHeader from './auth-header'
 import { DEFAULT_COVERAGE_AREA, DEFAULT_COVERAGE_TYPE } from '@/const/common'
+import { LayerTypeEnum } from '@/enum/map'
 // 后端的请求地址及端口
 // export const host = host
 axios.defaults.withCredentials = true
@@ -239,6 +240,34 @@ const loadMaxSurgeTif = (tyCode: string, tyTimeStamp: string) => {
     })
 }
 
+/**
+ * + 21-08-12
+ *   获取概率增水场 tif url
+ *
+ * @param {string} tyCode
+ * @param {string} tyTimeStamp
+ * @param {number} pro
+ * @param {LayerTypeEnum} coverageType
+ * @return {*}
+ */
+const loadProSurgeTif = (
+    tyCode: string,
+    tyTimeStamp: string,
+    pro: number,
+    coverageType: LayerTypeEnum
+) => {
+    const url = `${host}${area}/geotiff/surge/pro`
+    return axios.get(url, {
+        headers: authHeader(),
+        params: {
+            ty_code: tyCode,
+            ty_timestamp: tyTimeStamp,
+            pro: pro,
+            coverage_type: coverageType
+        }
+    })
+}
+
 export {
     loadCoverageList,
     loadCoverageInfo,
@@ -251,5 +280,6 @@ export {
     loadWindBarPaged,
     loadWaveBarPaged,
     loadFieldSurgeTif,
-    loadMaxSurgeTif
+    loadMaxSurgeTif,
+    loadProSurgeTif
 }
