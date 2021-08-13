@@ -327,7 +327,7 @@ import { StationSurge, IToHtml } from './station'
 import { TyGroupPath } from './typhoonGroup'
 // 引入枚举
 import { DictEnum } from '@/enum/dict'
-import { LayerTypeEnum } from '@/enum/map'
+import { LayerTypeEnum, SurgeProLayerEnum } from '@/enum/map'
 
 // api
 // + 21 typhoon api
@@ -2014,11 +2014,14 @@ export default class TyGroupMap extends mixins(
                     this.existLayers.push(tempLayerType)
                     this.tyFieldOptions.isShow = true
                     break
-                case LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT05:
-                    this.existLayers.push(tempLayerType)
-                    this.tyProSurgeOptions.isShow = true
-                    this.tyProSurgeOptions.layerType = LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT05
-                    break
+                // TODO:[-] 21-08-13 注意修改此处
+                default:
+                    if (tempLayerType in SurgeProLayerEnum) {
+                        this.existLayers.push(tempLayerType)
+                        this.tyProSurgeOptions.isShow = true
+                        this.tyProSurgeOptions.layerType = tempLayerType
+                        break
+                    }
             }
         })
     }

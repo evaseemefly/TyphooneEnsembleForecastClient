@@ -176,6 +176,26 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                             key: 1,
                             val: '大于1.0m',
                             optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT10
+                        },
+                        {
+                            key: 2,
+                            val: '大于1.5m',
+                            optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT15
+                        },
+                        {
+                            key: 3,
+                            val: '大于2.0m',
+                            optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT20
+                        },
+                        {
+                            key: 4,
+                            val: '大于2.5m',
+                            optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT25
+                        },
+                        {
+                            key: 5,
+                            val: '大于3.0m',
+                            optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT30
                         }
                     ]
                 },
@@ -403,18 +423,9 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         // 2-1 若为 layer 则去执行修改layer的操作
         if (
             item.toolType == ToolTypeEnum.LAYER &&
-            item['showOptions'] !== undefined &&
-            item.showOptions
+            item['showOptions'] === undefined &&
+            !item.showOptions
         ) {
-            // if (this.layers.indexOf(item.layerType) === -1) {
-            //     this.layers.push(item.layerType)
-            // } else {
-            //     // 若已经存在则删除
-            //     const index = this.layers.findIndex((temp) => temp === item.layerType)
-            //     if (index != -1) {
-            //         this.layers.splice(index, 1)
-            //     }
-            // }
             // TODO:[-] 21-08-11 此处将以上方法封装至 insertLayers 中
             this.insertLayers(item.layerType)
         }
