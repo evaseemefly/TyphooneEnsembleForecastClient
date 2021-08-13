@@ -318,7 +318,11 @@ import {
     ProSurgeGeoLayer
 } from '@/views/content/typhoon/raster'
 // TODO:[*] 21-04-28 + 脉冲 icon 用来示意海洋站所在位置
-import { IconCirlePulsing, IconMinStationSurge } from '@/views/members/icon/pulsingIcon'
+import {
+    IconCirlePulsing,
+    IconMinStationSurge,
+    IconTyphoonCirlePulsing
+} from '@/views/members/icon/pulsingIcon'
 import { WindArrow } from '@/views/content/oilspilling/arrow'
 // + 21-03-24 海浪等值线绘制类
 import { WaveContourLine, WaveArrow } from '@/views/content/oilspilling/wave'
@@ -1602,6 +1606,23 @@ export default class TyGroupMap extends mixins(
                 customData.lat,
                 customData.lon
             )
+            const tyMax = 10
+            const tyMin = 1
+            // TODO:[-] 21-08-13 对于当前台风位置的脉冲icon
+            const tyCirleIcon = new IconTyphoonCirlePulsing({
+                val: 10,
+                max: tyMax,
+                min: tyMin
+            })
+            const tyDivIcon = L.divIcon({
+                className: 'surge_pulsing_icon_default',
+                html: tyCirleIcon.toHtml()
+            })
+            const tyPulsingMarker = L.marker([customData.lat, customData.lon], {
+                icon: tyDivIcon
+            })
+            tyPulsingMarker.addTo(mymap)
+            // ---
             this.currentGaleRadius = L.circle(coords, {
                 radius: targetRadius * radiusUnit,
                 fillColor: galeRadiusScaleColor.getColor(targetRadius),
