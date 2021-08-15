@@ -328,7 +328,7 @@ import { WindArrow } from '@/views/content/oilspilling/arrow'
 import { WaveContourLine, WaveArrow } from '@/views/content/oilspilling/wave'
 import { StationSurge, IToHtml } from './station'
 // + 21-05-18 新加入的关于 tyGroupPath 相关的 逻辑封装类
-import { TyGroupPath } from './typhoonGroup'
+import { TyGroupPath, getTyCenterGroupDiffLayer } from './typhoonGroup'
 // 引入枚举
 import { DictEnum } from '@/enum/dict'
 import { LayerTypeEnum, SurgeProLayerEnum } from '@/enum/map'
@@ -606,7 +606,10 @@ export default class TyGroupMap extends mixins(
     // + 21-05-19 BottomMainBar -> ForecastAreaBar 需要传入的 currentCaseCoverageList
     currentCaseCoverageList: CoverageMin[] = []
 
-    // + 21-05-19 TyGroupPathOptions
+    // TODO:[-] + 21-08-15 当前时间对应的台风脉冲marker(位置示意)
+    currentTyPulsingMarker: L.Layer = new L.Layer()
+
+    // + 21-05-19 TyGroupPathOptions 监听该变量但并未实现对应方法
     tyGroupOptions: ITyGroupPathOptions = {
         tyCode: this.tyCode,
         timeStamp: this.tyTimeStamp,
@@ -1566,31 +1569,50 @@ export default class TyGroupMap extends mixins(
         }
     }
 
-    // TODO:[-] + 21-05-31 找到当前时间对应的 tyGroup 对应的 realdata,信息,并添加至map
+    // 找到当前时间对应的 tyGroup 对应的 realdata,信息,并添加至map
+    // TODO:[*] 21-08-15 需要加入差值
     addTyTargetDtRealData2Map(targetDt: Date): void {
         const that = this
         const mymap: any = this.$refs.basemap['mapObject']
         this.clearTyRealDataLayer()
-        const targetCircle: L.Layer = this.tyGroupCenterCirleLayers.find((temp) => {
-            return temp.options.customData.forecastDt - targetDt === 0
-        })
-        if (targetCircle) {
+        // TODO:[-] 21-08-15 此处需要加入差值，若未存在对应时间的 layer , 则需要手动找到差值后的对象
+        // const targetCircle: L.Layer = this.tyGroupCenterCirleLayers.find((temp) => {
+        //     return temp.options.customData.forecastDt - targetDt === 0
+        // })
+        // const targetCircle: L.Layer = getTyCenterGroupDiffLayer(
+        //     this.tyGroupCenterCirleLayers,
+        //     targetDt
+        // )
+        const diffCustomData:
+            | {
+                  bp: number
+                  radius: number
+                  lat: number
+                  lon: number
+                  forecastDt: Date
+              }
+            | undefined = getTyCenterGroupDiffLayer(this.tyGroupCenterCirleLayers, targetDt)
+        if (diffCustomData !== undefined) {
             const galeRadiusScaleColor = new ScaleColor(
                 that.tyGroupGaleRadiusRange.min,
                 that.tyGroupGaleRadiusRange.max
             )
             galeRadiusScaleColor.setScale('Viridis')
-            const layer = targetCircle
-            layer.setStyle({
-                opacity: 1
-                // weight: layer.options.weight * 1.25
-                // radius:
-            })
-            const customData: { bp: number; radius: number; lat: number; lon: number } =
-                targetCircle.options.customData
+            // const layer = targetCircle
+            // layer.setStyle({
+            //     opacity: 1
+            // })
+            const customData: {
+                bp: number
+                radius: number
+                lat: number
+                lon: number
+            } = diffCustomData
             // 获取半径
             const targetRadius = customData.radius
-            const coords: L.LatLng = targetCircle.getLatLng()
+            // const coords: L.LatLng = targetCircle.getLatLng()
+            // const coords: L.LatLng = { lat: customData.lat, lng: customData.lon }
+            const coords: L.LatLng = new L.LatLng(customData.lat, customData.lon)
             /*
                         大体逻辑:
                             -1 根据当前传入的 circle index 找到对应 group -> realdata
@@ -1621,7 +1643,7 @@ export default class TyGroupMap extends mixins(
             const tyPulsingMarker = L.marker([customData.lat, customData.lon], {
                 icon: tyDivIcon
             })
-            tyPulsingMarker.addTo(mymap)
+            this.currentTyPulsingMarker = tyPulsingMarker.addTo(mymap)
             // ---
             this.currentGaleRadius = L.circle(coords, {
                 radius: targetRadius * radiusUnit,
@@ -1646,9 +1668,8 @@ export default class TyGroupMap extends mixins(
             mymap.removeLayer(this.currentGaleRadius)
             this.currentGaleRadius = undefined
         }
+        mymap.removeLayer(this.currentTyPulsingMarker)
     }
-
-    clearAllLayer(): void {}
 
     // 根据 leaflet_id -> map.removce(layer)
     clearLayerById(id: number): void {
@@ -1740,7 +1761,6 @@ export default class TyGroupMap extends mixins(
     @Watch('getcurrent')
     async onCurrent(valNew: Date): Promise<void> {
         const mymap: L.Map = this.$refs.basemap['mapObject']
-        const that = this
         // 修改当前 的 targetDate
         this.targetDate = valNew
         this.tyGroupOptions.forecastDt = valNew
