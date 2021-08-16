@@ -9,7 +9,7 @@ import chroma from 'chroma-js'
 // 不同的引入 geotiff
 // import GeoTIFF from 'geotiff'
 // RasterPixel 中需要使用此种引入方式
-import * as geotiff from 'geotiff'
+// import * as geotiff from 'geotiff'
 // import 'geotiff'
 // import * as GeoTIFF from 'geotiff/dist-browser/geotiff.js'
 // import * as GeoTIFF from 'geotiff'
@@ -25,6 +25,11 @@ import 'georaster'
 // 以下方式引入不成功
 // import * as georaster from 'georaster'
 import 'georaster-layer-for-leaflet'
+// TODO:[*] 21-08-16 尝试使用geotiff.js
+// import * as GeoTIFF from 'geotiff'
+import GeoTIFF, { fromUrl, fromUrls, fromArrayBuffer, fromBlob } from 'geotiff'
+import * as plotty from 'plotty'
+// ---
 import { loadCurrentTif, loadFieldSurgeTif, loadProSurgeTif } from '@/api/geo'
 import { MaxSurge } from './surge'
 import { AreaEnum } from '@/enum/area'
@@ -624,6 +629,262 @@ class ProSurgeGeoLayer extends SurgeRasterGeoLayer {
     }
 }
 
+// 以下采用 https://github.com/837408195/leaflet-learn 的实现方式
+/*
+    目前可知的优缺点：
+        由于有一个根据 width 与 heigh 进行内外循环的操作，速度略慢，但生成之后缩放时较快
+*/
+class ProSurgeGeoLayerByGeotiffjsWay1 extends SurgeRasterGeoLayer {
+    public async add2map(
+        map: L.Map,
+        errorCallBackFun: (opt: { message: string; type: string }) => void,
+        pro: number,
+        coverageType: LayerTypeEnum
+    ): Promise<L.Layer> {
+        let addedLayer: L.Layer = null
+        const that = this
+        try {
+            const tifResp = await loadProSurgeTif(that.tyCode, that.tyTimestamp, pro, coverageType)
+            const urlGeoTifUrl = tifResp.data
+            // 大体思路 获取 geotiff file 的路径，二进制方式读取 -> 使用 georaster 插件实现转换 -> 获取色标，
+            // TODO:[-] 20-11-02 将之前的逻辑方式修改为 await 的方式
+            // TODO:[-] 20-11-05 在 fetch 请求头中加入跨域的部分
+            const fetchHeader = new Headers({
+                'Access-Control-Allow-Origin': '*',
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8,'
+            })
+            const response = await fetch(urlGeoTifUrl, {
+                method: 'GET',
+                // headers: fetchHeader,
+                mode: 'cors'
+            })
+            const arrayBuffer = await response.arrayBuffer()
+            // 使用 geotiff.js 的方式实现读取 tif
+            const tif = await fromArrayBuffer(arrayBuffer)
+            const image = await tif.getImage()
+            const data = await image.readRasters()
+            const canvas = document.getElementById('plot')
+            // const plot = new plotty.plot({
+            //     canvas,
+            //     data: data[0],
+            //     width: image.getWidth(),
+            //     height: image.getHeight(),
+            //     domain: [0, 256],
+            //     colorScale: 'viridis'
+            // })
+            // plot.render()
+            // --
+            const noDataValue = 99999
+            const tiffWidth = image.getWidth()
+            const tiffHeight = image.getHeight()
+            const samplesPerPixel = image.getSamplesPerPixel()
+            const bounds = image.getBoundingBox()
+            const tiepoint = image.getTiePoints()[0]
+            const pixelScale = image.getFileDirectory().ModelPixelScale
+            const geoTransform = [tiepoint.x, pixelScale[0], 0, tiepoint.y, 0, -1 * pixelScale[1]]
+            const tempData = new Array(tiffHeight)
+            for (let j = 0; j < tiffHeight; j++) {
+                tempData[j] = new Array(tiffWidth)
+                for (let i = 0; i < tiffWidth; i++) {
+                    tempData[j][i] = data[0][i + j * tiffWidth]
+                }
+            }
+            //   let arr = data[0].filter(item => item!==this.noDataValue);
+            //   let min = Math.min(...arr),
+            //     max = Math.max(...arr);
+            const canvasContent = document.createElement('canvas')
+            const rightBottomPixel = map.latLngToContainerPoint([bounds[1], bounds[2]])
+            const leftTopPixel = map.latLngToContainerPoint([bounds[3], bounds[0]])
+            const tileWidth = rightBottomPixel.x - leftTopPixel.x,
+                tileHeight = rightBottomPixel.y - leftTopPixel.y
+            canvasContent.width = tileWidth
+            canvasContent.height = tileHeight
+            const context = canvasContent.getContext('2d')
+            const id = context.createImageData(tileWidth, tileHeight)
+            const canvasData = id.data
+            const scale = chroma.scale([
+                '#081d58',
+                '#253494',
+                '#225ea8',
+                '#1d91c0',
+                '#41b6c4',
+                '#7fcdbb',
+                '#c7e9b4',
+                '#edf8b1',
+                '#ffffd9'
+            ])
+            for (let y = 0; y < tileHeight; y++) {
+                for (let x = 0; x < tileWidth; x++) {
+                    const latlng = map.layerPointToLatLng([leftTopPixel.x + x, leftTopPixel.y + y])
+                    const px = (latlng.lng - geoTransform[0]) / geoTransform[1]
+                    const py = (latlng.lat - geoTransform[3]) / geoTransform[5]
+                    if (Math.floor(px) >= 0 && Math.floor(py) >= 0) {
+                        // console.log(Math.floor(px),Math.floor(py))
+                        let rgba = scale(tempData[Math.floor(py)][Math.floor(px)]).rgba()
+                        if (tempData[Math.floor(py)][Math.floor(px)] == noDataValue)
+                            rgba = [0, 0, 0, 0]
+                        const index = (y * tileWidth + x) * 4
+                        canvasData[index + 0] = rgba[0]
+                        canvasData[index + 1] = rgba[1]
+                        canvasData[index + 2] = rgba[2]
+                        canvasData[index + 3] = rgba[3] * 255
+                    }
+                }
+            }
+            context.putImageData(id, 0, 0)
+            //   return
+            console.log(bounds)
+            // if (this.imgLayer) this.map.removeLayer(this.imgLayer)
+            addedLayer = L.imageOverlay(
+                canvasContent.toDataURL(),
+                [
+                    [bounds[1], bounds[0]],
+                    [bounds[3], bounds[2]]
+                ],
+                {
+                    opacity: 0.3
+                }
+            )
+            addedLayer.addTo(map)
+            //--
+            // addedLayer = layer.addTo(map)
+            that.rasterLayer = addedLayer
+        } catch (error) {
+            console.warn(error.message)
+        }
+
+        return addedLayer
+    }
+}
+
+class ProSurgeGeoLayerByGeotiffjsWay2 extends SurgeRasterGeoLayer {
+    public async add2map(
+        map: L.Map,
+        errorCallBackFun: (opt: { message: string; type: string }) => void,
+        pro: number,
+        coverageType: LayerTypeEnum
+    ): Promise<L.Layer> {
+        let addedLayer: L.Layer = null
+        const that = this
+        try {
+            const tifResp = await loadProSurgeTif(that.tyCode, that.tyTimestamp, pro, coverageType)
+            const urlGeoTifUrl = tifResp.data
+            // 大体思路 获取 geotiff file 的路径，二进制方式读取 -> 使用 georaster 插件实现转换 -> 获取色标，
+            // TODO:[-] 20-11-02 将之前的逻辑方式修改为 await 的方式
+            // TODO:[-] 20-11-05 在 fetch 请求头中加入跨域的部分
+            const fetchHeader = new Headers({
+                'Access-Control-Allow-Origin': '*',
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8,'
+            })
+            const response = await fetch(urlGeoTifUrl, {
+                method: 'GET',
+                // headers: fetchHeader,
+                mode: 'cors'
+            })
+            const arrayBuffer = await response.arrayBuffer()
+            // 使用 geotiff.js 的方式实现读取 tif
+            const tif = await fromArrayBuffer(arrayBuffer)
+            const image = await tif.getImage()
+            const data = await image.readRasters()
+            const canvas = document.getElementById('plot')
+            // const plot = new plotty.plot({
+            //     canvas,
+            //     data: data[0],
+            //     width: image.getWidth(),
+            //     height: image.getHeight(),
+            //     domain: [0, 256],
+            //     colorScale: 'viridis'
+            // })
+            // plot.render()
+            // --
+            const noDataValue = 99999
+            const tiffWidth = image.getWidth()
+            const tiffHeight = image.getHeight()
+            const samplesPerPixel = image.getSamplesPerPixel()
+            const bounds = image.getBoundingBox()
+            const tiepoint = image.getTiePoints()[0]
+            const pixelScale = image.getFileDirectory().ModelPixelScale
+            const geoTransform = [tiepoint.x, pixelScale[0], 0, tiepoint.y, 0, -1 * pixelScale[1]]
+            const tempData = new Array(tiffHeight)
+            for (let j = 0; j < tiffHeight; j++) {
+                tempData[j] = new Array(tiffWidth)
+                for (let i = 0; i < tiffWidth; i++) {
+                    tempData[j][i] = data[0][i + j * tiffWidth]
+                }
+            }
+            //   let arr = data[0].filter(item => item!==this.noDataValue);
+            //   let min = Math.min(...arr),
+            //     max = Math.max(...arr);
+            const canvasContent = document.createElement('canvas')
+            const rightBottomPixel = map.latLngToContainerPoint([bounds[1], bounds[2]])
+            const leftTopPixel = map.latLngToContainerPoint([bounds[3], bounds[0]])
+            const tileWidth = rightBottomPixel.x - leftTopPixel.x,
+                tileHeight = rightBottomPixel.y - leftTopPixel.y
+            canvasContent.width = tileWidth
+            canvasContent.height = tileHeight
+            const context = canvasContent.getContext('2d')
+            const id = context.createImageData(tileWidth, tileHeight)
+            const canvasData = id.data
+            const scale = chroma.scale([
+                '#081d58',
+                '#253494',
+                '#225ea8',
+                '#1d91c0',
+                '#41b6c4',
+                '#7fcdbb',
+                '#c7e9b4',
+                '#edf8b1',
+                '#ffffd9'
+            ])
+
+            const plot = new plotty.plot({
+                data: data,
+                width: tiffWidth,
+                height: tiffHeight,
+                // domain: [this.options.displayMin, this.options.displayMax],
+                colorScale: scale,
+                clampLow: true,
+                clampHigh: true,
+                canvas: canvasContent,
+                useWebGL: false
+            })
+            plot.setNoDataValue(-9999)
+            plot.render()
+
+            // this.colorScaleData = plot.colorScaleCanvas.toDataURL()
+
+            const rasterImageData = canvasContent
+                .getContext('2d')
+                .getImageData(0, 0, canvasContent.width, canvasContent.height)
+            // const imageData = this.parent.transform(rasterImageData, args)
+            // ctx.putImageData(imageData, args.xStart, args.yStart)
+
+            canvasContent.putImageData(id, 0, 0)
+            //   return
+            console.log(bounds)
+            // if (this.imgLayer) this.map.removeLayer(this.imgLayer)
+            addedLayer = L.imageOverlay(
+                canvasContent.toDataURL(),
+                [
+                    [bounds[1], bounds[0]],
+                    [bounds[3], bounds[2]]
+                ],
+                {
+                    opacity: 0.3
+                }
+            )
+            addedLayer.addTo(map)
+            //--
+            // addedLayer = layer.addTo(map)
+            that.rasterLayer = addedLayer
+        } catch (error) {
+            console.warn(error.message)
+        }
+
+        return addedLayer
+    }
+}
+
 /**
  *  风场栅格 layer (继承自 RasterGeoLayer)
  *
@@ -879,5 +1140,7 @@ export {
     WaveRasterGeoLayer,
     SurgeRasterGeoLayer,
     FieldSurgeGeoLayer,
-    ProSurgeGeoLayer
+    ProSurgeGeoLayer,
+    ProSurgeGeoLayerByGeotiffjsWay1,
+    ProSurgeGeoLayerByGeotiffjsWay2
 }

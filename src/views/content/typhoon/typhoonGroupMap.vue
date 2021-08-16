@@ -315,7 +315,9 @@ import {
     IRaster,
     FieldSurgeGeoLayer,
     SurgeRasterGeoLayer,
-    ProSurgeGeoLayer
+    ProSurgeGeoLayer,
+    ProSurgeGeoLayerByGeotiffjsWay1,
+    ProSurgeGeoLayerByGeotiffjsWay2
 } from '@/views/content/typhoon/raster'
 // TODO:[*] 21-04-28 + 脉冲 icon 用来示意海洋站所在位置
 import {
