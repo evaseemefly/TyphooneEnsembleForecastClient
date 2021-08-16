@@ -1777,7 +1777,7 @@ export default class TyGroupMap extends mixins(
         const that = this
         const mymap: any = this.$refs.basemap['mapObject']
         // if(val)
-        if (this.checkTyGroupOptions(val)) {
+        if (this.checkStationSurgeOptions(val)) {
             // 加载对应时刻的 潮位站数据
             this.loadStationList(this.zoom)
         } else {
@@ -1927,6 +1927,24 @@ export default class TyGroupMap extends mixins(
             val.tyCode === DefaultTyGroupPathOptions.tyCode ||
             val.forecastDt === DefaultTyGroupPathOptions.forecastDt ||
             val.timeStamp === DefaultTyGroupPathOptions.timeStamp ||
+            val.gpId === DEFAULT_TYPHOON_GROUP_PATH_ID
+        ) {
+            isOk = false
+        } else if (val.isShow === false) {
+            isOk = false
+        } else {
+            isOk = true
+        }
+        return isOk
+    }
+
+    // + 21-08-16 新加入的检查 stationSurgeIconOptions
+    checkStationSurgeOptions(val: ITyStationLayerOptions): boolean {
+        let isOk = false
+        if (
+            val.tyCode === DefaultTyGroupPathOptions.tyCode ||
+            val.forecastDt === DefaultTyGroupPathOptions.forecastDt ||
+            val.tyTimeStamp === DefaultTyGroupPathOptions.timeStamp ||
             val.gpId === DEFAULT_TYPHOON_GROUP_PATH_ID
         ) {
             isOk = false
@@ -2097,7 +2115,8 @@ export default class TyGroupMap extends mixins(
 
     @Watch('zoomLevel')
     onZoomLevel(val: number): void {
-        if (this.checkTyGroupOptions(this.tyGroupOptions)) {
+        // TODO:[-] 21-08-16 注意监听 zoom 只需要判断 stationSurgeOptions 即可
+        if (this.checkStationSurgeOptions(this.stationSurgeIconOptions)) {
             this.loadStationList(val)
         }
     }
