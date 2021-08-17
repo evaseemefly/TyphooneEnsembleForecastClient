@@ -58,6 +58,9 @@ export default class BottomMainBar extends Vue {
 #bottom-main-bar {
     z-index: 999;
     position: absolute;
+    position: fixed;
+    bottom: 50px;
+    right: 20px;
     left: 0px;
     right: 0px;
     bottom: 50px;
@@ -71,7 +74,10 @@ export default class BottomMainBar extends Vue {
     .color-bar {
         // display: flex;
         width: 300px;
-        // background: yellow;
+        // + 21-08-17 将右下侧的 main-bar 修改为绝对定位
+        position: fixed;
+        bottom: 50px;
+        right: 20px;
     }
 }
 </style>

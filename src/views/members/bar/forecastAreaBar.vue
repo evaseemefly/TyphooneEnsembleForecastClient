@@ -212,8 +212,8 @@ export default class ForecastAreaBar extends Vue {
 <style scoped lang="less">
 #forecast-area-bar {
     width: 300px;
-    position: absolute;
-    bottom: 40px;
+    // position: absolute;
+    // bottom: 40px;
 }
 // .card-list-bar {
 //     width: 300px;

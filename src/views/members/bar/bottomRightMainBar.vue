@@ -38,6 +38,9 @@ export default class BottomRightMainBar extends Vue {
 </script>
 <style scoped lang="less">
 #bottom-right-main-bar {
-    position: relative;
+    // position: relative;
+
+    display: flex;
+    flex-direction: column-reverse;
 }
 </style>

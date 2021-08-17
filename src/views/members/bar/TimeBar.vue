@@ -597,7 +597,7 @@ export default class TimeBar extends Vue {
                 const lastIndex = tempArr.length - 1
                 tempArr = tempArr.slice(1, lastIndex)
                 tempArr.forEach((temp: ChildNode) => {
-                    (temp as HTMLElement).style.width = this.lenUnit * this.interval + 'px'
+                    ;(temp as HTMLElement).style.width = this.lenUnit * this.interval + 'px'
                     // temp.style.width = this.lenUnit * this.interval + "px";
                 })
             }
@@ -785,7 +785,8 @@ export default class TimeBar extends Vue {
     white-space: nowrap;
     /* width: 600px; */
     display: flex;
-    width: 100%;
+    // width: 100%;
+    width: 80%; // + 21-08-17 将 width修改为原宽度的百分之80
     // background: red;
     /* 两边的边距 */
     margin-right: 20px;
