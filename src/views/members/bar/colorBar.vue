@@ -1,16 +1,8 @@
 <template>
     <div class="color-bar-list">
-        <div class="color-bar">
-            <span>m/s</span>
-            <span>0</span>
-            <span>0.2</span>
-            <span>0.4</span>
-            <span>0.6</span>
-            <span>0.8</span>
-            <span>1.0</span>
-            <span>1.2</span>
-        </div>
-        <div class="color-bar-2">
+        <!-- 最终可行的办法，参考自: https://segmentfault.com/q/1010000037424499?utm_source=tag-newest -->
+        <!-- 方式2:目前看不可行，https://stackoverflow.com/questions/59552974/how-can-i-bind-a-linear-gradient-background-property-made-up-of-dynamic-variable -->
+        <!-- <div class="color-bar-test" :style="{ backgroundImage: createBackgroundString() }">
             <span>m/s</span>
             <span>0</span>
             <span>0.2</span>
@@ -20,35 +12,22 @@
             <span>1.0</span>
             <span>1.0</span>
             <span>1.2</span>
-        </div>
-        <!-- <div
-            class="color-bar-test"
-            :style="{ backgroundImage: `linear-gradient(to right, ${color1},  ${color2})` }"
-        > -->
-        <div class="color-bar-test" :style="{ backgroundImage: createBackgroundString() }">
-            <!-- 最终可行的办法，参考自: https://segmentfault.com/q/1010000037424499?utm_source=tag-newest -->
-            <!-- 方式2:目前看不可行，https://stackoverflow.com/questions/59552974/how-can-i-bind-a-linear-gradient-background-property-made-up-of-dynamic-variable -->
-            <span>m/s</span>
-            <span>0</span>
-            <span>0.2</span>
-            <span>0.4</span>
-            <span>0.6</span>
-            <span>0.8</span>
-            <span>1.0</span>
-            <span>1.0</span>
-            <span>1.2</span>
-        </div>
-        <div class="color-bar-test" :style="{ background: color1 }">
-            <span>m/s</span>
-            <span>0</span>
-            <span>0.2</span>
-            <span>0.4</span>
-            <span>0.6</span>
-            <span>0.8</span>
-            <span>1.0</span>
-            <span>1.0</span>
-            <span>1.2</span>
-        </div>
+        </div> -->
+        <transition-group name="color-bar-fade">
+            <div
+                class="color-bar"
+                v-for="(tempScale, index) in colorScales"
+                :key="tempScale.key"
+                :style="{ backgroundImage: getBackgroundColorStr(tempScale) }"
+                @click="setSelectedScale(index)"
+                v-show="showScale(index)"
+            >
+                <span>单位: m</span>
+                <span v-for="tempRange in tempScale.scale.range" :key="tempRange.id">{{
+                    tempRange
+                }}</span>
+            </div>
+        </transition-group>
     </div>
 </template>
 <script lang="ts">
@@ -56,8 +35,11 @@ import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 import { Mutation, State, namespace } from 'vuex-class'
 // 本项目
 import { IColorScale, ColorScales, IScale } from '@/const/colorBar'
+import { DEFAULT_DICT_KEY } from '@/const/common'
 @Component({})
 export default class ColorBar extends Vue {
+    colorScales: { key: string; scale: IScale }[] = ColorScales
+    selectedScaleIndex = DEFAULT_DICT_KEY
     color1 = 'rgb(151, 75, 145)'
     angle = '50'
     // color1 = 'red'
@@ -78,31 +60,56 @@ export default class ColorBar extends Vue {
         return `linear-gradient(to right, ${this.color1},  ${this.color2})`
         // return 'rgb(151, 75, 145)'
     }
+    getBackgroundColorStr(tempScale: { key: string; scale: IScale }): string {
+        // eg: #ee4620,#ee462f,#ed4633,#ef6b6d,#f3a4a5,#f9dcdd,#dcdcfe,
+        let colorStr = ''
+        if (tempScale.scale !== undefined && tempScale.scale.scaleColorList !== undefined) {
+            if (Array.isArray(tempScale.scale.scaleColorList)) {
+                for (const temp of tempScale.scale.scaleColorList) {
+                    colorStr += temp + ','
+                }
+                // 需要去掉最后一位的 ,
+                colorStr = colorStr.substr(0, colorStr.lastIndexOf(','))
+            }
+        }
+
+        const colorLinearStr = `linear-gradient(to right, ${colorStr})`
+        return colorLinearStr
+    }
+    setSelectedScale(index: number): void {
+        if (index === this.selectedScaleIndex) {
+            this.selectedScaleIndex = DEFAULT_DICT_KEY
+        } else {
+            this.selectedScaleIndex = index
+        }
+    }
+    showScale(index: number): boolean {
+        let isShow = false
+        if (this.selectedScaleIndex === DEFAULT_DICT_KEY) {
+            isShow = true
+        }
+        if (this.selectedScaleIndex !== DEFAULT_DICT_KEY && index === this.selectedScaleIndex) {
+            isShow = true
+        }
+        return isShow
+    }
+
+    get selectedScale(): { key: string; scale: IScale } {
+        return this.colorScales[this.selectedScaleIndex]
+    }
 }
 </script>
 <style lang="less" scoped>
 .color-bar-list {
     margin-top: 10px;
 }
-.color-bar-list > div {
+.color-bar-list > .color-bar {
+    margin-bottom: 5px;
+}
+.color-bar-list .color-bar {
     margin-bottom: 5px;
 }
 .color-bar {
-    background: linear-gradient(
-        to right,
-        rgb(98, 113, 184),
-        rgb(98, 113, 184),
-        rgb(61, 110, 163),
-        rgb(74, 148, 170),
-        rgb(74, 146, 148),
-        rgb(77, 142, 124),
-        rgb(76, 164, 76),
-        rgb(103, 164, 54),
-        rgb(162, 135, 64),
-        rgb(162, 109, 92),
-        rgb(141, 63, 92),
-        rgb(151, 75, 145)
-    );
     width: 300px;
     border-radius: 0.4em;
     box-shadow: 0 0 4px 0 black;
@@ -122,51 +129,15 @@ export default class ColorBar extends Vue {
         color: white;
     }
 }
-.color-bar-primary {
-    // background: linear-gradient(
-    //     to right,
-    //     #ee4620,
-    //     #ee462f,
-    //     #ed4633,
-    //     #ef6b6d,
-    //     #f3a4a5,
-    //     #f9dcdd,
-    //     #dcdcfe,
-    //     #a5a6fd,
-    //     #6f6dfc,
-    //     #3d4bfb,
-    //     #2a4afc,
-    //     #2a4afc
-    // );
-    width: 300px;
-    border-radius: 0.4em;
-    box-shadow: 0 0 4px 0 black;
-    span {
-        margin-left: 8px;
-        width: 15px;
-        color: white;
-    }
+
+// 加入过度动画效果
+.color-bar-fade-enter-active,
+.color-bar-fade-leave-active {
+    transition: all 1s;
 }
-.color-bar-2 {
-    background: linear-gradient(
-        to right,
-        #ffffd9,
-        #edf8b1,
-        #c7e9b4,
-        #7fcdbb,
-        #41b6c4,
-        #1d91c0,
-        #225ea8,
-        #253494,
-        #081d58
-    );
-    width: 300px;
-    border-radius: 0.4em;
-    box-shadow: 0 0 4px 0 black;
-    span {
-        margin-left: 8px;
-        width: 15px;
-        color: white;
-    }
+.color-bar-fade-enter, .color-bar-fade-leave-to
+/* .list-leave-active for below version 2.1.8 */ {
+    opacity: 0;
+    transform: translateX(30px);
 }
 </style>
