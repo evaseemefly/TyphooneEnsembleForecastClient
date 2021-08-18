@@ -36,6 +36,7 @@ import { Mutation, State, namespace } from 'vuex-class'
 // 本项目
 import { IColorScale, ColorScales, IScale } from '@/const/colorBar'
 import { DEFAULT_DICT_KEY } from '@/const/common'
+import { SET_SCALE_KEY } from '@/store/types'
 @Component({})
 export default class ColorBar extends Vue {
     colorScales: { key: string; scale: IScale }[] = ColorScales
@@ -97,6 +98,14 @@ export default class ColorBar extends Vue {
     get selectedScale(): { key: string; scale: IScale } {
         return this.colorScales[this.selectedScaleIndex]
     }
+
+    @Watch('selectedScale')
+    onSelectedScale(temp: { key: string; scale: IScale }): void {
+        const key = temp.key
+        this.setColorScaleKey(key)
+    }
+
+    @Mutation(SET_SCALE_KEY, { namespace: 'common' }) setColorScaleKey
 }
 </script>
 <style lang="less" scoped>

@@ -25,6 +25,9 @@ export const REGISTRATION_SUCCESS = 'REGISTRATION_SUCCESS'
 export const SET_TOKEN = 'token'
 // 移除jwt的token,在localStorage中保存的token
 export const REMOVE_TOKEN = 'REMOVE_TOKEN'
+// + 21-08-18 color scal的key
+export const SET_SCALE_KEY = 'SET_SCALE_KEY'
+export const GET_SCALE_KEY = 'GET_SCALE_KEY'
 // 产品的种类(主要是oil还是rescue)
 export const SET_PRODUCT_TYPE = 'SET_PRODUCT_TYPE'
 export const GET_PRODUCT_TYPE = 'GET_PRODUCT_TYPE'

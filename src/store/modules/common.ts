@@ -1,5 +1,6 @@
-import { SET_PRODUCT_TYPE, GET_PRODUCT_TYPE } from '../types'
+import { SET_PRODUCT_TYPE, GET_PRODUCT_TYPE, SET_SCALE_KEY, GET_SCALE_KEY } from '../types'
 import { CaseTypeEnum } from '@/enum/case'
+import { DEFAULT_DICT_KEY, DEFAULT_SELECT_VAL } from '@/const/common'
 // export enum ProductType {
 //     oil = 0,
 //     rescue = 1
@@ -8,6 +9,8 @@ import { CaseTypeEnum } from '@/enum/case'
 interface Common {
     // productType: ProductType
     productType: CaseTypeEnum
+    // color scale 的key
+    scaleKey: string
 }
 
 // const actions={
@@ -15,10 +18,16 @@ interface Common {
 // }
 const state: Common = {
     // productType: ProductType.oil
-    productType: CaseTypeEnum.OIL
+    productType: CaseTypeEnum.OIL,
+    scaleKey: DEFAULT_SELECT_VAL
 }
 const getters = {
-    productType: (state) => state.productType
+    productType: (state) => state.productType,
+
+    //
+    [GET_SCALE_KEY](state: Common): string {
+        return state.scaleKey
+    }
 }
 // 使用dispatch调用
 const actions = {
@@ -39,6 +48,9 @@ const mutations = {
     },
     [GET_PRODUCT_TYPE](state: Common): CaseTypeEnum {
         return state.productType
+    },
+    [SET_SCALE_KEY](state: Common, key: string): void {
+        state.scaleKey = key
     }
 }
 
