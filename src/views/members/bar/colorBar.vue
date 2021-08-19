@@ -31,7 +31,8 @@
     </div>
 </template>
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
+import { Prop, Vue, Watch } from 'vue-property-decorator'
+import Component from 'vue-class-component'
 import { Mutation, State, namespace } from 'vuex-class'
 // 本项目
 import { IColorScale, ColorScales, IScale } from '@/const/colorBar'
