@@ -357,7 +357,10 @@ import {
     GET_TYPHOON_CODE,
     GET_TYPHOON_ID,
     // + 21-07-28
-    GET_TYPHOON_TIMESTAMP
+    GET_TYPHOON_TIMESTAMP,
+    // + 21-08-19 color scale相关
+    GET_SCALE_KEY,
+    SET_SCALE_KEY
 } from '@/store/types'
 import {
     DEFAULT_LAYER_ID,
@@ -378,9 +381,10 @@ import {
     ITySurgeLayerOptions,
     ITyStationLayerOptions,
     ITyLayer,
-    ITyProLayerOptions
+    ITyProLayerOptions,
+    IRasterLayer
 } from './types'
-import { ColorScales, getColorScale } from '@/const/colorBar'
+import { ColorScales, getColorScale, DEFAULT_COLOR_SCALE } from '@/const/colorBar'
 
 const DEFAULT = 'DEFAULT'
 // 21-01-04 分页读取散点的页面散点数
@@ -618,7 +622,8 @@ export default class TyGroupMap extends mixins(
         // tyTimeStamp: this.tyTimeStamp
         tyCode: this.tyCode,
         tyTimeStamp: this.tyTimeStamp,
-        forecastDt: new Date()
+        forecastDt: new Date(),
+        scaleList: DEFAULT_COLOR_SCALE.scaleColorList
     }
 
     // TODO:[-] 21-08-04 新增的用来监听 逐时增水配置
@@ -627,7 +632,8 @@ export default class TyGroupMap extends mixins(
         layerType: LayerTypeEnum.RASTER_HOURLY_SURGE_LAYER,
         tyCode: this.tyCode,
         tyTimeStamp: this.tyTimeStamp,
-        forecastDt: new Date()
+        forecastDt: new Date(),
+        scaleList: DEFAULT_COLOR_SCALE.scaleColorList
     }
     // TODO:[-] 21-08-12 新增的 概率增水配置
     tyProSurgeOptions: ITyProLayerOptions = {
@@ -635,7 +641,8 @@ export default class TyGroupMap extends mixins(
         layerType: LayerTypeEnum.UN_LAYER,
         tyCode: this.tyCode,
         tyTimeStamp: this.tyTimeStamp,
-        pro: 0.5
+        pro: 0.5,
+        scaleList: DEFAULT_COLOR_SCALE.scaleColorList
     }
 
     // TODO:[-] 21-06-08 临时的 潮位站 min marker
@@ -1772,7 +1779,8 @@ export default class TyGroupMap extends mixins(
     onTyFieldOptions(val: ITySurgeLayerOptions): void {
         const that = this
         const mymap: any = this.$refs.basemap['mapObject']
-        const scale: any = getColorScale('my-colour')
+        // const scaleList: string[] | string = getColorScale('my-colour').scaleColorList
+        const scaleList: string[] | string = val.scaleList
         if (this.checkSurgeOptions(val)) {
             // 当 tyGroupOptions 发生变更, tyCode | forecastDt | timeStamp 中一个或多个
             // 执行 loadStationList
@@ -1786,7 +1794,7 @@ export default class TyGroupMap extends mixins(
                 tyCode: val.tyCode,
                 tyTimestamp: val.tyTimeStamp,
                 forecastDt: val.forecastDt,
-                scale: scale
+                scaleList: scaleList
             })
             this.clearSurgeHourlyRasterLayer()
             fieldSurgeGeoLayer
@@ -1810,7 +1818,8 @@ export default class TyGroupMap extends mixins(
         const that = this
         // console.log(`监听到tyMaxSurgeOptions:tyCode:${val.tyCode},tyTS:${val.tyTimeStamp}发生变化`)
         const mymap: any = this.$refs.basemap['mapObject']
-        const scale: any = getColorScale('my-colour')
+        // const scaleList: string[] | string = getColorScale('my-colour').scaleColorList
+        const scaleList: string[] | string = val.scaleList
         if (val.isShow) {
             if (this.uniqueRasterLayer) {
                 clearRasterFromMap(mymap, this.uniqueRasterLayer)
@@ -1819,7 +1828,7 @@ export default class TyGroupMap extends mixins(
                 tyCode: val.tyCode,
                 tyTimestamp: val.tyTimeStamp,
                 forecastDt: this.forecastDt,
-                scale: scale
+                scaleList: scaleList
             })
             surgeRasterLayer
                 .add2map(mymap, () => {})
@@ -1836,7 +1845,8 @@ export default class TyGroupMap extends mixins(
         const that = this
         // console.log(`监听到tyMaxSurgeOptions:tyCode:${val.tyCode},tyTS:${val.tyTimeStamp}发生变化`)
         const mymap: any = this.$refs.basemap['mapObject']
-        const scale: any = getColorScale('my-colour')
+        // const scaleList: string[] | string = getColorScale('my-colour').scaleColorList
+        const scaleList: string[] | string = val.scaleList
         if (val.isShow) {
             if (this.uniqueRasterLayer) {
                 clearRasterFromMap(mymap, this.uniqueRasterLayer)
@@ -1845,7 +1855,7 @@ export default class TyGroupMap extends mixins(
                 tyCode: val.tyCode,
                 tyTimestamp: val.tyTimeStamp,
                 forecastDt: this.forecastDt,
-                scale: scale
+                scaleList: scaleList
             })
             surgeRasterLayer
                 .add2map(mymap, () => {}, 0.5, val.layerType)
@@ -1989,6 +1999,26 @@ export default class TyGroupMap extends mixins(
     @Watch('getTyCode')
     onTyCode(val: string): void {
         this.tyCode = val
+    }
+
+    // + 21-08-19 common -> 色标相关 scale
+    @Getter(GET_SCALE_KEY, { namespace: 'common' }) getScaleKey
+
+    @Watch('getScaleKey')
+    onScaleKey(key: string): void {
+        // 当当前选择的 color scale 发生变化后，更新当前 isShow==true 的 raster options
+        // console.log(`主组件map监听到 scaleKey 发生变化:${key}}`)
+        const listRasterOpt: IRasterLayer[] = [
+            this.tyMaxSurgeOptions,
+            this.tyFieldOptions,
+            this.tyProSurgeOptions
+        ]
+        const index = listRasterOpt.findIndex((temp) => {
+            return temp.isShow === true
+        })
+        if (index >= 0) {
+            listRasterOpt[index].scaleList = getColorScale(key).scaleColorList
+        }
     }
 
     @Watch('getTyphoonId')

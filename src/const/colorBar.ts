@@ -4,14 +4,24 @@ export interface IColorScale {
 }
 export interface IScale {
     range?: number[]
-    scaleColorList?: string | string[]
+    scaleColorList: string | string[]
 }
 
 const DEFAULT_COLOR_INDEX = -1
 const DEFAULT_COLOR_KEY = 'my-colour'
 const DEFAULT_COLOR_SCALE: IScale = {
     range: [0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2],
-    scaleColorList: ['#ee4620', '#ee462f', '#ed4633', '#ef6b6d', '#f3a4a5', '#f9dcdd', '#dcdcfe']
+    scaleColorList: [
+        '#4575b4',
+        '#74add1',
+        '#abd9e9',
+        '#e0f3f8',
+        '#ffffbf',
+        '#fee090',
+        '#fdae61',
+        '#f46d43',
+        '#d73027'
+    ]
 }
 
 const ColorScales: { key: string; scale: IScale }[] = [
@@ -20,13 +30,15 @@ const ColorScales: { key: string; scale: IScale }[] = [
         scale: {
             range: [0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2],
             scaleColorList: [
-                '#ee4620',
-                '#ee462f',
-                '#ed4633',
-                '#ef6b6d',
-                '#f3a4a5',
-                '#f9dcdd',
-                '#dcdcfe'
+                '#4575b4',
+                '#74add1',
+                '#abd9e9',
+                '#e0f3f8',
+                '#ffffbf',
+                '#fee090',
+                '#fdae61',
+                '#f46d43',
+                '#d73027'
             ]
         }
     },

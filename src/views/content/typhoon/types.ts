@@ -69,6 +69,16 @@ export interface ISurgeLayer {
 }
 
 /**
+ * + 21-08-19
+ *   色标接口 *
+ * @export
+ * @interface IScale
+ */
+export interface IScale {
+    scaleList: string[] | string
+}
+
+/**
  *
  * 加入了 ILayerDisplayOptions
  *
@@ -101,6 +111,7 @@ const DefaultTyGroupPathOptions: ITyGroupPathOptions = {
 
 export interface ITyLayer extends ILayerDisplayOptions, ISurgeLayer {}
 
+export interface IRasterLayer extends ILayerDisplayOptions, ISurgeLayer, IScale {}
 /**
  * 台风增水配置接口
  *
@@ -109,7 +120,7 @@ export interface ITyLayer extends ILayerDisplayOptions, ISurgeLayer {}
  * @extends {ILayerDisplayOptions}
  * @extends {ISurgeLayer}
  */
-export interface ITySurgeLayerOptions extends ITyLayer {
+export interface ITySurgeLayerOptions extends IRasterLayer {
     forecastDt: Date
 }
 
@@ -120,7 +131,7 @@ export interface ITySurgeLayerOptions extends ITyLayer {
  * @interface ITyProLayerOptions
  * @extends {ITyLayer}
  */
-export interface ITyProLayerOptions extends ITyLayer {
+export interface ITyProLayerOptions extends IRasterLayer {
     pro: number
 }
 

@@ -18,7 +18,7 @@
                     </el-menu-item>
                 </el-submenu>
                 <!-- 风场及流场 -->
-                <el-submenu index="2">
+                <!-- <el-submenu index="2">
                     <template slot="title">风场及流场</template>
                     <el-menu-item index="2-1">
                         <router-link to="/content/caselist">风场</router-link>
@@ -26,7 +26,7 @@
                     <el-menu-item index="2-2">
                         <router-link to="/content/windmap">流场</router-link>
                     </el-menu-item>
-                </el-submenu>
+                </el-submenu> -->
                 <!-- 搜救模型 -->
                 <el-submenu index="3">
                     <template slot="title">台风集合预报</template>
@@ -49,8 +49,8 @@
         <div class="top-logo">
             <div class="logo"><img src="../../../assets/nmefclog.png" /></div>
             <div class="title">
-                <h2>nmefc可视化平台</h2>
-                <h4>台风集合预报路径系统</h4>
+                <h2>可视化平台@nmefc</h2>
+                <h4>台风风暴潮集合预报系统</h4>
             </div>
         </div>
         <!-- <div class="line"></div> -->

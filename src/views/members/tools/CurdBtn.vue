@@ -34,7 +34,7 @@
                     @click.native="isShowByList = !isShowByList"
                 ></InfoBox>
             </transition>
-            <transition name="fade">
+            <!-- <transition name="fade">
                 <InfoBox
                     :key="3"
                     v-show="isExpanded"
@@ -44,7 +44,7 @@
                     :showsize="'small'"
                     @click.native="isShowByCoverageSearch = !isShowByCoverageSearch"
                 ></InfoBox>
-            </transition>
+            </transition> -->
             <!-- </transition-group> -->
         </div>
 

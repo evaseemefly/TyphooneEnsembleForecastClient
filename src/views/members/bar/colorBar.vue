@@ -78,6 +78,7 @@ export default class ColorBar extends Vue {
         return colorLinearStr
     }
     setSelectedScale(index: number): void {
+        // 若点击是当前已经选中的 scale index 则将 selectedScaleIndex 改为默认值
         if (index === this.selectedScaleIndex) {
             this.selectedScaleIndex = DEFAULT_DICT_KEY
         } else {
@@ -100,9 +101,11 @@ export default class ColorBar extends Vue {
     }
 
     @Watch('selectedScale')
-    onSelectedScale(temp: { key: string; scale: IScale }): void {
-        const key = temp.key
-        this.setColorScaleKey(key)
+    onSelectedScale(temp: { key: string; scale: IScale }, old): void {
+        if (temp !== undefined) {
+            const key = temp.key
+            this.setColorScaleKey(key)
+        }
     }
 
     @Mutation(SET_SCALE_KEY, { namespace: 'common' }) setColorScaleKey

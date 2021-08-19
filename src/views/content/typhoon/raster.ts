@@ -321,7 +321,7 @@ class SurgeRasterGeoLayer {
          * @type {*}
          * @memberof SurgeRasterGeoLayer
          */
-        scale: any
+        scaleList: string[] | string
     } = {
         rasterLayer: new L.Layer(),
 
@@ -342,11 +342,15 @@ class SurgeRasterGeoLayer {
          * @type {*}
          * @memberof SurgeRasterGeoLayer
          */
-        scale: chroma.scale([DEFAULT_COLOR_SCALE.scaleColorList])
+        scaleList: DEFAULT_COLOR_SCALE.scaleColorList
     }
 
     get rasterLayer(): L.Layer {
         return this.options.rasterLayer
+    }
+
+    set rasterLayer(layer: L.Layer) {
+        this.options.rasterLayer = layer
     }
     // rasterLayer = this.options.rasterLayer
 
@@ -377,15 +381,15 @@ class SurgeRasterGeoLayer {
      * @memberof SurgeRasterGeoLayer
      */
     // scale = this.options.scale
-    get scale(): any {
-        return this.options.scale
+    get scaleList(): any {
+        return this.options.scaleList
     }
 
     constructor(options?: {
         tyCode?: string
         tyTimestamp?: string
         forecastDt?: Date
-        scale?: any
+        scaleList: string[] | string
     }) {
         this.options = { ...this.options, ...options }
     }
@@ -429,7 +433,9 @@ class SurgeRasterGeoLayer {
         const max = georasterResponse.maxs[0]
         const range = georasterResponse.ranges[0]
         // const scale = chroma.scale('Viridis')
-        const scale = this.scale
+        // TODO:[*] 21-08-19 error: chroma 错误
+        // chroma.js?6149:180 Uncaught (in promise) Error: unknown format: #ee4620,#ee462f,#ed4633,#ef6b6d,#f3a4a5,#f9dcdd,#dcdcfe
+        const scale = chroma.scale([...this.options.scaleList])
 
         // TODO:[*] 21-02-10 此处当加载全球风场的geotiff时，y不在实际范围内，需要手动处理
         georasterResponse.ymax = georasterResponse.ymax
@@ -454,6 +460,9 @@ class SurgeRasterGeoLayer {
             resolution: 256
         })
         addedLayer = layer.addTo(map)
+        // TODO:[*] 21-08-19 ERROR:TypeError
+        // Uncaught (in promise) TypeError: Cannot set property rasterLayer of #<SurgeRasterGeoLayer> which has only a getter
+        // this.rasterLayer 设置了 get 访问器，未设置 set 访问器，加入解决问题
         this.rasterLayer = addedLayer
         try {
             // const tifResp = await loadCurrentTif(
@@ -534,17 +543,18 @@ class FieldSurgeGeoLayer extends SurgeRasterGeoLayer {
             //     'rgb(192, 162, 157)'
             // ])
             // + 21-08-04 : https://colorbrewer2.org/#type=sequential&scheme=YlGnBu&n=9
-            const scale = chroma.scale([
-                '#081d58',
-                '#253494',
-                '#225ea8',
-                '#1d91c0',
-                '#41b6c4',
-                '#7fcdbb',
-                '#c7e9b4',
-                '#edf8b1',
-                '#ffffd9'
-            ])
+            // const scale = chroma.scale([
+            //     '#081d58',
+            //     '#253494',
+            //     '#225ea8',
+            //     '#1d91c0',
+            //     '#41b6c4',
+            //     '#7fcdbb',
+            //     '#c7e9b4',
+            //     '#edf8b1',
+            //     '#ffffd9'
+            // ])
+            const scale = chroma.scale([...this.options.scaleList])
             // const scale = chroma.scale([
             //     '#00429d',
             //     '#4771b2',
@@ -649,17 +659,18 @@ class ProSurgeGeoLayer extends SurgeRasterGeoLayer {
             // const max = 0.5
             const range = max - min
             // + 21-08-04 : https://colorbrewer2.org/#type=sequential&scheme=YlGnBu&n=9
-            const scale = chroma.scale([
-                '#081d58',
-                '#253494',
-                '#225ea8',
-                '#1d91c0',
-                '#41b6c4',
-                '#7fcdbb',
-                '#c7e9b4',
-                '#edf8b1',
-                '#ffffd9'
-            ])
+            // const scale = chroma.scale([
+            //     '#081d58',
+            //     '#253494',
+            //     '#225ea8',
+            //     '#1d91c0',
+            //     '#41b6c4',
+            //     '#7fcdbb',
+            //     '#c7e9b4',
+            //     '#edf8b1',
+            //     '#ffffd9'
+            // ])
+            const scale = chroma.scale([...this.options.scaleList])
 
             // TODO:[*] 21-02-10 此处当加载全球风场的geotiff时，y不在实际范围内，需要手动处理
             georasterResponse.ymax = georasterResponse.ymax
@@ -776,17 +787,18 @@ class ProSurgeGeoLayerByGeotiffjsWay1 extends SurgeRasterGeoLayer {
             const context = canvasContent.getContext('2d')
             const id = context.createImageData(tileWidth, tileHeight)
             const canvasData = id.data
-            const scale = chroma.scale([
-                '#081d58',
-                '#253494',
-                '#225ea8',
-                '#1d91c0',
-                '#41b6c4',
-                '#7fcdbb',
-                '#c7e9b4',
-                '#edf8b1',
-                '#ffffd9'
-            ])
+            // const scale = chroma.scale([
+            //     '#081d58',
+            //     '#253494',
+            //     '#225ea8',
+            //     '#1d91c0',
+            //     '#41b6c4',
+            //     '#7fcdbb',
+            //     '#c7e9b4',
+            //     '#edf8b1',
+            //     '#ffffd9'
+            // ])
+            const scale = chroma.scale([this.options.scaleList])
             for (let y = 0; y < tileHeight; y++) {
                 for (let x = 0; x < tileWidth; x++) {
                     const latlng = map.layerPointToLatLng([leftTopPixel.x + x, leftTopPixel.y + y])
@@ -899,17 +911,18 @@ class ProSurgeGeoLayerByGeotiffjsWay2 extends SurgeRasterGeoLayer {
             const context = canvasContent.getContext('2d')
             const id = context.createImageData(tileWidth, tileHeight)
             const canvasData = id.data
-            const scale = chroma.scale([
-                '#081d58',
-                '#253494',
-                '#225ea8',
-                '#1d91c0',
-                '#41b6c4',
-                '#7fcdbb',
-                '#c7e9b4',
-                '#edf8b1',
-                '#ffffd9'
-            ])
+            // const scale = chroma.scale([
+            //     '#081d58',
+            //     '#253494',
+            //     '#225ea8',
+            //     '#1d91c0',
+            //     '#41b6c4',
+            //     '#7fcdbb',
+            //     '#c7e9b4',
+            //     '#edf8b1',
+            //     '#ffffd9'
+            // ])
+            const scale = chroma.scale([this.options.scaleList])
 
             const plot = new plotty.plot({
                 data: data,
