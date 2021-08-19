@@ -43,6 +43,8 @@ import {
 } from '@/const/common'
 import { LayerTypeEnum } from '@/enum/map'
 import { BIconChevronCompactUp } from 'bootstrap-vue'
+// COMMON
+import { DEFAULT_COLOR_SCALE, DEFAULT_COLOR_KEY, IScale } from '@/const/colorBar'
 
 export interface IRaster {
     rasterLayer: L.Layer
@@ -340,17 +342,7 @@ class SurgeRasterGeoLayer {
          * @type {*}
          * @memberof SurgeRasterGeoLayer
          */
-        scale: chroma.scale([
-            '#00429d',
-            '#4771b2',
-            '#73a2c6',
-            '#a5d5d8',
-            '#ffffe0',
-            '#ffbcaf',
-            '#f4777f',
-            '#cf3759',
-            '#93003a'
-        ])
+        scale: chroma.scale([DEFAULT_COLOR_SCALE.scaleColorList])
     }
 
     get rasterLayer(): L.Layer {

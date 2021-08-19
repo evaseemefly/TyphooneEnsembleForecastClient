@@ -380,6 +380,7 @@ import {
     ITyLayer,
     ITyProLayerOptions
 } from './types'
+import { ColorScales, getColorScale } from '@/const/colorBar'
 
 const DEFAULT = 'DEFAULT'
 // 21-01-04 分页读取散点的页面散点数
@@ -1771,6 +1772,7 @@ export default class TyGroupMap extends mixins(
     onTyFieldOptions(val: ITySurgeLayerOptions): void {
         const that = this
         const mymap: any = this.$refs.basemap['mapObject']
+        const scale: any = getColorScale('my-colour')
         if (this.checkSurgeOptions(val)) {
             // 当 tyGroupOptions 发生变更, tyCode | forecastDt | timeStamp 中一个或多个
             // 执行 loadStationList
@@ -1783,7 +1785,8 @@ export default class TyGroupMap extends mixins(
             const fieldSurgeGeoLayer = new FieldSurgeGeoLayer({
                 tyCode: val.tyCode,
                 tyTimestamp: val.tyTimeStamp,
-                forecastDt: val.forecastDt
+                forecastDt: val.forecastDt,
+                scale: scale
             })
             this.clearSurgeHourlyRasterLayer()
             fieldSurgeGeoLayer
@@ -1807,6 +1810,7 @@ export default class TyGroupMap extends mixins(
         const that = this
         // console.log(`监听到tyMaxSurgeOptions:tyCode:${val.tyCode},tyTS:${val.tyTimeStamp}发生变化`)
         const mymap: any = this.$refs.basemap['mapObject']
+        const scale: any = getColorScale('my-colour')
         if (val.isShow) {
             if (this.uniqueRasterLayer) {
                 clearRasterFromMap(mymap, this.uniqueRasterLayer)
@@ -1814,7 +1818,8 @@ export default class TyGroupMap extends mixins(
             const surgeRasterLayer = new SurgeRasterGeoLayer({
                 tyCode: val.tyCode,
                 tyTimestamp: val.tyTimeStamp,
-                forecastDt: this.forecastDt
+                forecastDt: this.forecastDt,
+                scale: scale
             })
             surgeRasterLayer
                 .add2map(mymap, () => {})
@@ -1831,6 +1836,7 @@ export default class TyGroupMap extends mixins(
         const that = this
         // console.log(`监听到tyMaxSurgeOptions:tyCode:${val.tyCode},tyTS:${val.tyTimeStamp}发生变化`)
         const mymap: any = this.$refs.basemap['mapObject']
+        const scale: any = getColorScale('my-colour')
         if (val.isShow) {
             if (this.uniqueRasterLayer) {
                 clearRasterFromMap(mymap, this.uniqueRasterLayer)
@@ -1838,7 +1844,8 @@ export default class TyGroupMap extends mixins(
             const surgeRasterLayer = new ProSurgeGeoLayer({
                 tyCode: val.tyCode,
                 tyTimestamp: val.tyTimeStamp,
-                forecastDt: this.forecastDt
+                forecastDt: this.forecastDt,
+                scale: scale
             })
             surgeRasterLayer
                 .add2map(mymap, () => {}, 0.5, val.layerType)

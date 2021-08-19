@@ -7,6 +7,13 @@ export interface IScale {
     scaleColorList?: string | string[]
 }
 
+const DEFAULT_COLOR_INDEX = -1
+const DEFAULT_COLOR_KEY = 'my-colour'
+const DEFAULT_COLOR_SCALE: IScale = {
+    range: [0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2],
+    scaleColorList: ['#ee4620', '#ee462f', '#ed4633', '#ef6b6d', '#f3a4a5', '#f9dcdd', '#dcdcfe']
+}
+
 const ColorScales: { key: string; scale: IScale }[] = [
     {
         key: 'my-colour',
@@ -62,6 +69,11 @@ const ColorScales: { key: string; scale: IScale }[] = [
     }
 ]
 
-const DEFAULT_COLOR_INDEX=-1
+const getColorScale = (key: string): IScale => {
+    const colorScaleObj: { key: string; scale: IScale } | undefined =
+        ColorScales.find((temp) => temp.key === key) ||
+        ColorScales.find((temp) => temp.key == DEFAULT_COLOR_KEY)
+    return (colorScaleObj && colorScaleObj.scale) || DEFAULT_COLOR_SCALE
+}
 
-export { ColorScales }
+export { ColorScales, DEFAULT_COLOR_INDEX, DEFAULT_COLOR_SCALE, DEFAULT_COLOR_KEY, getColorScale }
