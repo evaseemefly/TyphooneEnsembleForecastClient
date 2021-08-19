@@ -34,8 +34,15 @@ import { loadCurrentTif, loadFieldSurgeTif, loadProSurgeTif } from '@/api/geo'
 import { MaxSurge } from './surge'
 import { AreaEnum } from '@/enum/area'
 import { DictEnum, ProductEnum } from '@/enum/dict'
-import { USELESS_COVERAGE_ID } from '@/const/common'
+import {
+    USELESS_COVERAGE_ID,
+    DEFAULT_TYPHOON_ID,
+    DEFAULT_TYPHOON_CODE,
+    DEFAULT_DATE,
+    DEFAULT_TIMESTAMP
+} from '@/const/common'
 import { LayerTypeEnum } from '@/enum/map'
+import { BIconChevronCompactUp } from 'bootstrap-vue'
 
 export interface IRaster {
     rasterLayer: L.Layer
@@ -285,25 +292,110 @@ class RasterGeoLayer implements IRaster {
         return addedLayer
     }
 }
-
+/**
+ * modfiy + 21-08-19
+ * 建议在创建时加入scale，可以直接使用 chroma.scale
+ *
+ * @class SurgeRasterGeoLayer
+ */
 class SurgeRasterGeoLayer {
-    rasterLayer: L.Layer
+    options: {
+        rasterLayer: L.Layer
 
-    tyCode: string
+        tyCode: string
 
-    tyTimestamp: string
+        tyTimestamp: string
+        /**
+         * 预报的时间
+         *
+         * @type {Date}
+         * @memberof RasterGeoLayer
+         */
+        forecastDt: Date
+
+        /**
+         * + 21-08-19 新加入的 chroma.scale 色标变量，在构造函数中给与赋值
+         *
+         * @type {*}
+         * @memberof SurgeRasterGeoLayer
+         */
+        scale: any
+    } = {
+        rasterLayer: new L.Layer(),
+
+        tyCode: DEFAULT_TYPHOON_CODE,
+
+        tyTimestamp: DEFAULT_TIMESTAMP,
+        /**
+         * 预报的时间
+         *
+         * @type {Date}
+         * @memberof RasterGeoLayer
+         */
+        forecastDt: DEFAULT_DATE,
+
+        /**
+         * + 21-08-19 新加入的 chroma.scale 色标变量，在构造函数中给与赋值
+         *
+         * @type {*}
+         * @memberof SurgeRasterGeoLayer
+         */
+        scale: chroma.scale([
+            '#00429d',
+            '#4771b2',
+            '#73a2c6',
+            '#a5d5d8',
+            '#ffffe0',
+            '#ffbcaf',
+            '#f4777f',
+            '#cf3759',
+            '#93003a'
+        ])
+    }
+
+    get rasterLayer(): L.Layer {
+        return this.options.rasterLayer
+    }
+    // rasterLayer = this.options.rasterLayer
+
+    // tyCode = this.options.tyCode
+    get tyCode(): string {
+        return this.options.tyCode
+    }
+
+    // tyTimestamp = this.options.tyTimestamp
+    get tyTimestamp(): string {
+        return this.options.tyTimestamp
+    }
     /**
      * 预报的时间
      *
      * @type {Date}
      * @memberof RasterGeoLayer
      */
-    forecastDt: Date
+    // forecastDt = this.options.forecastDt
+    get forecastDt(): Date {
+        return this.options.forecastDt
+    }
 
-    constructor(tyCode: string, tyTimestamp: string, forecastDt: Date) {
-        this.tyCode = tyCode
-        this.tyTimestamp = tyTimestamp
-        this.forecastDt = forecastDt
+    /**
+     * + 21-08-19 新加入的 chroma.scale 色标变量，在构造函数中给与赋值
+     *
+     * @type {*}
+     * @memberof SurgeRasterGeoLayer
+     */
+    // scale = this.options.scale
+    get scale(): any {
+        return this.options.scale
+    }
+
+    constructor(options?: {
+        tyCode?: string
+        tyTimestamp?: string
+        forecastDt?: Date
+        scale?: any
+    }) {
+        this.options = { ...this.options, ...options }
     }
 
     public async add2map(
@@ -345,17 +437,7 @@ class SurgeRasterGeoLayer {
         const max = georasterResponse.maxs[0]
         const range = georasterResponse.ranges[0]
         // const scale = chroma.scale('Viridis')
-        const scale = chroma.scale([
-            '#00429d',
-            '#4771b2',
-            '#73a2c6',
-            '#a5d5d8',
-            '#ffffe0',
-            '#ffbcaf',
-            '#f4777f',
-            '#cf3759',
-            '#93003a'
-        ])
+        const scale = this.scale
 
         // TODO:[*] 21-02-10 此处当加载全球风场的geotiff时，y不在实际范围内，需要手动处理
         georasterResponse.ymax = georasterResponse.ymax

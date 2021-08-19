@@ -535,31 +535,11 @@ export default class TyGroupMap extends mixins(
     waveWveRasterLayerId: number = DEFAULT_LAYER_ID
     // TODO:[*] 20-10-22 + 缩放等级
     zoomLevel = 7
-    windRasterOptions: IRasterOptions = {
-        // TODO:[-] 21-02-10 注意 coverageId 是由 watch casecode -> loadTargetOilModelData 中修改的，而非 getCoverageId
-        coverageId: DEFAULT_COVERAGE_ID,
-        current: new Date(),
-        isShow: false,
-        productType: ProductEnum.COVERAGE_TYPE_WIND,
-        level: 3,
-        area: AreaEnum.GLOBAL
-    }
-    // TODO:[-] 20-07-07 + 用来监听实现 windy 效果
-    velocityOptions: IRasterOptions = {
-        coverageId: DEFAULT_COVERAGE_ID,
-        current: new Date(),
-        isShow: false,
-        productType: ProductEnum.COVERAGE_TYPE_CURRENT,
-        level: 5,
-        area: AreaEnum.GLOBAL
-    }
     // 用于动态加载的 wms 的 ws 的str
     wmsWorkSpace = ''
     layerControl: any = null
     // TODO:[-] + 21-08-05 新加入的全局唯一的 栅格layer
     uniqueRasterLayer: L.Layer = null
-    // 流场 layer (注意是一个矢量 layer 注意与上面的 风场的区分)
-    velocityLayer: any = null
     // TODO:[*] 20-07-27 记录当前 add layers to map 时的 layers种类数组
     existLayers: LayerTypeEnum[] = []
     // TODO:[-] 20-06-20 加入的是否分页的标识符
@@ -1313,11 +1293,11 @@ export default class TyGroupMap extends mixins(
                         // 点击向后台发送 获取逐时风暴增水场的请求
                         // 请求参数包含 ty_code | ty_timestamp | forecast_dt
                         const params: { forecastDt: Date } = e.target.options.customData
-                        const fieldSurgeGeoLayer = new FieldSurgeGeoLayer(
-                            tyCode,
-                            tyTimestamp,
-                            params.forecastDt
-                        )
+                        const fieldSurgeGeoLayer = new FieldSurgeGeoLayer({
+                            tyCode: tyCode,
+                            tyTimestamp: tyTimestamp,
+                            forecastDt: params.forecastDt
+                        })
                         if (that.fieldSurgeRasterLayer) {
                             mymap.removeLayer(that.fieldSurgeRasterLayer)
                             that.fieldSurgeRasterLayer = null
@@ -1800,11 +1780,11 @@ export default class TyGroupMap extends mixins(
             if (this.uniqueRasterLayer) {
                 clearRasterFromMap(mymap, this.uniqueRasterLayer)
             }
-            const fieldSurgeGeoLayer = new FieldSurgeGeoLayer(
-                val.tyCode,
-                val.tyTimeStamp,
-                val.forecastDt
-            )
+            const fieldSurgeGeoLayer = new FieldSurgeGeoLayer({
+                tyCode: val.tyCode,
+                tyTimestamp: val.tyTimeStamp,
+                forecastDt: val.forecastDt
+            })
             this.clearSurgeHourlyRasterLayer()
             fieldSurgeGeoLayer
                 .add2map(mymap, () => {})
@@ -1831,11 +1811,11 @@ export default class TyGroupMap extends mixins(
             if (this.uniqueRasterLayer) {
                 clearRasterFromMap(mymap, this.uniqueRasterLayer)
             }
-            const surgeRasterLayer = new SurgeRasterGeoLayer(
-                val.tyCode,
-                val.tyTimeStamp,
-                this.forecastDt
-            )
+            const surgeRasterLayer = new SurgeRasterGeoLayer({
+                tyCode: val.tyCode,
+                tyTimestamp: val.tyTimeStamp,
+                forecastDt: this.forecastDt
+            })
             surgeRasterLayer
                 .add2map(mymap, () => {})
                 .then((layer) => {
@@ -1855,11 +1835,11 @@ export default class TyGroupMap extends mixins(
             if (this.uniqueRasterLayer) {
                 clearRasterFromMap(mymap, this.uniqueRasterLayer)
             }
-            const surgeRasterLayer = new ProSurgeGeoLayer(
-                val.tyCode,
-                val.tyTimeStamp,
-                this.forecastDt
-            )
+            const surgeRasterLayer = new ProSurgeGeoLayer({
+                tyCode: val.tyCode,
+                tyTimestamp: val.tyTimeStamp,
+                forecastDt: this.forecastDt
+            })
             surgeRasterLayer
                 .add2map(mymap, () => {}, 0.5, val.layerType)
                 .then((layer) => {
