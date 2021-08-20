@@ -1833,6 +1833,7 @@ export default class TyGroupMap extends mixins(
             surgeRasterLayer
                 .add2map(mymap, () => {})
                 .then((layer) => {
+                    console.log(surgeRasterLayer)
                     this.uniqueRasterLayer = layer
                 })
         } else {

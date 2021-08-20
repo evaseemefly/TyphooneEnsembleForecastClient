@@ -9,8 +9,9 @@ export interface IScale {
 
 const DEFAULT_COLOR_INDEX = -1
 const DEFAULT_COLOR_KEY = 'my-colour'
+const DEFAULT_RANGE = [0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2]
 const DEFAULT_COLOR_SCALE: IScale = {
-    range: [0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2],
+    range: DEFAULT_RANGE,
     scaleColorList: [
         '#4575b4',
         '#74add1',
@@ -28,7 +29,7 @@ const ColorScales: { key: string; scale: IScale }[] = [
     {
         key: 'my-colour',
         scale: {
-            range: [0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2],
+            range: DEFAULT_RANGE,
             scaleColorList: [
                 '#4575b4',
                 '#74add1',
@@ -45,7 +46,7 @@ const ColorScales: { key: string; scale: IScale }[] = [
     {
         key: 'my-rainbow',
         scale: {
-            range: [0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2],
+            range: DEFAULT_RANGE,
             scaleColorList: [
                 'rgb(98, 113, 184)',
                 'rgb(98, 113, 184)',
@@ -65,7 +66,7 @@ const ColorScales: { key: string; scale: IScale }[] = [
     {
         key: 'my-ocean',
         scale: {
-            range: [0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2],
+            range: DEFAULT_RANGE,
             scaleColorList: [
                 '#ffffd9',
                 '#edf8b1',
