@@ -1,6 +1,7 @@
 <template>
     <div id="bottom-right-main-bar">
         <ColorBar></ColorBar>
+        <SwitchBaseMap></SwitchBaseMap>
         <ForecastAreaBar
             :tyCode="tyCode"
             :timeStampStr="timeStampStr"
@@ -13,13 +14,15 @@ import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 // 引入组件
 import ColorBar from '@/views/members/bar/colorBar.vue'
 import ForecastAreaBar from '@/views/members/bar/forecastAreaBar.vue'
+import SwitchBaseMap from '@/components/bar/switchBaseMap.vue'
 
 // 引入部分中间变量
 import CoverageMin from '@/views/content/oilspilling/coverage.vue'
 @Component({
     components: {
         ColorBar,
-        ForecastAreaBar
+        ForecastAreaBar,
+        SwitchBaseMap
     }
 })
 export default class BottomRightMainBar extends Vue {
