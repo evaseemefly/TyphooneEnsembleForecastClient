@@ -28,6 +28,10 @@ export const REMOVE_TOKEN = 'REMOVE_TOKEN'
 // + 21-08-18 color scal的key
 export const SET_SCALE_KEY = 'SET_SCALE_KEY'
 export const GET_SCALE_KEY = 'GET_SCALE_KEY'
+// +21-08-20 color scale 的 range
+export const SET_SCALE_RANGE = 'SET_SCALE_RANGE'
+export const GET_SCALE_RANGE = 'GET_SCALE_RANGE'
+
 // 产品的种类(主要是oil还是rescue)
 export const SET_PRODUCT_TYPE = 'SET_PRODUCT_TYPE'
 export const GET_PRODUCT_TYPE = 'GET_PRODUCT_TYPE'

@@ -385,7 +385,7 @@ class SurgeRasterGeoLayer {
         return this.options.scaleList
     }
 
-    scaleRnage: number[] = []
+    scaleRange: number[] = []
 
     constructor(options?: {
         tyCode?: string
@@ -438,7 +438,7 @@ class SurgeRasterGeoLayer {
         // TODO:[*] 21-08-19 error: chroma 错误
         // chroma.js?6149:180 Uncaught (in promise) Error: unknown format: #ee4620,#ee462f,#ed4633,#ef6b6d,#f3a4a5,#f9dcdd,#dcdcfe
         const scale = chroma.scale([...this.options.scaleList])
-        this.scaleRnage = [min, max]
+        this.scaleRange = [min, max]
 
         // TODO:[*] 21-02-10 此处当加载全球风场的geotiff时，y不在实际范围内，需要手动处理
         georasterResponse.ymax = georasterResponse.ymax
@@ -529,6 +529,7 @@ class FieldSurgeGeoLayer extends SurgeRasterGeoLayer {
             // const min = 0
             // const max = 0.5
             const range = max - min
+            this.scaleRange = [min, max]
             // const scale = chroma.scale('Viridis')
             // + 21-07-30 参考 windy 的色标
             // const scale = chroma.scale([
@@ -674,7 +675,7 @@ class ProSurgeGeoLayer extends SurgeRasterGeoLayer {
             //     '#ffffd9'
             // ])
             const scale = chroma.scale([...this.options.scaleList])
-
+            this.scaleRange = [min, max]
             // TODO:[*] 21-02-10 此处当加载全球风场的geotiff时，y不在实际范围内，需要手动处理
             georasterResponse.ymax = georasterResponse.ymax
             georasterResponse.ymin = georasterResponse.ymin

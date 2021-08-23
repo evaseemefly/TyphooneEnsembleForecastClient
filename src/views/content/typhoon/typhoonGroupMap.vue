@@ -360,7 +360,8 @@ import {
     GET_TYPHOON_TIMESTAMP,
     // + 21-08-19 color scale相关
     GET_SCALE_KEY,
-    SET_SCALE_KEY
+    SET_SCALE_KEY,
+    SET_SCALE_RANGE
 } from '@/store/types'
 import {
     DEFAULT_LAYER_ID,
@@ -1801,6 +1802,7 @@ export default class TyGroupMap extends mixins(
                 .add2map(mymap, () => {})
                 .then((res) => {
                     // console.log(res)
+                    this.setScaleRange(fieldSurgeGeoLayer.scaleRange || [])
                     that.uniqueRasterLayer = res
                 })
         } else {
@@ -1833,13 +1835,16 @@ export default class TyGroupMap extends mixins(
             surgeRasterLayer
                 .add2map(mymap, () => {})
                 .then((layer) => {
-                    console.log(surgeRasterLayer)
+                    // console.log(surgeRasterLayer)
+                    this.setScaleRange(surgeRasterLayer.scaleRange || [])
                     this.uniqueRasterLayer = layer
                 })
         } else {
             clearRasterFromMap(mymap, this.uniqueRasterLayer)
         }
     }
+
+    @Mutation(SET_SCALE_RANGE, { namespace: 'common' }) setScaleRange
 
     @Watch('tyProSurgeOptions', { immediate: true, deep: true })
     onTyProSurgeOptions(val: ITySurgeLayerOptions): void {
@@ -1861,6 +1866,7 @@ export default class TyGroupMap extends mixins(
             surgeRasterLayer
                 .add2map(mymap, () => {}, 0.5, val.layerType)
                 .then((layer) => {
+                    this.setScaleRange(surgeRasterLayer.scaleRange || [])
                     this.uniqueRasterLayer = layer
                 })
         } else {

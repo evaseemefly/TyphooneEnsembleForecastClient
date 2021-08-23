@@ -33,15 +33,17 @@
 <script lang="ts">
 import { Prop, Vue, Watch } from 'vue-property-decorator'
 import Component from 'vue-class-component'
-import { Mutation, State, namespace } from 'vuex-class'
+import { Mutation, State, namespace, Getter } from 'vuex-class'
 // 本项目
 import { IColorScale, ColorScales, IScale } from '@/const/colorBar'
 import { DEFAULT_DICT_KEY } from '@/const/common'
-import { SET_SCALE_KEY } from '@/store/types'
+import { SET_SCALE_KEY, GET_SCALE_RANGE } from '@/store/types'
 @Component({})
 export default class ColorBar extends Vue {
     colorScales: { key: string; scale: IScale }[] = ColorScales
     selectedScaleIndex = DEFAULT_DICT_KEY
+    colorRange: number[] = []
+    splitNum = 6 // 对当前 range 进行切分的数量
     color1 = 'rgb(151, 75, 145)'
     angle = '50'
     // color1 = 'red'
@@ -110,6 +112,24 @@ export default class ColorBar extends Vue {
     }
 
     @Mutation(SET_SCALE_KEY, { namespace: 'common' }) setColorScaleKey
+
+    // + 21-08-20 监听 vuex -> color scale range
+    @Getter(GET_SCALE_RANGE, { namespace: 'common' }) getColorScaleRange
+
+    @Watch('getColorScaleRange')
+    onColorScaleRange(range: number[]): void {
+        // console.log(range)
+        const max = Math.max(...range)
+        const min = Math.min(...range)
+        const spaceUnit = (max - min) / this.splitNum
+        const rangeList: number[] = []
+        for (let i = 0; i <= this.splitNum; i++) {
+            const tempVal = parseFloat((min + i * spaceUnit).toFixed(1))
+            rangeList.push(tempVal)
+        }
+        // 注意需要将 range 按照当前的切分要求进行切分
+        this.colorScales.forEach((temp) => (temp.scale.range = rangeList))
+    }
 }
 </script>
 <style lang="less" scoped>
