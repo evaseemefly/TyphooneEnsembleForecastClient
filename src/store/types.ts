@@ -48,6 +48,10 @@ export const GET_MAP_NOW = 'GET_MAP_NOW'
 export const SET_MAP_LAYERS = 'SET_MAY_LAYERS'
 export const GET_MAP_LAYERS = 'GET_MAP_LAYERS'
 
+// + 21-08-23 切换地图底图
+export const SET_BASE_MAP_KEY = 'SET_BASE_MAP_KEY'
+export const GET_BASE_MAP_KEY = 'GET_BASE_MAP_KEY'
+
 // map - 修改是否显示创建 oil case model
 export const SET_CREATE_OIL_CASE_MODAL = 'SET_CREATE_OIL_CASE_MODAL'
 export const GET_CREATE_OIL_CASE_MODAL = 'GET_CREATE_OIL_CASE_MODAL'

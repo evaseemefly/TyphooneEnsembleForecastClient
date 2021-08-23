@@ -26,7 +26,9 @@
 <script lang="ts">
 // + 21-08-23 加入的切换底图的 switch bar
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
-import { MapLayerEnum } from '@/enum/common'
+import { Mutation, State, namespace, Getter } from 'vuex-class'
+import { MapLayerEnum } from '@/enum/map'
+import { SET_BASE_MAP_KEY } from '@/store/types'
 @Component({})
 export default class SwitchBaseMap extends Vue {
     mydata: any = null
@@ -62,6 +64,7 @@ export default class SwitchBaseMap extends Vue {
         isActive: boolean
     }): void {
         this.baseMapType = val.code
+        this.setBaseMapKey(this.baseMapType)
         this.showLayers.map((temp) => {
             if (temp.code === val.code) {
                 temp.isActive = !temp.isActive
@@ -70,10 +73,8 @@ export default class SwitchBaseMap extends Vue {
             }
         })
     }
-    mounted() {}
-    get computedTest() {
-        return null
-    }
+
+    @Mutation(SET_BASE_MAP_KEY, { namespace: 'map' }) setBaseMapKey
 }
 </script>
 <style scoped lang="less">

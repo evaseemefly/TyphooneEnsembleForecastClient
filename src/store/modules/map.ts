@@ -1,6 +1,6 @@
 import { State } from './map'
 import { Commit, Dispatch } from 'vuex'
-import { LayerTypeEnum } from '@/enum/map'
+import { LayerTypeEnum, MapLayerEnum } from '@/enum/map'
 import {
     SET_MAP_NOW,
     GET_MAP_NOW,
@@ -19,7 +19,9 @@ import {
     SET_AUTO_PLAY,
     GET_AUTO_PLAY,
     SET_CREATE_FORM,
-    GET_CREATE_FORM
+    GET_CREATE_FORM,
+    SET_BASE_MAP_KEY,
+    GET_BASE_MAP_KEY
 } from '../types'
 export interface State {
     // range:number,
@@ -37,6 +39,8 @@ export interface State {
     timerLock: boolean
     // + 21-01-29 配合 map -> SET_TIMER_LOCK 使用的, lock = true 锁住,lock =false 打开
     autoPlay: boolean
+    //
+    baseMapKey: MapLayerEnum
 }
 
 // 用来存储应用状态的数据对象
@@ -56,7 +60,9 @@ const state: State = {
     // + 21-01-27 新加入的 timer 锁，正常为 false，代表未锁住
     timerLock: false,
     // + 21-01-29 配合 map -> SET_TIMER_LOCK 使用的, lock = true 锁住,lock =false 打开
-    autoPlay: false
+    autoPlay: false,
+    // + 21-08-23 切换底图的key
+    baseMapKey: MapLayerEnum.SIMPLE_MAP
 }
 
 // 用来改变应用状态的函数
@@ -131,6 +137,9 @@ const mutations = {
     },
     [SET_AUTO_PLAY](state: State, play: boolean): void {
         state.autoPlay = play
+    },
+    [SET_BASE_MAP_KEY](state: State, mapKey: MapLayerEnum): void {
+        state.baseMapKey = mapKey
     }
 }
 
@@ -180,6 +189,9 @@ const getters = {
     // + 21-07-11 是否在 map 页面 show -> 风暴潮 create form
     [GET_CREATE_FORM]: (state: State): boolean => {
         return state.isShowCreateForm
+    },
+    [GET_BASE_MAP_KEY]: (state: State): MapLayerEnum => {
+        return state.baseMapKey
     }
 }
 

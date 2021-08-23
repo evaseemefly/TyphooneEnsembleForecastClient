@@ -27,6 +27,16 @@ export enum SurgeProLayerEnum {
     RASTER_PRO_SURGE_LAYER_GT30 = 1306
 }
 
+/**
+ *+ 21-08-23 切换底图的key
+ *
+ * @export
+ * @enum {number}
+ */
+export enum MapLayerEnum {
+    SATELITE_MAP = 4001, // 卫星卫片
+    SIMPLE_MAP = 4002 // 简单底图
+}
 export const LayerTypeEnum = { ...SurgeProLayerEnum, ...BaseLayerTypeEnum }
 export type LayerTypeEnum = BaseLayerTypeEnum | SurgeProLayerEnum
 // export { LayerTypeEnum&SurgeProLayerEnum }

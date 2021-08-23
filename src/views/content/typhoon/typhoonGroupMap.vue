@@ -333,7 +333,7 @@ import { StationSurge, IToHtml } from './station'
 import { TyGroupPath, getTyCenterGroupDiffLayer } from './typhoonGroup'
 // 引入枚举
 import { DictEnum } from '@/enum/dict'
-import { LayerTypeEnum, SurgeProLayerEnum } from '@/enum/map'
+import { LayerTypeEnum, SurgeProLayerEnum, MapLayerEnum } from '@/enum/map'
 
 // api
 // + 21 typhoon api
@@ -361,7 +361,8 @@ import {
     // + 21-08-19 color scale相关
     GET_SCALE_KEY,
     SET_SCALE_KEY,
-    SET_SCALE_RANGE
+    SET_SCALE_RANGE,
+    GET_BASE_MAP_KEY // + 21-08-23 监听切换地图的 baseMapKey
 } from '@/store/types'
 import {
     DEFAULT_LAYER_ID,
@@ -386,6 +387,9 @@ import {
     IRasterLayer
 } from './types'
 import { ColorScales, getColorScale, DEFAULT_COLOR_SCALE } from '@/const/colorBar'
+
+// TODO:[-] 21-08-23 保存个人token及key，不推送
+import { TDT_TOKEN_KEY, MAPTITLELAYER_TOKEN_KEY } from '@/privacy/key'
 
 const DEFAULT = 'DEFAULT'
 // 21-01-04 分页读取散点的页面散点数
@@ -659,11 +663,19 @@ export default class TyGroupMap extends mixins(
 
     // + 21-07-25 当前选中的 typhoon id，给一个默认值
     selectedTyId: number = DEFAULT_TYPHOON_ID
-    getMapBoxLayerClass(url, options): any {
-        return L.mapboxGL({
-            accessToken:
-                'pk.eyJ1IjoiZXZhc2VlbWVmbHkxIiwiYSI6ImNrcHE4OHJsejBobnoyb3BhOTkwb3MzbGwifQ.5ThyBJrIccBpeVi9pUdJnw',
-            style: '/static/mapbox/style/style_210610/style.json'
+    getMapBoxLayerClass(key: string): L.TileLayer {
+        // return L.mapboxGL({
+        //     accessToken:
+        //         'pk.eyJ1IjoiZXZhc2VlbWVmbHkxIiwiYSI6ImNrcHE4OHJsejBobnoyb3BhOTkwb3MzbGwifQ.5ThyBJrIccBpeVi9pUdJnw',
+        //     style: '/static/mapbox/style/style_210610/style.json'
+        // })
+        return L.tileLayer(`https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=${key}`, {
+            tileSize: 512,
+            zoomOffset: -1,
+            minZoom: 1,
+            attribution:
+                '\u003ca href="https://www.maptiler.com/copyright/" target="_blank"\u003e\u0026copy; MapTiler\u003c/a\u003e \u003ca href="https://www.openstreetmap.org/copyright" target="_blank"\u003e\u0026copy; OpenStreetMap contributors\u003c/a\u003e',
+            crossOrigin: true
         })
     }
     created() {
@@ -2136,6 +2148,28 @@ export default class TyGroupMap extends mixins(
             this.zoomLevel = 11
         } else if (valNew > 10 && valOld === DEFAULT_ZOOM_LEVEL) {
             this.zoomLevel = 11
+        }
+    }
+
+    // + 21-08-23 监听底图key
+    @Getter(GET_BASE_MAP_KEY, { namespace: 'map' }) getBaseMapKey
+
+    @Watch('getBaseMapKey')
+    onBaseMapKey(val: MapLayerEnum): void {
+        const mymap: L.Map = this.$refs.basemap['mapObject']
+        switch (true) {
+            // case val === MapLayerEnum.SATELITE_MAP:
+            //     this.url = `https://api.maptiler.com/maps/hybrid/256/{z}/{x}/{y}.jpg?key=${MAPTITLELAYER_TOKEN_KEY}`
+            case val === MapLayerEnum.SATELITE_MAP:
+                this.url = `https://api.maptiler.com/maps/afe4e54b-c07b-4042-b750-6a83214d0096/{z}/{x}/{y}.jpg?key=${MAPTITLELAYER_TOKEN_KEY}`
+
+                // this.getMapBoxLayerClass('0TuB9SR4KyaoCi4FUrPM').addTo(mymap)
+                break
+            case val === MapLayerEnum.SIMPLE_MAP:
+                // 使用 geoq 的底图
+                this.url =
+                    'https://map.geoq.cn/arcgis/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/{z}/{y}/{x}'
+                break
         }
     }
 

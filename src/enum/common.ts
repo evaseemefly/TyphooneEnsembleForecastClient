@@ -9,8 +9,4 @@ export enum LayerTypeEnum {
     TYPHOON_GROUPPATH_LAYER = 1003
 }
 
-export enum MapLayerEnum {
-    SATELITE_MAP = 4001,
-    SIMPLE_MAP = 4002
-}
 export { getEnumVal }
