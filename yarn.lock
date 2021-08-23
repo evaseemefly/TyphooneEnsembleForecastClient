@@ -14705,9 +14705,9 @@ xdg-basedir@^3.0.0:
   integrity sha1-SWsswQnsqNus/i3HK2A8F8WHCtQ=
 
 xml-utils@^0.2.0:
-  version "0.0.2"
-  resolved "https://registry.nlark.com/xml-utils/download/xml-utils-0.0.2.tgz#358fbe199d3f03fc58b73a1d8802fcb64d373806"
-  integrity sha1-NY++GZ0/A/xYtzodiAL8tk03OAY=
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/xml-utils/-/xml-utils-0.2.0.tgz#1c9451e378dfbcd681c5265f70409422dd1bfaa8"
+  integrity sha512-xun/4Ls9hrelX0dSMS6HH5wAWNspUs4/VmG+xOVALqYqMQXMy/1WKeiRR5nhYbMCp5UG/YF6XaSdU3AvwgxVSQ==
 
 xmldom@0.1.*:
   version "0.1.31"
