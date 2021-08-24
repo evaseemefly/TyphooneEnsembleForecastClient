@@ -75,8 +75,34 @@ const getStationSurgeRealDataListAndRange = (
     })
 }
 
+/**
+ * + 21-08-24
+ * 获取天文潮数据列表
+ *
+ * @param {string} tyCode
+ * @param {string} timestamp
+ * @param {string} stationCode
+ * @return {*}
+ */
+const getAstronomictideTideRealDataList = (
+    tyCode: string,
+    timestamp: string,
+    stationCode: string
+) => {
+    const url = `${host}${area}/station/astronomictide/range/list`
+    return axios.get(url, {
+        headers: authHeader(),
+        params: {
+            ty_code: tyCode,
+            timestamp: timestamp,
+            station_code: stationCode
+        }
+    })
+}
+
 export {
     getStationListByGroupPath,
     getStationSurgeRangeListByGroupPath,
-    getStationSurgeRealDataListAndRange
+    getStationSurgeRealDataListAndRange,
+    getAstronomictideTideRealDataList
 }

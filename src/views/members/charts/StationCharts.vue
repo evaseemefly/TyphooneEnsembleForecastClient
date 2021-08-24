@@ -15,7 +15,10 @@ import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 // import Echarts from 'echarts'
 import * as echarts from 'echarts'
 import moment from 'moment'
-import { getStationSurgeRealDataListAndRange } from '@/api/station'
+import {
+    getStationSurgeRealDataListAndRange,
+    getAstronomictideTideRealDataList
+} from '@/api/station'
 import { DEFAULTTYCODE, DEFAULTTIMESTAMP } from '@/const/typhoon'
 @Component({})
 export default class StationCharts extends Vue {
@@ -33,17 +36,22 @@ export default class StationCharts extends Vue {
     forecastSurgeValList: number[] = []
     forecastSurgeMaxList: number[] = []
     forecastSurgeMinList: number[] = []
+    forecastAstronomicTideList: number[] = []
 
-    loadStationSurgeRealDataListAndRange(tyCode: string, timeStamp: string, stationCode: string) {
+    async loadStationSurgeRealDataListAndRange(
+        tyCode: string,
+        timeStamp: string,
+        stationCode: string
+    ) {
         const that = this
-        getStationSurgeRealDataListAndRange(tyCode, timeStamp, stationCode).then((res) => {
+        await getStationSurgeRealDataListAndRange(tyCode, timeStamp, stationCode).then((res) => {
             if (res.status == 200) {
                 // eg:
                 // forecast_dt: "2020-09-15T17:00:00Z"
                 // surge: 0
                 // surge_max: 0
                 // surge_min: 0
-                console.log(res.data)
+                // console.log(res.data)
                 if (res.data.length > 0) {
                     res.data.forEach(
                         (item: {
@@ -58,7 +66,32 @@ export default class StationCharts extends Vue {
                             that.forecastSurgeMinList.push(item.surge_min)
                         }
                     )
-                    that.initChart()
+                }
+            }
+        })
+        // + 21-08-24 信加入的加载 天文潮位数据
+        await this.loadAstronomicTideList(tyCode, timeStamp, stationCode)
+        that.initChart()
+    }
+
+    async loadAstronomicTideList(tyCode: string, timestamp: string, stationCode: string) {
+        const that = this
+        await getAstronomictideTideRealDataList(tyCode, timestamp, stationCode).then((res) => {
+            if (res.status == 200) {
+                /*
+                {
+                    "station_code": "CWH",
+                    "forecast_dt": "2020-09-15T09:00:00Z",
+                    "surge": 171.0
+                },
+                */
+                if (res.data.length > 0) {
+                    res.data.forEach(
+                        (item: { station_code: string; surge: number; forecast_dt: string }) => {
+                            that.forecastAstronomicTideList.push(item.surge)
+                        }
+                    )
+                    // that.initChart()
                 }
             }
         })
@@ -91,7 +124,7 @@ export default class StationCharts extends Vue {
                     }
                 },
                 legend: {
-                    data: ['最大值', '中间预测路径值', '最小值'],
+                    data: ['最大值', '中间预测路径值', '最小值', '天文潮位'],
                     itemStyle: {
                         color: '#f8f8f7'
                     },
@@ -174,6 +207,17 @@ export default class StationCharts extends Vue {
                             focus: 'series'
                         },
                         data: that.forecastSurgeMinList
+                    },
+                    {
+                        name: '天文潮位',
+                        type: 'line',
+                        stack: '总量',
+                        areaStyle: { color: '#9b59b6' },
+                        lineStyle: { color: '#8e44ad' },
+                        emphasis: {
+                            focus: 'series'
+                        },
+                        data: that.forecastAstronomicTideList
                     }
                 ]
             }
