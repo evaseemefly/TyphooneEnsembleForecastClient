@@ -100,9 +100,27 @@ const getAstronomictideTideRealDataList = (
     })
 }
 
+/**
+ * + 21-08-25
+ *  获取对应站点的警戒潮位值
+ *
+ * @param {string} tyCode
+ * @return {*}
+ */
+const getStationAlert = (tyCode: string) => {
+    const url = `${host}${area}/station/alert`
+    return axios.get(url, {
+        headers: authHeader(),
+        params: {
+            station_code: tyCode
+        }
+    })
+}
+
 export {
     getStationListByGroupPath,
     getStationSurgeRangeListByGroupPath,
     getStationSurgeRealDataListAndRange,
-    getAstronomictideTideRealDataList
+    getAstronomictideTideRealDataList,
+    getStationAlert
 }

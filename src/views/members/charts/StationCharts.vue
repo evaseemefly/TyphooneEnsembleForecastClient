@@ -17,9 +17,13 @@ import * as echarts from 'echarts'
 import moment from 'moment'
 import {
     getStationSurgeRealDataListAndRange,
-    getAstronomictideTideRealDataList
+    getAstronomictideTideRealDataList,
+    getStationAlert
 } from '@/api/station'
+// 枚举
+import { AlertTideEnum } from '@/enum/surge'
 import { DEFAULTTYCODE, DEFAULTTIMESTAMP } from '@/const/typhoon'
+import { DEFAULT_ALERT_TIDE } from '@/const/surge'
 @Component({})
 export default class StationCharts extends Vue {
     mydata: any = null
@@ -37,6 +41,10 @@ export default class StationCharts extends Vue {
     forecastSurgeMaxList: number[] = []
     forecastSurgeMinList: number[] = []
     forecastAstronomicTideList: number[] = []
+    alertBlue: number = DEFAULT_ALERT_TIDE
+    alertYellow: number = DEFAULT_ALERT_TIDE
+    alertOrange: number = DEFAULT_ALERT_TIDE
+    alertRed: number = DEFAULT_ALERT_TIDE
 
     async loadStationSurgeRealDataListAndRange(
         tyCode: string,
@@ -73,6 +81,7 @@ export default class StationCharts extends Vue {
         await this.loadAstronomicTideList(tyCode, timeStamp, stationCode)
         // TODO:[-] 21-08-25 将 三类潮位 分别叠加 天文潮计算一个总潮位
         this.add2AstornomicTid()
+        await this.loadAlertTideList(stationCode)
         that.initChart()
     }
 
@@ -99,6 +108,38 @@ export default class StationCharts extends Vue {
         })
     }
 
+    async loadAlertTideList(stationCode: string): void {
+        await getStationAlert(stationCode).then((res) => {
+            if (res.status === 200) {
+                res.data.forEach(
+                    (val: { station_code: string; tide: number; alert: AlertTideEnum }) => {
+                        /*
+                            {
+                                "station_code": "CWH",
+                                "tide": 443.0,
+                                "alert": 5001
+                            },
+                        */
+                        switch (true) {
+                            case val.alert === AlertTideEnum.BLUE:
+                                this.alertBlue = val.tide
+                                break
+                            case val.alert === AlertTideEnum.YELLOW:
+                                this.alertYellow = val.tide
+                                break
+                            case val.alert === AlertTideEnum.ORANGE:
+                                this.alertOrange = val.tide
+                                break
+                            case val.alert === AlertTideEnum.RED:
+                                this.alertRed = val.tide
+                                break
+                        }
+                    }
+                )
+            }
+        })
+    }
+
     add2AstornomicTid(): void {
         const that = this
         this.forecastAstronomicTideList.map((val, index) => {
@@ -117,6 +158,19 @@ export default class StationCharts extends Vue {
         this.forecastSurgeMaxList = []
         this.forecastSurgeMinList = []
     }
+
+    initLine() {
+        if (
+            this.alertBlue !== DEFAULT_ALERT_TIDE &&
+            this.alertYellow !== DEFAULT_ALERT_TIDE &&
+            this.alertOrange !== DEFAULT_ALERT_TIDE &&
+            this.alertRed !== DEFAULT_ALERT_TIDE
+        ) {
+            const markLine = []
+            const positions = ['start', 'middle', 'end']
+        }
+    }
+
     initChart() {
         const that = this
         const nodeDiv = document.getElementById('station_charts')
@@ -213,6 +267,10 @@ export default class StationCharts extends Vue {
                         },
                         data: that.forecastSurgeMaxList,
                         showSymbol: false
+                        // TODO: 21-08-25 新加入的四色警戒潮位标线
+                        // markLine: {
+                        //     data: [{ type: 'average', name: '平均值' }]
+                        // }
                     },
                     {
                         name: '中间预测路径值',
@@ -284,6 +342,75 @@ export default class StationCharts extends Vue {
                             focus: 'series'
                         },
                         data: that.forecastAstronomicTideList
+                    },
+                    // TODO: 21-08-25 新加入的四色警戒潮位标线
+                    {
+                        name: '警戒潮位',
+                        type: 'line',
+                        markLine: {
+                            symbol: 'none', // 虚线不显示端点的圆圈及箭头
+                            itemStyle: {
+                                color: 'rgb(19, 184, 196)'
+                            },
+                            data: [
+                                {
+                                    name: '蓝色警戒潮位',
+                                    yAxis: this.alertBlue
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        name: '警戒潮位',
+                        type: 'line',
+                        markLine: {
+                            symbol: 'none',
+                            itemStyle: {
+                                color: 'rgb(245, 241, 20)'
+                            },
+                            data: [
+                                {
+                                    name: '黄色警戒潮位',
+                                    yAxis: this.alertYellow
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        name: '警戒潮位',
+                        type: 'line',
+                        markLine: {
+                            symbol: 'none',
+                            itemStyle: {
+                                color: 'rgb(235, 134, 19)'
+                            },
+                            data: [
+                                {
+                                    name: '橙色警戒潮位',
+                                    yAxis: this.alertOrange
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        name: '警戒潮位',
+                        type: 'line',
+                        markLine: {
+                            symbol: 'none',
+                            itemStyle: {
+                                color: 'rgb(241, 11, 11)',
+                                lineStyle: {
+                                    cap: 'round',
+                                    type: 'dotted'
+                                }
+                            },
+                            data: [
+                                {
+                                    name: '红色警戒潮位',
+                                    yAxis: this.alertRed
+                                }
+                            ]
+                        }
                     }
                 ]
             }
@@ -311,6 +438,9 @@ export default class StationCharts extends Vue {
 </script>
 <style scoped lang="less">
 @import '../../../styles/station/surge-chart';
+.test {
+    background: rgb(19, 184, 196);
+}
 // .right-station-surge-form {
 //     border-radius: 5px;
 //     position: absolute;
