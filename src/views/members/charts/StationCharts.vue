@@ -71,6 +71,8 @@ export default class StationCharts extends Vue {
         })
         // + 21-08-24 信加入的加载 天文潮位数据
         await this.loadAstronomicTideList(tyCode, timeStamp, stationCode)
+        // TODO:[-] 21-08-25 将 三类潮位 分别叠加 天文潮计算一个总潮位
+        this.add2AstornomicTid()
         that.initChart()
     }
 
@@ -96,6 +98,19 @@ export default class StationCharts extends Vue {
             }
         })
     }
+
+    add2AstornomicTid(): void {
+        const that = this
+        this.forecastAstronomicTideList.map((val, index) => {
+            that.forecastSurgeValList[index] += val
+        })
+        this.forecastAstronomicTideList.map((val, index) => {
+            that.forecastSurgeMaxList[index] += val
+        })
+        this.forecastAstronomicTideList.map((val, index) => {
+            that.forecastSurgeMinList[index] += val
+        })
+    }
     clearForecastSurge() {
         this.forecastDateList = []
         this.forecastSurgeValList = []
@@ -109,7 +124,7 @@ export default class StationCharts extends Vue {
             const myChart: echarts.ECharts = echarts.init(nodeDiv)
             const option = {
                 title: {
-                    text: `${that.stationCode}潮位站实测数据`,
+                    text: `${that.stationCode}潮位站`,
                     textStyle: {
                         color: '#f8f8f7'
                     }
@@ -178,42 +193,93 @@ export default class StationCharts extends Vue {
                     {
                         name: '最大值',
                         type: 'line',
-                        stack: '总量',
-                        areaStyle: { color: '#e74c3c' },
-                        lineStyle: { color: '#c0392b' },
+                        // areaStyle: { color: '#e74c3c' },
+                        areaStyle: {
+                            opacity: 0.8,
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                {
+                                    offset: 0,
+                                    color: 'rgba(255, 0, 135)'
+                                },
+                                {
+                                    offset: 1,
+                                    color: 'rgba(135, 0, 157)'
+                                }
+                            ])
+                        },
+                        lineStyle: { color: 'rgba(255, 0, 135)' },
                         emphasis: {
                             focus: 'series'
                         },
-                        data: that.forecastSurgeMaxList
+                        data: that.forecastSurgeMaxList,
+                        showSymbol: false
                     },
                     {
                         name: '中间预测路径值',
                         type: 'line',
-                        stack: '总量',
-                        areaStyle: { color: '#e67e22' },
-                        lineStyle: { color: '#d35400' },
+                        // areaStyle: { color: '#e67e22' },
+                        areaStyle: {
+                            opacity: 0.8,
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                {
+                                    offset: 0,
+                                    color: 'rgba(255, 191, 0)'
+                                },
+                                {
+                                    offset: 1,
+                                    color: 'rgba(224, 62, 76)'
+                                }
+                            ])
+                        },
+                        lineStyle: { color: 'rgba(255, 191, 0)' },
                         emphasis: {
                             focus: 'series'
                         },
-                        data: that.forecastSurgeValList
+                        data: that.forecastSurgeValList,
+                        showSymbol: false
                     },
                     {
                         name: '最小值',
                         type: 'line',
-                        stack: '总量',
-                        areaStyle: { color: '#f1c40f' },
-                        lineStyle: { color: '#f39c12' },
+                        // areaStyle: { color: '#f1c40f' },
+                        areaStyle: {
+                            opacity: 0.8,
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                {
+                                    offset: 0,
+                                    color: 'rgba(128, 255, 165)'
+                                },
+                                {
+                                    offset: 1,
+                                    color: 'rgba(1, 191, 236)'
+                                }
+                            ])
+                        },
+                        lineStyle: { color: 'rgba(1, 191, 236)' },
                         emphasis: {
                             focus: 'series'
                         },
-                        data: that.forecastSurgeMinList
+                        data: that.forecastSurgeMinList,
+                        showSymbol: false
                     },
                     {
                         name: '天文潮位',
                         type: 'line',
-                        stack: '总量',
-                        areaStyle: { color: '#9b59b6' },
-                        lineStyle: { color: '#8e44ad' },
+                        // areaStyle: { color: '#9b59b6' },
+                        areaStyle: {
+                            opacity: 0.8,
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                {
+                                    offset: 0,
+                                    color: 'rgba(0, 221, 255)'
+                                },
+                                {
+                                    offset: 1,
+                                    color: 'rgba(77, 119, 255)'
+                                }
+                            ])
+                        },
+                        lineStyle: { color: 'rgba(0, 221, 255)' },
                         emphasis: {
                             focus: 'series'
                         },

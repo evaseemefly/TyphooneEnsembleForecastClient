@@ -587,7 +587,7 @@ export default class TyGroupMap extends mixins(
     // gpId = DEFAULT_TYPHOON_GROUP_PATH_ID
     tyCode = DEFAULTTYCODE
     tyTimeStamp = DEFAULTTIMESTAMP
-    stationCode = 'SHW'
+    stationCode = 'CWH'
     // + 21-05-15 脉冲 groupLayer
     groupLayerSurgePulsing: L.LayerGroup = null
 
