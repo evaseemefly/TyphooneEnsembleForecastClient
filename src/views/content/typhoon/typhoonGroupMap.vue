@@ -1220,6 +1220,8 @@ export default class TyGroupMap extends mixins(
             cirleScaleColor.setScale('Viridis')
             let indexDate = 0
             const cirleLayers: L.Layer[] = []
+            // TODO:[-] 21-08-26 新加入的台风所在位置 point
+            const tyPointsLayers: L.Layer[] = []
 
             temp.listRealdata.forEach((tempRealdata) => {
                 indexDate++
@@ -1336,6 +1338,25 @@ export default class TyGroupMap extends mixins(
                     })
                     circleTemp.setStyle({ zIndexOffset: 19999 })
                     cirleLayers.push(circleTemp)
+
+                    // TODO:[-] 21-08-26 新加入的台风所在位置 point
+                    const tyMax = 10
+                    const tyMin = 1
+                    // TODO:[-] 21-08-13 对于当前台风位置的脉冲icon
+                    const tyCirleIcon = new IconTyphoonCirlePulsing({
+                        val: 10,
+                        max: tyMax,
+                        min: tyMin
+                    })
+                    const tyDivIcon = L.divIcon({
+                        className: 'surge_pulsing_icon_default',
+                        html: tyCirleIcon.toHtml()
+                    })
+                    const tyPulsingMarker = L.marker([tempRealdata.lat, tempRealdata.lon], {
+                        icon: tyDivIcon
+                    })
+                    tyPointsLayers.push(tyPulsingMarker)
+                    // this.currentTyPulsingMarker = tyPulsingMarker.addTo(mymap)
                 }
             })
 
@@ -1380,11 +1401,14 @@ export default class TyGroupMap extends mixins(
                 // // })
                 // .addTo(mymap)
                 let tempLayer = L.layerGroup([...cirleLayers])
+                let tyPointsLayersGroup = L.layerGroup([...tyPointsLayers])
                 tempLayer = tempLayer.setZIndex(9999)
+                tyPointsLayersGroup = tyPointsLayersGroup.setZIndex(9999)
                 // tempLayer.setStyle({ zIndexOffset: 9999 })
                 // TODO:[-] 21-08-26 暂时不在显示 台风风圈
                 // tempLayer.addTo(mymap)
-                console.log(tempLayer)
+                tyPointsLayersGroup.addTo(mymap)
+                // console.log(tempLayer)
             } else {
                 let tempLayer = L.layerGroup([...cirleLayers])
                 tempLayer = tempLayer.setZIndex(2000)
