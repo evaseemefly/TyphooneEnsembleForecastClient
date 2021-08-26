@@ -4,17 +4,21 @@
  * @class IconCirlePulsing
  */
 
+import { IconTypeEnum } from '@/enum/common'
+
 interface IIconPlusingOptions {
     val?: number
     min?: number
     max?: number
     radius?: number
+    iconType: IconTypeEnum
 }
 
 const iconPlusingDefaultOptions = {
     min: 1,
     max: 10,
-    radius: 20
+    radius: 20,
+    iconType: IconTypeEnum.TY_PULSING_ICON
 }
 
 /**
@@ -176,20 +180,27 @@ class IconTyphoonCirlePulsing {
     }
     toHtml(): string {
         const that = this
-        //     const divHtml = `<div class="my-leaflet-pulsing-marker" >
-        //     <div class="my-leaflet-icon-border" style="width: ${that.getPlusingIconRectangle[0]}.px;height:${that.getPlusingIconRectangle[1]}.px;left:${that.shiftX}.px;top:${that.shiftY}.px"></div>
-        //     <div class="my-leaflet-pulsing-icon" style="width: ${that.getPlusingIconBorderRectangle[0]}.px;height:${that.getPlusingIconBorderRectangle[1]}.px;"></div>
-        //   </div>`
         const iconBorderWidth = that.getPlusingIconRectangle()[0]
         const iconBorderHeight = that.getPlusingIconRectangle()[1]
         const iconPulsingWidth = that.getPlusingIconBorderRectangle()[0]
         const iconPulsingHeight = that.getPlusingIconBorderRectangle()[1]
-        const divHtml = `<div class="my-leaflet-pulsing-marker" >
-        <div class="my-leaflet-icon-border ${this.getAlarmColor()}" style="width: ${iconBorderWidth}px;height:${iconBorderHeight}px;left:${
-            that.shiftX
-        }px;top:${that.shiftY}px"></div>
-        <div class="my-leaflet-pulsing-icon ${this.getAlarmColor()}" style="width: ${iconPulsingWidth}px;height:${iconPulsingHeight}px;"></div>
-      </div>`
+        let divHtml = ''
+        if (this.config.iconType === IconTypeEnum.TY_PULSING_ICON) {
+            divHtml = `<div class="my-leaflet-pulsing-marker" >
+            <div class="my-leaflet-icon-border ${this.getAlarmColor()}" style="width: ${iconBorderWidth}px;height:${iconBorderHeight}px;left:${
+                that.shiftX
+            }px;top:${that.shiftY}px"></div>
+            <div class="my-leaflet-pulsing-icon ${this.getAlarmColor()}" style="width: ${iconPulsingWidth}px;height:${iconPulsingHeight}px;"></div>
+          </div>`
+        } else {
+            divHtml = `<div class="my-leaflet-pulsing-marker" >
+            <div class="my-leaflet-icon-border ${this.getAlarmColor()}" style="width: ${iconBorderWidth}px;height:${iconBorderHeight}px;left:${
+                that.shiftX
+            }px;top:${that.shiftY}px"></div>
+            <div class="my-leaflet-pulsing-icon ${this.getAlarmColor()}" style="width: ${iconPulsingWidth}px;height:${iconPulsingHeight}px;"></div>
+          </div>`
+        }
+
         return divHtml
     }
 

@@ -288,6 +288,7 @@ import {
     DEFAULT_ZOOM_LEVEL
 } from '@/const/common'
 import { OilFactor, ShowType } from '@/enum/OilSelect'
+import { IconTypeEnum } from '@/enum/common'
 // 20-10-23 产品种类
 import { ProductEnum } from '@/enum/dict'
 import { AreaEnum } from '@/enum/area'
@@ -1346,7 +1347,8 @@ export default class TyGroupMap extends mixins(
                     const tyCirleIcon = new IconTyphoonCirlePulsing({
                         val: 10,
                         max: tyMax,
-                        min: tyMin
+                        min: tyMin,
+                        iconType: IconTypeEnum.TY_PULSING_ICON
                     })
                     const tyDivIcon = L.divIcon({
                         className: 'surge_pulsing_icon_default',
@@ -2224,7 +2226,7 @@ export default class TyGroupMap extends mixins(
 @import '../../../styles/typhoon/typhoonDivIcon';
 
 // + 21-04-28 引入 针对 station surge div Icon 的样式
-@import '../../../styles/station//icon';
+@import '../../../styles/station/icon';
 
 // TODO:[-] 21-06-10 TEST 加入了关于 mybasemap 的测试样式
 // #mybasemap {
