@@ -141,7 +141,7 @@ export default class IconInfoBox extends Vue {
     }
 }
 .info-box:hover {
-    background-color: rgba(0, 0, 0, 0.308);
+    background-color: #f39d129c;
     //   color: transparent;
     transition: all 0.5s;
     //   width: 100px;

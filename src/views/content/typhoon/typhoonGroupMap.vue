@@ -1079,6 +1079,8 @@ export default class TyGroupMap extends mixins(
             }
         )
     }
+
+    // loadTy
     testGetAddTyGroupPath2Map(tyId: number): void {
         const that = this
         const arrTyComplexGroupRealdata: Array<TyphoonComplexGroupRealDataMidModel> = []
@@ -1380,12 +1382,14 @@ export default class TyGroupMap extends mixins(
                 let tempLayer = L.layerGroup([...cirleLayers])
                 tempLayer = tempLayer.setZIndex(9999)
                 // tempLayer.setStyle({ zIndexOffset: 9999 })
-                tempLayer.addTo(mymap)
+                // TODO:[-] 21-08-26 暂时不在显示 台风风圈
+                // tempLayer.addTo(mymap)
                 console.log(tempLayer)
             } else {
                 let tempLayer = L.layerGroup([...cirleLayers])
                 tempLayer = tempLayer.setZIndex(2000)
-                tempLayer.addTo(mymap)
+                // TODO:[-] 21-08-26 暂时不在显示 台风风圈
+                // tempLayer.addTo(mymap)
                 groupPolyLine.addTo(mymap)
                 // console.log(tempLayer)
             }

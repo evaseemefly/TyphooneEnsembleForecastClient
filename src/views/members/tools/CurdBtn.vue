@@ -16,7 +16,7 @@
                 <InfoBox
                     v-show="isExpanded"
                     :key="1"
-                    :msg="'创建case'"
+                    :msg="'新建作业'"
                     :iconstyle="'fa-edit'"
                     :levelstyle="'my-opt-btn'"
                     :showsize="'small'"
