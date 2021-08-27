@@ -6,6 +6,7 @@
             :tyCode="tyCode"
             :stationCode="stationCode"
             :timeStamp="timeStamp"
+            :stationName="stationName"
         ></StationCharts>
         <RangePie :leftNum="scatterLeftNum" :currentNum="numsData.current"></RangePie>
         <!-- <timeBar :step="step" :index="index" :startDate="startDate" :count="count"></timeBar> -->
@@ -82,6 +83,8 @@ export default class RightInfoBar extends Vue {
     tyCode: string
     @Prop()
     stationCode: string
+    @Prop()
+    stationName: string
     @Prop()
     timeStamp: string
     // current: Date = this.targetDate;

@@ -119,6 +119,7 @@
                 :oilModelData="targetOilModelData"
                 :tyCode="tyCode"
                 :stationCode="stationCode"
+                :stationName="stationName"
                 :timeStamp="tyTimeStamp"
             ></OilRightBar>
 
@@ -287,6 +288,7 @@ import {
     USELESS_COVERAGE_ID,
     DEFAULT_ZOOM_LEVEL
 } from '@/const/common'
+import { DEFAULT_STATION_CODE, DEFAULT_STATION_NAME } from '@/const/station'
 import { OilFactor, ShowType } from '@/enum/OilSelect'
 import { IconTypeEnum } from '@/enum/common'
 // 20-10-23 产品种类
@@ -588,7 +590,8 @@ export default class TyGroupMap extends mixins(
     // gpId = DEFAULT_TYPHOON_GROUP_PATH_ID
     tyCode = DEFAULTTYCODE
     tyTimeStamp = DEFAULTTIMESTAMP
-    stationCode = 'CWH'
+    stationCode = DEFAULT_STATION_CODE
+    stationName = DEFAULT_STATION_NAME
     // + 21-05-15 脉冲 groupLayer
     groupLayerSurgePulsing: L.LayerGroup = null
 
@@ -988,7 +991,8 @@ export default class TyGroupMap extends mixins(
                                         surgeMin: res.data[index].surge_min,
                                         stationCode: res.data[index].station_code,
                                         lat: res.data[index].lat,
-                                        lon: res.data[index].lon
+                                        lon: res.data[index].lon,
+                                        name: res.data[index].name
                                     }
                                 }
                             )
@@ -1047,7 +1051,10 @@ export default class TyGroupMap extends mixins(
                                 [res.data[index].lat, res.data[index].lon],
                                 {
                                     icon: stationSurgeMinDivICOn,
-                                    customData: { stationCode: res.data[index]['station_code'] }
+                                    customData: {
+                                        stationCode: res.data[index]['station_code'],
+                                        stationName: res.data[index].name
+                                    }
                                 }
                             )
 
@@ -1060,10 +1067,10 @@ export default class TyGroupMap extends mixins(
                                     stationSurgeIconMarker.setZIndexOffset(1999)
                                 })
                                 .on('click', (e) => {
-                                    // that.stationCode = iconSurgeMinArr[index].getStationCode()
                                     // 通过 -> e -> target -> options -> customData -> stationCode
-                                    console.log(e)
+                                    // console.log(e)
                                     that.stationCode = e.target.options.customData.stationCode
+                                    that.stationName = e.target.options.customData.stationName
                                 })
                             surgeDataFormMarkersList.push(stationSurgeIconMarker)
                             index++
@@ -1348,7 +1355,7 @@ export default class TyGroupMap extends mixins(
                         val: 10,
                         max: tyMax,
                         min: tyMin,
-                        iconType: IconTypeEnum.TY_PULSING_ICON
+                        iconType: IconTypeEnum.TY_PATH_ICON
                     })
                     const tyDivIcon = L.divIcon({
                         className: 'surge_pulsing_icon_default',

@@ -24,6 +24,7 @@ import {
 import { AlertTideEnum } from '@/enum/surge'
 import { DEFAULTTYCODE, DEFAULTTIMESTAMP } from '@/const/typhoon'
 import { DEFAULT_ALERT_TIDE } from '@/const/surge'
+import { DEFAULT_STATION_CODE, DEFAULT_STATION_NAME } from '@/const/station'
 @Component({})
 export default class StationCharts extends Vue {
     mydata: any = null
@@ -33,6 +34,8 @@ export default class StationCharts extends Vue {
     tyCode: string
     @Prop()
     stationCode: string
+    @Prop()
+    stationName: string
     @Prop()
     timeStamp: string
 
@@ -178,7 +181,8 @@ export default class StationCharts extends Vue {
             const myChart: echarts.ECharts = echarts.init(nodeDiv)
             const option = {
                 title: {
-                    text: `${that.stationCode}潮位站`,
+                    text: `${that.stationName}`,
+                    subtext: '潮位站',
                     textStyle: {
                         color: '#f8f8f7'
                     }
@@ -423,7 +427,11 @@ export default class StationCharts extends Vue {
             `options发生变化tyCode:${val.tyCode},stationCode:${val.stationCode},timeStamp:${val.timeStamp}发生变化`
         )
         this.clearForecastSurge()
-        if (val.tyCode !== DEFAULTTYCODE && val.timeStamp !== DEFAULTTIMESTAMP) {
+        if (
+            val.tyCode !== DEFAULTTYCODE &&
+            val.timeStamp !== DEFAULTTIMESTAMP &&
+            val.stationCode !== DEFAULT_STATION_CODE
+        ) {
             this.loadStationSurgeRealDataListAndRange(val.tyCode, val.timeStamp, val.stationCode)
         }
     }
