@@ -2,10 +2,11 @@
     <div
         class="right-station-surge-form"
         :class="isExpanded ? 'mybar-right-in' : 'mybar-right-out'"
-        @click="isExpanded = !isExpanded"
     >
-        <div class="my-detail-title">潮位数据</div>
+        <div class="my-detail-title" @click="isExpanded = !isExpanded">潮位预报</div>
         <div class="my-detail-form">
+            <el-switch v-model="isAdditionTide" active-text="总潮位" inactive-text="风暴增水">
+            </el-switch>
             <div id="station_charts"></div>
         </div>
     </div>
@@ -30,6 +31,8 @@ export default class StationCharts extends Vue {
     mydata: any = null
     // 是否展开窗口| false:未展开, true:展开了|默认未展开
     isExpanded = false
+    // 21-08-28 是否为叠加后的潮位
+    isAdditionTide = false
     @Prop()
     tyCode: string
     @Prop()
@@ -83,7 +86,10 @@ export default class StationCharts extends Vue {
         // + 21-08-24 信加入的加载 天文潮位数据
         await this.loadAstronomicTideList(tyCode, timeStamp, stationCode)
         // TODO:[-] 21-08-25 将 三类潮位 分别叠加 天文潮计算一个总潮位
-        this.add2AstornomicTid()
+        if (this.isAdditionTide) {
+            this.add2AstornomicTid()
+        }
+
         await this.loadAlertTideList(stationCode)
         that.initChart()
     }
@@ -155,6 +161,20 @@ export default class StationCharts extends Vue {
             that.forecastSurgeMinList[index] += val
         })
     }
+
+    wipe2AstornomicTide(): void {
+        const that = this
+        this.forecastAstronomicTideList.map((val, index) => {
+            that.forecastSurgeValList[index] -= val
+        })
+        this.forecastAstronomicTideList.map((val, index) => {
+            that.forecastSurgeMaxList[index] -= val
+        })
+        this.forecastAstronomicTideList.map((val, index) => {
+            that.forecastSurgeMinList[index] -= val
+        })
+    }
+
     clearForecastSurge() {
         this.forecastDateList = []
         this.forecastSurgeValList = []
@@ -434,6 +454,16 @@ export default class StationCharts extends Vue {
         ) {
             this.loadStationSurgeRealDataListAndRange(val.tyCode, val.timeStamp, val.stationCode)
         }
+    }
+
+    @Watch('isAdditionTide')
+    onIsAdditionTide(isAdd: boolean): void {
+        if (isAdd) {
+            this.add2AstornomicTid()
+        } else {
+            this.wipe2AstornomicTide()
+        }
+        this.initChart()
     }
     get getOptions(): { tyCode: string; stationCode: string; timeStamp: string } {
         const { tyCode, stationCode, timeStamp } = this
