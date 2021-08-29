@@ -2,7 +2,10 @@
     <div class="color-bar-list">
         <!-- 最终可行的办法，参考自: https://segmentfault.com/q/1010000037424499?utm_source=tag-newest -->
         <!-- 方式2:目前看不可行，https://stackoverflow.com/questions/59552974/how-can-i-bind-a-linear-gradient-background-property-made-up-of-dynamic-variable -->
-        <!-- <div class="color-bar-test" :style="{ backgroundImage: createBackgroundString() }">
+        <!-- 此种方式可行 -->
+        <!-- <div class="color-bar-test" :style="{ backgroundImage: createBackgroundString() }"> -->
+        <!-- 此种方式不可行 -->
+        <!-- <div class="color-bar-test" :style="testColorStyle">
             <span>m/s</span>
             <span>0</span>
             <span>0.2</span>
@@ -14,7 +17,36 @@
             <span>1.2</span>
         </div> -->
         <transition-group name="color-bar-fade">
+            <!-- 方式1: 不可行 -->
+            <!-- <div
+                class="color-bar"
+                v-for="(tempScale, index) in colorScales"
+                :key="tempScale.key"
+                :style="tempScale | filterBackgroundColor"
+                @click="setSelectedScale(index)"
+                v-show="showScale(index)"
+            >
+                <span>单位: m</span>
+                <span v-for="tempRange in tempScale.scale.range" :key="tempRange.id">{{
+                    tempRange
+                }}</span>
+            </div> -->
+            <!-- 方式3: -->
             <div
+                class="color-bar"
+                v-for="(tempScale, index) in colorScales"
+                :key="tempScale.key"
+                :style="getCustomerStyleObj(tempScale)"
+                @click="setSelectedScale(index)"
+                v-show="showScale(index)"
+            >
+                <span>单位: m</span>
+                <span v-for="tempRange in tempScale.scale.range" :key="tempRange.id">{{
+                    tempRange
+                }}</span>
+            </div>
+            <!-- 方式2: 可行 -->
+            <!-- <div
                 class="color-bar"
                 v-for="(tempScale, index) in colorScales"
                 :key="tempScale.key"
@@ -26,7 +58,22 @@
                 <span v-for="tempRange in tempScale.scale.range" :key="tempRange.id">{{
                     tempRange
                 }}</span>
-            </div>
+            </div> -->
+            <!-- --- -->
+            <!-- 动态绑定类，写在过滤器中会无法找到对应的  function -->
+            <!-- <div
+                class="color-bar"
+                v-for="(tempScale, index) in colorScales"
+                :key="tempScale.key"
+                :style="{ backgroundImage: tempScale | filterBackgroundColor(tempScale) }"
+                @click="setSelectedScale(index)"
+                v-show="showScale(index)"
+            >
+                <span>单位: m</span>
+                <span v-for="tempRange in tempScale.scale.range" :key="tempRange.id">{{
+                    tempRange
+                }}</span>
+            </div> -->
         </transition-group>
     </div>
 </template>
@@ -38,7 +85,29 @@ import { Mutation, State, namespace, Getter } from 'vuex-class'
 import { IColorScale, ColorScales, IScale } from '@/const/colorBar'
 import { DEFAULT_DICT_KEY } from '@/const/common'
 import { SET_SCALE_KEY, GET_SCALE_RANGE } from '@/store/types'
-@Component({})
+@Component({
+    filters: {
+        filterBackgroundColor(val: { key: string; scale: IScale }): string {
+            // eg: #ee4620,#ee462f,#ed4633,#ef6b6d,#f3a4a5,#f9dcdd,#dcdcfe,
+            let colorStr = ''
+            const styleObj: { backgroundImage: string } = { backgroundImage: '' }
+            if (val.scale !== undefined && val.scale.scaleColorList !== undefined) {
+                if (Array.isArray(val.scale.scaleColorList)) {
+                    for (const temp of val.scale.scaleColorList) {
+                        colorStr += temp + ','
+                    }
+                    // 需要去掉最后一位的 ,
+                    colorStr = colorStr.substr(0, colorStr.lastIndexOf(','))
+                }
+            }
+
+            const colorLinearStr = `linear-gradient(to right, ${colorStr})`
+            styleObj.backgroundImage = colorStr
+            return styleObj
+            // return colorLinearStr
+        }
+    }
+})
 export default class ColorBar extends Vue {
     colorScales: { key: string; scale: IScale }[] = ColorScales
     selectedScaleIndex = DEFAULT_DICT_KEY
@@ -59,10 +128,29 @@ export default class ColorBar extends Vue {
         // background: this.createBackgroundString()
     }
     createBackgroundString() {
+        const that = this
+        console.log(that)
         // return `linear-gradient(${this.angle}deg, ${this.color1}, ${this.color2})`
         // TODO:!] 此种办法也可行
         return `linear-gradient(to right, ${this.color1},  ${this.color2})`
         // return 'rgb(151, 75, 145)'
+    }
+    getCustomerStyleObj(val: { key: string; scale: IScale }): { backgroundImage: string } {
+        let colorStr = ''
+        const styleObj: { backgroundImage: string } = { backgroundImage: '' }
+        if (val.scale !== undefined && val.scale.scaleColorList !== undefined) {
+            if (Array.isArray(val.scale.scaleColorList)) {
+                for (const temp of val.scale.scaleColorList) {
+                    colorStr += temp + ','
+                }
+                // 需要去掉最后一位的 ,
+                colorStr = colorStr.substr(0, colorStr.lastIndexOf(','))
+            }
+        }
+
+        const colorLinearStr = `linear-gradient(to right, ${colorStr})`
+        styleObj.backgroundImage = colorLinearStr
+        return styleObj
     }
     getBackgroundColorStr(tempScale: { key: string; scale: IScale }): string {
         // eg: #ee4620,#ee462f,#ed4633,#ef6b6d,#f3a4a5,#f9dcdd,#dcdcfe,

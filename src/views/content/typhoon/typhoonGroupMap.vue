@@ -668,11 +668,6 @@ export default class TyGroupMap extends mixins(
     // + 21-07-25 当前选中的 typhoon id，给一个默认值
     selectedTyId: number = DEFAULT_TYPHOON_ID
     getMapBoxLayerClass(key: string): L.TileLayer {
-        // return L.mapboxGL({
-        //     accessToken:
-        //         'pk.eyJ1IjoiZXZhc2VlbWVmbHkxIiwiYSI6ImNrcHE4OHJsejBobnoyb3BhOTkwb3MzbGwifQ.5ThyBJrIccBpeVi9pUdJnw',
-        //     style: '/static/mapbox/style/style_210610/style.json'
-        // })
         return L.tileLayer(`https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=${key}`, {
             tileSize: 512,
             zoomOffset: -1,
