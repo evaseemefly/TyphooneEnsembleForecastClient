@@ -215,6 +215,15 @@ export default class StationCharts extends Vue {
                             backgroundColor: '#d4e257'
                         }
                     }
+                    // formatter: function(params, ticket, callback) {
+                    //     //x轴名称
+                    //     const name = params[0].name
+                    //     //图表title名称
+                    //     const seriesName = params[0].seriesName
+                    //     //值
+                    //     const value = params[0].value
+                    //     return seriesName + '<br />' + name + '<br />' + value
+                    // }
                 },
                 legend: {
                     data: ['最大值', '中间预测路径值', '最小值', '天文潮位'],
@@ -238,7 +247,8 @@ export default class StationCharts extends Vue {
                     {
                         type: 'category',
                         boundaryGap: false,
-                        data: that.forecastDateList,
+                        // data: that.forecastDateList,
+                        data: that.getForecastDtList,
                         nameTextStyle: {
                             color: '#f8f8f7'
                         },
@@ -246,10 +256,10 @@ export default class StationCharts extends Vue {
                             textStyle: {
                                 color: '#f8f8f7', //字体颜色
                                 fontSize: 12 //字体大小
-                            },
-                            formatter: (val: Date) => {
-                                return moment(val).format('MM/DD/HH:mm')
                             }
+                            // formatter: (val: Date) => {
+                            //     return moment(val).format('MM/DD/HH:mm')
+                            // }
                         }
                     }
                 ],
@@ -290,7 +300,8 @@ export default class StationCharts extends Vue {
                             focus: 'series'
                         },
                         data: that.forecastSurgeMaxList,
-                        showSymbol: false
+                        showSymbol: false,
+                        smooth: true
                         // TODO: 21-08-25 新加入的四色警戒潮位标线
                         // markLine: {
                         //     data: [{ type: 'average', name: '平均值' }]
@@ -318,7 +329,8 @@ export default class StationCharts extends Vue {
                             focus: 'series'
                         },
                         data: that.forecastSurgeValList,
-                        showSymbol: false
+                        showSymbol: false,
+                        smooth: true
                     },
                     {
                         name: '最小值',
@@ -342,7 +354,8 @@ export default class StationCharts extends Vue {
                             focus: 'series'
                         },
                         data: that.forecastSurgeMinList,
-                        showSymbol: false
+                        showSymbol: false,
+                        smooth: true
                     },
                     {
                         name: '天文潮位',
@@ -365,7 +378,8 @@ export default class StationCharts extends Vue {
                         emphasis: {
                             focus: 'series'
                         },
-                        data: that.forecastAstronomicTideList
+                        data: that.forecastAstronomicTideList,
+                        smooth: true
                     },
                     // TODO: 21-08-25 新加入的四色警戒潮位标线
                     {
@@ -468,6 +482,16 @@ export default class StationCharts extends Vue {
     get getOptions(): { tyCode: string; stationCode: string; timeStamp: string } {
         const { tyCode, stationCode, timeStamp } = this
         return { tyCode, stationCode, timeStamp }
+    }
+
+    get getForecastDtList(): string[] {
+        const forecastDtFormatList: string[] = []
+        if (this.forecastDateList.length > 0) {
+            this.forecastDateList.forEach((dt: Date) => {
+                forecastDtFormatList.push(moment(dt).format('MM/DD/HH:mm'))
+            })
+        }
+        return forecastDtFormatList
     }
     get computedTest() {
         return null

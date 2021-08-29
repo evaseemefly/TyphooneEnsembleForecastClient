@@ -49,8 +49,8 @@
         <div class="top-logo">
             <div class="logo"><img src="../../../assets/nmefclog.png" /></div>
             <div class="title">
-                <h2>可视化平台@nmefc</h2>
-                <h4>台风风暴潮集合预报系统</h4>
+                <h2>台风风暴潮集合预报系统</h2>
+                <h4>国家海洋环境预报中心</h4>
             </div>
         </div>
         <!-- <div class="line"></div> -->
