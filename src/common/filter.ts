@@ -6,6 +6,9 @@ import moment from 'moment'
  * @param {Date} now
  * @returns {string}
  */
+const fortmatData2YMDHM = (now: Date): string => {
+    return moment(now).format('YYYY-MM-DD HH:mm')
+}
 const fortmatData2YMDH = (now: Date): string => {
     return moment(now).format('YYYY-MM-DD HH')
 }
@@ -51,4 +54,4 @@ const formatDir = (val: { x: number; y: number }, keepNum = 2): string => {
     return dir.toFixed(keepNum)
 }
 
-export { fortmatData2YMDH, formatAbs, formatFixed, formatDir, fortmatDate2YMD }
+export { fortmatData2YMDH, fortmatData2YMDHM, formatAbs, formatFixed, formatDir, fortmatDate2YMD }

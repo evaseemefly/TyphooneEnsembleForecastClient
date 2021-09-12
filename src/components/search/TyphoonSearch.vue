@@ -34,7 +34,7 @@
             <div class="card-header card-my-header">
                 集合预报列表
             </div>
-            <div class="card-header card-my-body">
+            <div class="card-header card-my-body my-result-table-parent">
                 <div class="row">
                     <div class="col">
                         <table class="table">
@@ -55,7 +55,7 @@
                                     <!-- <th scope="row">{{ item.key }}</th> -->
                                     <td>{{ item.tyCode }}</td>
                                     <td>{{ item.timestamp }}</td>
-                                    <td>{{ item.gmtCreated | fortmatData2YMDH }}</td>
+                                    <td>{{ item.gmtCreated | fortmatData2YMDHM }}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -72,9 +72,9 @@ import { getTyListByYear, getTyCaseListByTyCode } from '@/api/tyhoon'
 import { DEFAULT_NUMBER, DEFAULT_SELECT_KEY, DEFAULT_SELECT_VAL } from '@/const/common'
 import { DEFAULTTIMESTAMP } from '@/const/typhoon'
 import { SET_TYPHOON_CODE, SET_TYPHOON_ID, SET_TYPHOON_TIMESTAMP } from '@/store/types'
-import { fortmatData2YMDH } from '@/common/filter'
+import { fortmatData2YMDH, fortmatData2YMDHM } from '@/common/filter'
 @Component({
-    filters: { fortmatData2YMDH }
+    filters: { fortmatData2YMDH, fortmatData2YMDHM }
 })
 export default class TyphoonSearch extends Vue {
     /*
@@ -249,6 +249,35 @@ tbody {
         background: #f39c12;
     }
 }
+// + 21-09-11 加入结果列表的高度限制以及显示滚动条
+.my-result-table-parent {
+    max-height: 300px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+// TODO:[-] 21-09-12 加入的滚动条的相关样式
+// 参考文章: https://segmentfault.com/a/1190000012800450
+// 滑轨的背景色
+.my-result-table-parent::-webkit-scrollbar {
+    width: 16px;
+    height: 16px;
+    background-color: rgba(4, 107, 114, 0.639);
+}
+/*定义滚动条轨道
+ 内阴影+圆角*/
+.my-result-table-parent::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    background-color: #f5f5f5c2;
+}
+/*定义滑块
+ 内阴影+圆角*/
+.my-result-table-parent::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+    background-color: #34495eb0;
+}
+
 // .base-card {
 //     // padding: 10px;
 // }

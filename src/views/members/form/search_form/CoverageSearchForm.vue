@@ -55,7 +55,7 @@
                 <div class="card-header card-my-header">
                     栅格数据列表
                 </div>
-                <div class="card-header card-my-body">
+                <div class="card-header card-my-body my-result-table-parent">
                     <div class="row">
                         <div class="col">
                             <!-- 暂时不使用之前的 ul -> li 的方式 -->
@@ -370,7 +370,11 @@ li {
     /* background: linear-gradient(to right, #248e8a 30%, rgba(4, 107, 114, 0.639)); */
     padding-left: 24px;
 }
-
+// + 21-09-11 加入结果列表的高度限制以及显示滚动条
+// .my-result-table-parent {
+//     max-height: 300px;
+//     overflow-y: scroll;
+// }
 .test-current {
     background: #0000ff;
     background: #0066ff;
