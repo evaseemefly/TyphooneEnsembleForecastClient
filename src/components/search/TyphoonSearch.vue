@@ -22,9 +22,10 @@
                             :value="item.code"
                         >
                             <span style="float: left">{{ item.code }}</span>
-                            <span style="float: right; color: #8492a6; font-size: 13px">{{
+                            <!-- 不再显示 时间戳，只显示不同的 ty_code -->
+                            <!-- <span style="float: right; color: #8492a6; font-size: 13px">{{
                                 item.timestamp
-                            }}</span>
+                            }}</span> -->
                         </el-option>
                     </el-select>
                 </div>
@@ -82,11 +83,7 @@ export default class TyphoonSearch extends Vue {
     */
     years: number[] = [2021, 2020, 2019]
     selectedYear: number = DEFAULT_NUMBER
-    typhoonList: { code: string; timestamp: string }[] = [
-        // { tyCode: '2107', tyName: 'xxx' },
-        // { tyCode: '2016', tyName: 'xxx1' },
-        // { tyCode: '2105', tyName: 'xxx2' }
-    ]
+    typhoonList: { code: string }[] = []
     tyGroupCaseList: {
         gmtCreated: Date
         timestamp: string
@@ -121,7 +118,7 @@ export default class TyphoonSearch extends Vue {
                 if (res.data.length > 0) {
                     // console.log(res.data)
                     res.data.forEach((item) => {
-                        that.typhoonList.push({ code: item.code, timestamp: item.timestamp })
+                        that.typhoonList.push({ code: item.code })
                     })
                 }
             }
