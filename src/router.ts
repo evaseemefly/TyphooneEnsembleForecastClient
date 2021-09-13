@@ -64,7 +64,7 @@ export default new Router({
                     name: 'caselist',
                     component: CaseListContent,
                     // 开始加入了需要判断是否登录的验证(只有登录的才让访问该页面)
-                    beforeEnter: requireAuthenticated
+                    // beforeEnter: requireAuthenticated
                 },
                 {
                     path: 'windmap',
