@@ -8,7 +8,7 @@
                     <el-progress
                         type="circle"
                         :stroke-width="12"
-                        :percentage="25"
+                        :percentage="taskRate.caseRate"
                         :width="85"
                     ></el-progress>
                 </div>
@@ -16,14 +16,16 @@
                     <div class="my-card-info">
                         <div class="my-card-primary-title">当前任务</div>
                         <div class="my-card-content">
-                            <div class="my-card-primary-content">TY2114</div>
-                            <div class="my-card-sub-content">09/14 10:15</div>
+                            <div class="my-card-primary-content">TY{{ tyCode }}</div>
+                            <div class="my-card-sub-content">
+                                {{ taskRate.gmtCreated | fortmatDate('MM/DD HH:mm') }}
+                            </div>
                         </div>
                     </div>
                     <div class="my-card-info">
                         <div class="my-card-primary-title">当前进度</div>
                         <div class="my-card-content">
-                            <div class="my-card-primary-content">写入db</div>
+                            <div class="my-card-primary-content">{{ taskRate.caseState }}</div>
                         </div>
                     </div>
                 </div>
@@ -33,12 +35,72 @@
 </template>
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
-@Component({})
+import { Mutation, State, namespace, Action, Getter } from 'vuex-class'
+
+import {
+    DEFAULT_NUMBER,
+    DEFAULT_SELECT_KEY,
+    DEFAULT_SELECT_VAL,
+    DEFAULT_TYPHOON_ID,
+    DEFAULT_TYPHOON_CODE,
+    DEFAULT_CELERY_ID
+} from '@/const/common'
+import { TaskStateEnum } from '@/enum/task'
+import { DEFAULTTIMESTAMP } from '@/const/typhoon'
+import {
+    SET_TYPHOON_CODE,
+    SET_TYPHOON_ID,
+    SET_TYPHOON_TIMESTAMP,
+    GET_TYPHOON_ID,
+    GET_TYPHOON_CODE
+} from '@/store/types'
+import { getTaskRateByTy } from '@/api/task'
+import { fortmatData2YMDH, fortmatData2YMDHM, fortmatDate } from '@/common/filter'
+@Component({ filters: { fortmatData2YMDH, fortmatData2YMDHM, fortmatDate } })
 export default class TaskRateCard extends Vue {
-    mydata: any = null
-    mounted() {}
-    get computedTest() {
-        return null
+    tyId: number = DEFAULT_TYPHOON_ID
+    // tyCode: string = DEFAULT_TYPHOON_CODE
+    taskRate: {
+        celeryId: string
+        caseState: TaskStateEnum
+        caseRate: number
+        gmtCreated: Date
+    } = {
+        celeryId: DEFAULT_CELERY_ID,
+        caseState: TaskStateEnum.INIT_CELERY,
+        caseRate: 0,
+        gmtCreated: new Date()
+    }
+    @Watch('getTyphoonId')
+    onTyphoonId(tyId: number): void {
+        getTaskRateByTy(tyId).then(
+            (res: {
+                status: number
+                data: {
+                    celery_id: string
+                    case_state: number
+                    case_rate: number
+                    gmt_created: Date
+                }
+            }) => {
+                if (res.status === 200) {
+                    this.taskRate = {
+                        celeryId: res.data.celery_id,
+                        caseState: res.data.case_state,
+                        caseRate: res.data.case_rate,
+                        gmtCreated: res.data.gmt_created
+                    }
+                }
+            }
+        )
+    }
+    @Getter(GET_TYPHOON_ID, { namespace: 'typhoon' })
+    getTyphoonId
+    @Getter(GET_TYPHOON_CODE, { namespace: 'typhoon' })
+    getTyphoonCode
+
+    get tyCode(): string {
+        return this.getTyphoonCode
     }
 }
 </script>

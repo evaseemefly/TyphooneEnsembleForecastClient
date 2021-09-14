@@ -79,4 +79,5 @@ const loadCaseModelInfo = (code: string) => {
     })
 }
 
+
 export { loadCaseListByUser, loadCaseHistory, createCaseInfo, loadCaseModelInfo, createOilCase }

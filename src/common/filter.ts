@@ -15,6 +15,9 @@ const fortmatData2YMDH = (now: Date): string => {
 const fortmatDate2YMD = (now: Date): string => {
     return moment(now).format('YYYY-MM-DD')
 }
+const fortmatDate = (now: Date, formatStr: string) => {
+    return moment(now).format(formatStr)
+}
 /**
  * 获取 abs val
  *
@@ -54,4 +57,12 @@ const formatDir = (val: { x: number; y: number }, keepNum = 2): string => {
     return dir.toFixed(keepNum)
 }
 
-export { fortmatData2YMDH, fortmatData2YMDHM, formatAbs, formatFixed, formatDir, fortmatDate2YMD }
+export {
+    fortmatData2YMDH,
+    fortmatData2YMDHM,
+    fortmatDate,
+    formatAbs,
+    formatFixed,
+    formatDir,
+    fortmatDate2YMD
+}

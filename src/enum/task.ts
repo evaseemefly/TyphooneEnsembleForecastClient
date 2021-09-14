@@ -1,0 +1,14 @@
+export enum TaskStateEnum {
+    INIT_CELERY = 0,
+    GET_TY_DETAIL,
+    GEN_PATH_FILES,
+    GEN_CONTROL_FILES,
+    STORE_TY_DETAIL, // 存储 获取到的 ty
+    STORE_GROUP_PATH,
+    STORE_STATION,
+    TASK_BATCH,
+    TXT_2_NC,
+    STORE_FIELD_SURGE,
+    TXT_2_NC_PRO,
+    STORE_PRO_SURGE
+}
