@@ -134,9 +134,9 @@
             <!-- <OilFactorSelect></OilFactorSelect> -->
             <CurdBtn :caseList="caseList"></CurdBtn>
         </div>
-        <!-- TODO:[-] 20-01-27 在地图页面加入创建等的btn -->
-        <div id="toolbar_btns">
-            <!-- <CurdBtn></CurdBtn> -->
+
+        <div id="task_rate_card">
+            <TaskRateCard></TaskRateCard>
         </div>
 
         <div class="dialog-create-case">
@@ -244,6 +244,8 @@ import BottomMainBar from '@/views/members/bar/bottomMainBar.vue'
 // + 21-03-07 新加入的 grid_charts 模块
 import GridDetailForm from '@/views/members/form/grid_form/GridDetailForm.vue'
 import RightStationBar from '@/views/members/bar/rightStationBar.vue'
+// + 21-09-14 新加入的 作业统计card
+import TaskRateCard from '@/components/card/TaskRateCard.vue'
 
 // + 21-07-01 加入了 createCaseForm
 import CreateCaseForm from '@/components/form/CreateCaseForm.vue'
@@ -419,7 +421,8 @@ const DEFAULT_SCATTER_PAGE_COUNT = 1000
         BottomMainBar,
         // + 21-05-24 新加入的 右侧显示 测站历史数据曲线的 charts
         RightStationBar,
-        CreateCaseForm
+        CreateCaseForm,
+        TaskRateCard
         // GridDetailForm
         // LeafletHeatmap
     }
