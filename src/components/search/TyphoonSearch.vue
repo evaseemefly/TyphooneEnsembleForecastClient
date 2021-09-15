@@ -70,7 +70,12 @@
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 import { Mutation, State, namespace, Action } from 'vuex-class'
 import { getTyListByYear, getTyCaseListByTyCode } from '@/api/tyhoon'
-import { DEFAULT_NUMBER, DEFAULT_SELECT_KEY, DEFAULT_SELECT_VAL } from '@/const/common'
+import {
+    DEFAULT_NUMBER,
+    DEFAULT_SELECT_KEY,
+    DEFAULT_SELECT_VAL,
+    DEFAULT_TYPHOON_CODE
+} from '@/const/common'
 import { DEFAULTTIMESTAMP } from '@/const/typhoon'
 import { SET_TYPHOON_CODE, SET_TYPHOON_ID, SET_TYPHOON_TIMESTAMP } from '@/store/types'
 import { fortmatData2YMDH, fortmatData2YMDHM } from '@/common/filter'
@@ -97,7 +102,7 @@ export default class TyphoonSearch extends Vue {
         tyCode: string
         tyId: number
     } = { gmtCreated: new Date(), timestamp: '', tyCode: '', tyId: -1 }
-    selectedTyCode: string = DEFAULT_SELECT_VAL
+    selectedTyCode: string = DEFAULT_TYPHOON_CODE
     selectedTyId: number = DEFAULT_SELECT_KEY
     selectedTyTimeStampStr: string = DEFAULTTIMESTAMP
     mounted() {

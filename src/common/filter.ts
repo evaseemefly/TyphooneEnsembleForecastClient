@@ -1,5 +1,6 @@
 import moment from 'moment'
-
+import { DEFAULTTYCODE } from '@/const/typhoon'
+import { DEFAULT_DATE } from '@/const/common'
 /**
  * 将时间转换为指定的格式(str)
  *
@@ -16,7 +17,25 @@ const fortmatDate2YMD = (now: Date): string => {
     return moment(now).format('YYYY-MM-DD')
 }
 const fortmatDate = (now: Date, formatStr: string) => {
+    if (now === DEFAULT_DATE) {
+        return '-'
+    }
     return moment(now).format(formatStr)
+}
+
+/**
+ * 根据 tyCode 获取台风编号
+ * 输入的为 2114 ，则手动加上 TY
+ *
+ * @param {string} tyCode
+ * @return {*}
+ */
+const fortmatTyCode = (tyCode: string) => {
+    let message = '未选择台风'
+    if (tyCode != DEFAULTTYCODE) {
+        message = `TY${tyCode}`
+    }
+    return message
 }
 /**
  * 获取 abs val
@@ -64,5 +83,6 @@ export {
     formatAbs,
     formatFixed,
     formatDir,
+    fortmatTyCode,
     fortmatDate2YMD
 }

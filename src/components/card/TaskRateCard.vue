@@ -16,7 +16,7 @@
                     <div class="my-card-info">
                         <div class="my-card-primary-title">当前任务</div>
                         <div class="my-card-content">
-                            <div class="my-card-primary-content">TY{{ tyCode }}</div>
+                            <div class="my-card-primary-content">{{ tyCode | fortmatTyCode }}</div>
                             <div class="my-card-sub-content">
                                 {{ taskRate.gmtCreated | fortmatDate('MM/DD HH:mm') }}
                             </div>
@@ -25,7 +25,9 @@
                     <div class="my-card-info">
                         <div class="my-card-primary-title">当前进度</div>
                         <div class="my-card-content">
-                            <div class="my-card-primary-content">{{ taskRate.caseState }}</div>
+                            <div class="my-card-primary-content">
+                                {{ taskRate.caseState | getTaskStateVal }}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -43,9 +45,10 @@ import {
     DEFAULT_SELECT_VAL,
     DEFAULT_TYPHOON_ID,
     DEFAULT_TYPHOON_CODE,
-    DEFAULT_CELERY_ID
+    DEFAULT_CELERY_ID,
+    DEFAULT_DATE
 } from '@/const/common'
-import { TaskStateEnum } from '@/enum/task'
+import { TaskStateEnum, getTaskStateVal } from '@/enum/task'
 import { DEFAULTTIMESTAMP } from '@/const/typhoon'
 import {
     SET_TYPHOON_CODE,
@@ -55,8 +58,10 @@ import {
     GET_TYPHOON_CODE
 } from '@/store/types'
 import { getTaskRateByTy } from '@/api/task'
-import { fortmatData2YMDH, fortmatData2YMDHM, fortmatDate } from '@/common/filter'
-@Component({ filters: { fortmatData2YMDH, fortmatData2YMDHM, fortmatDate } })
+import { fortmatData2YMDH, fortmatData2YMDHM, fortmatDate, fortmatTyCode } from '@/common/filter'
+@Component({
+    filters: { fortmatData2YMDH, fortmatData2YMDHM, fortmatDate, getTaskStateVal, fortmatTyCode }
+})
 export default class TaskRateCard extends Vue {
     tyId: number = DEFAULT_TYPHOON_ID
     // tyCode: string = DEFAULT_TYPHOON_CODE
@@ -67,9 +72,9 @@ export default class TaskRateCard extends Vue {
         gmtCreated: Date
     } = {
         celeryId: DEFAULT_CELERY_ID,
-        caseState: TaskStateEnum.INIT_CELERY,
+        caseState: TaskStateEnum.UNLESS_INIT,
         caseRate: 0,
-        gmtCreated: new Date()
+        gmtCreated: DEFAULT_DATE
     }
     @Watch('getTyphoonId')
     onTyphoonId(tyId: number): void {
