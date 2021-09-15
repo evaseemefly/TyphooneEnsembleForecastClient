@@ -75,6 +75,7 @@ export default class TopNavbar extends Vue {
 
     .menu-bar {
         // width: 1200px;
+        backdrop-filter: blur(4px);
         background: linear-gradient(
             to right,
             #34495e 40%,

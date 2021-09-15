@@ -142,7 +142,14 @@ export default class TaskRateCard extends Vue {
     // background: #34495ee5;
     // filter: blur(1px);
     // border-radius: 8px;
-    background: rgba(114, 114, 114, 0.07);
+    // background: rgba(114, 114, 114, 0.07);
+    background: linear-gradient(
+        to right,
+        #34495e 40%,
+        rgba(74, 145, 148, 0.726),
+        rgba(77, 142, 124, 0.739)
+    );
+    border-radius: 10px;
     backdrop-filter: blur(4px);
 }
 

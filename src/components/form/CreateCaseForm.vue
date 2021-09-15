@@ -90,7 +90,15 @@
                         ></el-input-number>
                     </div>
                     <div class="base-card-row">
-                        误差半径增减
+                        大风半径增减值
+                        <el-input-number
+                            v-model="maxWindRadiusDiff"
+                            :min="0"
+                            label="描述文字"
+                        ></el-input-number>
+                    </div>
+                    <div class="base-card-row">
+                        误差半径成员
                         <el-input-number
                             v-model="deviationRadiusNum"
                             :min="deviationRadiusLenMin"
@@ -100,7 +108,7 @@
                         ></el-input-number>
                     </div>
                     <div class="base-card-row">
-                        <div class="cell" :key="item.key" v-for="item in deviationRadiusList">
+                        <div class="cell" :key="item.key" v-for="item in deviationRadiusNumberList">
                             <p>{{ item.hours }}h</p>
                             <el-input v-model="item.radius" placeholder="请输入内容"></el-input>
                         </div>
@@ -112,7 +120,7 @@
             <button type="button" class="el-button el-button--default" @click="isShow = false">
                 取消
             </button>
-            <button type="button" class="el-button el-button--primary">确定</button>
+            <button type="button" class="el-button el-button--primary" @click="commit">确定</button>
         </div>
     </div>
 </template>
@@ -120,6 +128,7 @@
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 import { Getter, Mutation, State, namespace } from 'vuex-class'
 import { Draggable } from '@/directives/drag'
+import { createTyCase } from '@/api/task'
 // STORE 常量
 import { GET_CREATE_FORM } from '@/store/types'
 @Component({
@@ -133,17 +142,18 @@ export default class CreateCaseForm extends Vue {
         { label: '102', value: '102' },
         { label: '103', value: '103' }
     ]
-    deviationRadiusList: { hours: number; radius: number }[] = [
+    deviationRadiusNumberList: { hours: number; radius: number }[] = [
         { hours: 24, radius: 60 },
         { hours: 48, radius: 100 },
         { hours: 72, radius: 120 },
         { hours: 96, radius: 150 }
     ]
-    deviationRadiusLenMin = 4
-    deviationRadiusLenMax = 8
+    deviationRadiusLenMin = 0
+    deviationRadiusLenMax = 100
+    maxWindRadiusDiff = 0
     tyCode = ''
-    membersNum = 0
-    deviationRadiusNum = 4
+    membersNum = 145
+    deviationRadiusNum = this.deviationRadiusNumberList.length
     isShowAdvancedCard = false // + 21-07-10 是否显示高级选项
     // + 21-07-10 预报范围(西北，东北，西南，东南)
     // w: 110
@@ -169,19 +179,19 @@ export default class CreateCaseForm extends Vue {
     deviationChange(num: number, oldNum: number): void {
         const hoursInterval = 24
         const radiusInterval = 30
-        const lastDeviation = this.deviationRadiusList.slice(-1)[0]
+        const lastDeviation = this.deviationRadiusNumberList.slice(-1)[0]
         if (num > oldNum) {
             // +
-            if (this.deviationRadiusList.length <= this.deviationRadiusLenMax - 1) {
+            if (this.deviationRadiusNumberList.length <= this.deviationRadiusLenMax - 1) {
                 const newDeviationHours = lastDeviation.hours + hoursInterval
                 const newDeviationRadius = lastDeviation.radius + radiusInterval
                 const newDeviation = { hours: newDeviationHours, radius: newDeviationRadius }
-                this.deviationRadiusList.push(newDeviation)
+                this.deviationRadiusNumberList.push(newDeviation)
                 console.log(newDeviation)
             }
         } else if (num < oldNum) {
-            if (this.deviationRadiusList.length > this.deviationRadiusLenMin) {
-                this.deviationRadiusList.pop()
+            if (this.deviationRadiusNumberList.length > this.deviationRadiusLenMin) {
+                this.deviationRadiusNumberList.pop()
             }
         }
         console.log(`new:${num},old:${oldNum}`)
@@ -223,13 +233,23 @@ export default class CreateCaseForm extends Vue {
     }
 
     get getDeviationRadiusNum(): number {
-        return this.deviationRadiusList.length
+        return this.deviationRadiusNumberList.length
+    }
+
+    // + 21-09-15 提交当前页面中的信息
+    commit(): void {
+        const postData = {
+            max_wind_radius_diff: this.maxWindRadiusDiff,
+            members_num: this.membersNum,
+            deviation_radius_list: this.deviationRadiusNumberList
+        }
+        createTyCase(postData).then((res) => {})
     }
 }
 </script>
 <style scoped lang="less">
 #base_form_createcast {
-    background: white;
+    // background: white;
     // padding: 15px;
     // form 四个角圆角
     border-radius: 1.25rem;
@@ -248,7 +268,8 @@ export default class CreateCaseForm extends Vue {
     }
     .base-card-title {
         padding: 15px;
-        background: #34495e;
+        background: #34495eb0;
+        backdrop-filter: blur(4px);
         color: white;
         user-select: none;
     }
@@ -260,6 +281,7 @@ export default class CreateCaseForm extends Vue {
         line-height: 1.5;
         color: #212529;
         text-align: left;
+        background: white;
         .base-card-row {
             line-height: 2.5rem;
             justify-content: space-around;
@@ -269,6 +291,8 @@ export default class CreateCaseForm extends Vue {
     .form-footer {
         padding: 10px 20px 20px;
         text-align: right;
+        background: #327f7785;
+        backdrop-filter: blur(4px);
     }
 }
 .base-card-row {

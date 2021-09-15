@@ -556,6 +556,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
     // 加入了文字不可选
     user-select: none;
     width: 40px;
+    backdrop-filter: blur(4px);
     // 暂时未用
     .main-title {
         background: @main-title-color;

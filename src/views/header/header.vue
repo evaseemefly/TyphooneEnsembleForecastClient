@@ -27,6 +27,7 @@ export default class header extends Vue {
     flex: 0.5;
     // background: #31859be8;
     background: linear-gradient(#465581, #313b59);
+    backdrop-filter: blur(4px);
     .logo {
         position: absolute;
         left: 50px;
