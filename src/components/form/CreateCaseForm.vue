@@ -4,7 +4,6 @@
             <div class="base-card-title"><h4>台风信息</h4></div>
             <div class="base-card-content">
                 <div class="base-card-row">
-                    <p>台风编号</p>
                     <!-- <el-select v-model="value" placeholder="请选择">
                         <el-option
                             v-for="item in options"
@@ -14,7 +13,7 @@
                         >
                         </el-option>
                     </el-select> -->
-                    <el-select v-model="tyCode" clearable placeholder="请选择">
+                    <!-- <el-select v-model="tyCode" clearable placeholder="请选择">
                         <el-option
                             v-for="item in tyCodeOptions"
                             :key="item.value"
@@ -22,19 +21,36 @@
                             :value="item.value"
                         >
                         </el-option>
-                    </el-select>
-                    <!-- <el-select placeholder="请选择" v-model="form.oilType">
-                        <el-option
-                            v-for="item in optionOilType"
-                            :key="item.key"
-                            :label="item.name"
-                            :value="item.key"
-                        ></el-option>
                     </el-select> -->
+                    <div class="base-card-row tiled">
+                        <p>台风编号</p>
+                        <el-input v-model="tyCode" placeholder="台风编号"></el-input>
+                    </div>
+                    <div
+                        class="base-card-row tiled mini"
+                        v-for="item in customerTyCMAList"
+                        :key="item.key"
+                    >
+                        <i class="el-icon-circle-plus" @click="addCustomerTyCMA"></i>
+                        <i class="el-icon-delete" @click="deleteCustomerTyCMA"></i>
+                        <el-date-picker
+                            v-model="item.forecastDt"
+                            align="right"
+                            type="datetime"
+                            placeholder="时间"
+                            :picker-options="pickerOptions"
+                        >
+                        </el-date-picker>
+                        <el-input v-model="item.lat" placeholder="经度"></el-input>
+                        <el-input v-model="item.lon" placeholder="维度"></el-input>
+                        <el-input v-model="item.bp" placeholder="气压"></el-input>
+                        <el-input v-model="item.radius" placeholder="大风半径"></el-input>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="base-card">
+        <!-- + 21-09-18 暂时去掉 预报区域 -->
+        <!-- <div class="base-card">
             <div class="base-card-title">
                 <h4>预报区域</h4>
             </div>
@@ -68,7 +84,7 @@
                     ></el-input>
                 </div>
             </div>
-        </div>
+        </div> -->
         <div class="base-card">
             <div
                 class="base-card-title clickable"
@@ -148,6 +164,13 @@ export default class CreateCaseForm extends Vue {
         { hours: 72, radius: 120 },
         { hours: 96, radius: 150 }
     ]
+    customerTyCMAList: {
+        forecastDt: Date
+        lat: number
+        lon: number
+        bp: number
+        radius: number
+    }[] = [{ forecastDt: new Date(), lat: 0, lon: 0, bp: 0, radius: 0 }]
     deviationRadiusLenMin = 0
     deviationRadiusLenMax = 100
     maxWindRadiusDiff = 0
@@ -245,6 +268,19 @@ export default class CreateCaseForm extends Vue {
         }
         createTyCase(postData).then((res) => {})
     }
+
+    // 在 customerTyCMAList 后面追加数组中的最后一个对象
+    addCustomerTyCMA(): void {
+        console.log(this.customerTyCMAList)
+        const tempCustomerTyCMA = this.customerTyCMAList[this.customerTyCMAList.length - 1]
+        this.customerTyCMAList.push(tempCustomerTyCMA)
+    }
+
+    // 在 customerTyCMAList 中取出最后一组对象
+    deleteCustomerTyCMA(): void {
+        const popCMA = this.customerTyCMAList.pop()
+        console.log(popCMA)
+    }
 }
 </script>
 <style scoped lang="less">
@@ -308,6 +344,20 @@ export default class CreateCaseForm extends Vue {
         margin-right: 8px;
     }
 }
+.base-card-row.tiled.mini {
+    align-items: center;
+    padding: 2px;
+    .el-input {
+        width: 16%;
+        margin-right: 2px;
+    }
+}
+.base-card-row .tiled {
+    .el-input {
+        width: 50%;
+    }
+}
+
 .overflowable {
     // + 21-07-10 加入y轴滚动条
     overflow-y: scroll;
