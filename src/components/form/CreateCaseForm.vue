@@ -1,5 +1,5 @@
 <template>
-    <div id="base_form_createcast" v-drag style="visibility: hidden;">
+    <div id="base_form_createcase" v-drag style="visibility: hidden;">
         <div class="base-card">
             <div class="base-card-title"><h4>台风信息</h4></div>
             <div class="base-card-content">
@@ -170,11 +170,22 @@ export default class CreateCaseForm extends Vue {
         lon: number
         bp: number
         radius: number
-    }[] = [{ forecastDt: new Date(), lat: 0, lon: 0, bp: 0, radius: 0 }]
+    }[] = [
+        { forecastDt: new Date(2021, 8, 4, 14), lat: 115.7, lon: 21.5, bp: 990, radius: 80 },
+        { forecastDt: new Date(2021, 8, 4, 20), lat: 116.3, lon: 22.0, bp: 988, radius: 80 },
+        { forecastDt: new Date(2021, 8, 5, 8), lat: 116.8, lon: 22.6, bp: 985, radius: 80 },
+        { forecastDt: new Date(2021, 8, 5, 14), lat: 117.0, lon: 23.0, bp: 980, radius: 72 },
+        { forecastDt: new Date(2021, 8, 5, 20), lat: 117.0, lon: 23.5, bp: 985, radius: 80 },
+        { forecastDt: new Date(2021, 8, 6, 2), lat: 116.9, lon: 24.1, bp: 989, radius: 80 },
+        { forecastDt: new Date(2021, 8, 6, 8), lat: 116.9, lon: 24.5, bp: 990, radius: 80 },
+        { forecastDt: new Date(2021, 8, 6, 14), lat: 116.9, lon: 24.7, bp: 991, radius: 80 },
+        { forecastDt: new Date(2021, 8, 6, 20), lat: 117.0, lon: 24.8, bp: 992, radius: 80 },
+        { forecastDt: new Date(2021, 8, 7, 2), lat: 117.3, lon: 25.0, bp: 992, radius: 80 }
+    ]
     deviationRadiusLenMin = 0
     deviationRadiusLenMax = 100
     maxWindRadiusDiff = 0
-    tyCode = ''
+    tyCode = '2109'
     membersNum = 145
     deviationRadiusNum = this.deviationRadiusNumberList.length
     isShowAdvancedCard = false // + 21-07-10 是否显示高级选项
@@ -232,7 +243,7 @@ export default class CreateCaseForm extends Vue {
     // }
 
     toShow(val: boolean): void {
-        const divCreateForm = document.getElementById('base_form_createcast')
+        const divCreateForm = document.getElementById('base_form_createcase')
         if (divCreateForm) {
             if (divCreateForm.style) {
                 if (divCreateForm.style.visibility != undefined) {
@@ -272,7 +283,7 @@ export default class CreateCaseForm extends Vue {
     // 在 customerTyCMAList 后面追加数组中的最后一个对象
     addCustomerTyCMA(): void {
         console.log(this.customerTyCMAList)
-        const tempCustomerTyCMA = this.customerTyCMAList[this.customerTyCMAList.length - 1]
+        const tempCustomerTyCMA = { ...this.customerTyCMAList[this.customerTyCMAList.length - 1] }
         this.customerTyCMAList.push(tempCustomerTyCMA)
     }
 
@@ -284,7 +295,7 @@ export default class CreateCaseForm extends Vue {
 }
 </script>
 <style scoped lang="less">
-#base_form_createcast {
+#base_form_createcase {
     // background: white;
     // padding: 15px;
     // form 四个角圆角
@@ -318,6 +329,8 @@ export default class CreateCaseForm extends Vue {
         color: #212529;
         text-align: left;
         background: white;
+        max-height: 300px; // 设置最大高度，剩余部分滚动显示
+        overflow-y: scroll;
         .base-card-row {
             line-height: 2.5rem;
             justify-content: space-around;
@@ -344,6 +357,7 @@ export default class CreateCaseForm extends Vue {
         margin-right: 8px;
     }
 }
+
 .base-card-row.tiled.mini {
     align-items: center;
     padding: 2px;
