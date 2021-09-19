@@ -284,11 +284,18 @@ export default class CreateCaseForm extends Vue {
     // + 21-09-15 提交当前页面中的信息
     commit(): void {
         const postData = {
+            ty_code: this.tyCode,
+            is_customer_ty: this.isCustomerTy,
+            customer_ty_cma_list: this.customerTyCMAList,
             max_wind_radius_diff: this.maxWindRadiusDiff,
             members_num: this.membersNum,
             deviation_radius_list: this.deviationRadiusNumberList
         }
-        createTyCase(postData).then((res) => {})
+        createTyCase(postData).then((res) => {
+            if (res.status === 200) {
+                console.log(res.data)
+            }
+        })
     }
 
     // 在 customerTyCMAList 后面追加数组中的最后一个对象
