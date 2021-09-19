@@ -3,8 +3,8 @@
         <div class="base-card">
             <div class="base-card-title"><h4>台风信息</h4></div>
             <div class="base-card-content">
-                <div class="base-card-row">
-                    <!-- <el-select v-model="value" placeholder="请选择">
+                <!-- <div class="base-card-row"> -->
+                <!-- <el-select v-model="value" placeholder="请选择">
                         <el-option
                             v-for="item in options"
                             :key="item.value"
@@ -13,7 +13,7 @@
                         >
                         </el-option>
                     </el-select> -->
-                    <!-- <el-select v-model="tyCode" clearable placeholder="请选择">
+                <!-- <el-select v-model="tyCode" clearable placeholder="请选择">
                         <el-option
                             v-for="item in tyCodeOptions"
                             :key="item.value"
@@ -22,31 +22,41 @@
                         >
                         </el-option>
                     </el-select> -->
-                    <div class="base-card-row tiled">
-                        <p>台风编号</p>
-                        <el-input v-model="tyCode" placeholder="台风编号"></el-input>
-                    </div>
-                    <div
-                        class="base-card-row tiled mini"
-                        v-for="item in customerTyCMAList"
-                        :key="item.key"
+                <!-- </div> -->
+                <div class="base-card-row tiled" id="ty_form_create-title">
+                    <p>台风编号</p>
+                    <el-input v-model="tyCode" placeholder="台风编号"></el-input>
+                    <el-switch
+                        v-model="isCustomerTy"
+                        active-text="自定义台风"
+                        inactive-text="中央台"
                     >
-                        <i class="el-icon-circle-plus" @click="addCustomerTyCMA"></i>
-                        <i class="el-icon-delete" @click="deleteCustomerTyCMA"></i>
-                        <el-date-picker
-                            v-model="item.forecastDt"
-                            align="right"
-                            type="datetime"
-                            placeholder="时间"
-                            :picker-options="pickerOptions"
-                        >
-                        </el-date-picker>
-                        <el-input v-model="item.lat" placeholder="经度"></el-input>
-                        <el-input v-model="item.lon" placeholder="维度"></el-input>
-                        <el-input v-model="item.bp" placeholder="气压"></el-input>
-                        <el-input v-model="item.radius" placeholder="大风半径"></el-input>
-                    </div>
+                    </el-switch>
                 </div>
+                <el-collapse-transition>
+                    <div class="base-card-row" id="ty_form_create_info" v-show="isCustomerTy">
+                        <div
+                            class="base-card-row tiled mini"
+                            v-for="item in customerTyCMAList"
+                            :key="item.key"
+                        >
+                            <i class="el-icon-circle-plus" @click="addCustomerTyCMA"></i>
+                            <i class="el-icon-delete" @click="deleteCustomerTyCMA"></i>
+                            <el-date-picker
+                                v-model="item.forecastDt"
+                                align="right"
+                                type="datetime"
+                                placeholder="时间"
+                                :picker-options="pickerOptions"
+                            >
+                            </el-date-picker>
+                            <el-input v-model="item.lat" placeholder="经度"></el-input>
+                            <el-input v-model="item.lon" placeholder="维度"></el-input>
+                            <el-input v-model="item.bp" placeholder="气压"></el-input>
+                            <el-input v-model="item.radius" placeholder="大风半径"></el-input>
+                        </div>
+                    </div>
+                </el-collapse-transition>
             </div>
         </div>
         <!-- + 21-09-18 暂时去掉 预报区域 -->
@@ -158,6 +168,7 @@ export default class CreateCaseForm extends Vue {
         { label: '102', value: '102' },
         { label: '103', value: '103' }
     ]
+    isCustomerTy = false
     deviationRadiusNumberList: { hours: number; radius: number }[] = [
         { hours: 24, radius: 60 },
         { hours: 48, radius: 100 },
@@ -366,12 +377,25 @@ export default class CreateCaseForm extends Vue {
         margin-right: 2px;
     }
 }
-.base-card-row .tiled {
+.base-card-row.tiled {
     .el-input {
-        width: 50%;
+        width: 30%;
     }
 }
-
+#ty_form_create-title {
+    align-items: center;
+    p {
+    }
+}
+#ty_form_create_info {
+    // 编辑行的 第一行加入一个 顶部的 border 边框
+    border-top: 5px solid transparent;
+    border-radius: 15px 0 15px 0;
+    border-image: linear-gradient(#f80, #2ed) 20 20;
+    padding-top: 10px;
+    .base-card-row:nth-child(2) {
+    }
+}
 .overflowable {
     // + 21-07-10 加入y轴滚动条
     overflow-y: scroll;
