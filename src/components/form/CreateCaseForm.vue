@@ -25,7 +25,7 @@
                 <!-- </div> -->
                 <div class="base-card-row tiled" id="ty_form_create-title">
                     <p>台风编号</p>
-                    <el-input v-model="tyCode" placeholder="台风编号"></el-input>
+                    <el-input v-model="tyCode" value="number" placeholder="台风编号"></el-input>
                     <el-switch
                         v-model="isCustomerTy"
                         active-text="自定义台风"
@@ -47,13 +47,25 @@
                                 align="right"
                                 type="datetime"
                                 placeholder="时间"
-                                :picker-options="pickerOptions"
                             >
                             </el-date-picker>
-                            <el-input v-model="item.lat" placeholder="经度"></el-input>
-                            <el-input v-model="item.lon" placeholder="维度"></el-input>
-                            <el-input v-model="item.bp" placeholder="气压"></el-input>
-                            <el-input v-model="item.radius" placeholder="大风半径"></el-input>
+                            <el-input
+                                v-model.number="item.lat"
+                                value="number"
+                                placeholder="经度"
+                            ></el-input>
+                            <el-input
+                                v-model.number="item.lon"
+                                value="number"
+                                placeholder="维度"
+                            ></el-input>
+                            <el-input
+                                v-model.number="item.bp"
+                                value="number"
+                                placeholder="气压"
+                            ></el-input>
+                            <!-- 21-09-20 暂时去掉了大风半径 -->
+                            <!-- <el-input v-model="item.radius" placeholder="大风半径"></el-input> -->
                         </div>
                     </div>
                 </el-collapse-transition>
@@ -136,7 +148,10 @@
                     <div class="base-card-row">
                         <div class="cell" :key="item.key" v-for="item in deviationRadiusNumberList">
                             <p>{{ item.hours }}h</p>
-                            <el-input v-model="item.radius" placeholder="请输入内容"></el-input>
+                            <el-input
+                                v-model.number="item.radius"
+                                placeholder="请输入内容"
+                            ></el-input>
                         </div>
                     </div>
                 </div>
@@ -180,18 +195,18 @@ export default class CreateCaseForm extends Vue {
         lat: number
         lon: number
         bp: number
-        radius: number
+        // radius: number
     }[] = [
-        { forecastDt: new Date(2021, 8, 4, 14), lat: 115.7, lon: 21.5, bp: 990, radius: 80 },
-        { forecastDt: new Date(2021, 8, 4, 20), lat: 116.3, lon: 22.0, bp: 988, radius: 80 },
-        { forecastDt: new Date(2021, 8, 5, 8), lat: 116.8, lon: 22.6, bp: 985, radius: 80 },
-        { forecastDt: new Date(2021, 8, 5, 14), lat: 117.0, lon: 23.0, bp: 980, radius: 72 },
-        { forecastDt: new Date(2021, 8, 5, 20), lat: 117.0, lon: 23.5, bp: 985, radius: 80 },
-        { forecastDt: new Date(2021, 8, 6, 2), lat: 116.9, lon: 24.1, bp: 989, radius: 80 },
-        { forecastDt: new Date(2021, 8, 6, 8), lat: 116.9, lon: 24.5, bp: 990, radius: 80 },
-        { forecastDt: new Date(2021, 8, 6, 14), lat: 116.9, lon: 24.7, bp: 991, radius: 80 },
-        { forecastDt: new Date(2021, 8, 6, 20), lat: 117.0, lon: 24.8, bp: 992, radius: 80 },
-        { forecastDt: new Date(2021, 8, 7, 2), lat: 117.3, lon: 25.0, bp: 992, radius: 80 }
+        { forecastDt: new Date(2021, 8, 4, 14), lat: 115.7, lon: 21.5, bp: 990 },
+        { forecastDt: new Date(2021, 8, 4, 20), lat: 116.3, lon: 22.0, bp: 988 },
+        { forecastDt: new Date(2021, 8, 5, 8), lat: 116.8, lon: 22.6, bp: 985 },
+        { forecastDt: new Date(2021, 8, 5, 14), lat: 117.0, lon: 23.0, bp: 980 },
+        { forecastDt: new Date(2021, 8, 5, 20), lat: 117.0, lon: 23.5, bp: 985 },
+        { forecastDt: new Date(2021, 8, 6, 2), lat: 116.9, lon: 24.1, bp: 989 },
+        { forecastDt: new Date(2021, 8, 6, 8), lat: 116.9, lon: 24.5, bp: 990 },
+        { forecastDt: new Date(2021, 8, 6, 14), lat: 116.9, lon: 24.7, bp: 991 },
+        { forecastDt: new Date(2021, 8, 6, 20), lat: 117.0, lon: 24.8, bp: 992 },
+        { forecastDt: new Date(2021, 8, 7, 2), lat: 117.3, lon: 25.0, bp: 992 }
     ]
     deviationRadiusLenMin = 0
     deviationRadiusLenMax = 100
