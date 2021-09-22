@@ -50,14 +50,14 @@
                             >
                             </el-date-picker>
                             <el-input
-                                v-model.number="item.lat"
+                                v-model.number="item.lon"
                                 value="number"
                                 placeholder="经度"
                             ></el-input>
                             <el-input
-                                v-model.number="item.lon"
+                                v-model.number="item.lat"
                                 value="number"
-                                placeholder="维度"
+                                placeholder="纬度"
                             ></el-input>
                             <el-input
                                 v-model.number="item.bp"
@@ -197,16 +197,16 @@ export default class CreateCaseForm extends Vue {
         bp: number
         // radius: number
     }[] = [
-        { forecastDt: new Date(2021, 8, 4, 14), lat: 115.7, lon: 21.5, bp: 990 },
-        { forecastDt: new Date(2021, 8, 4, 20), lat: 116.3, lon: 22.0, bp: 988 },
-        { forecastDt: new Date(2021, 8, 5, 8), lat: 116.8, lon: 22.6, bp: 985 },
-        { forecastDt: new Date(2021, 8, 5, 14), lat: 117.0, lon: 23.0, bp: 980 },
-        { forecastDt: new Date(2021, 8, 5, 20), lat: 117.0, lon: 23.5, bp: 985 },
-        { forecastDt: new Date(2021, 8, 6, 2), lat: 116.9, lon: 24.1, bp: 989 },
-        { forecastDt: new Date(2021, 8, 6, 8), lat: 116.9, lon: 24.5, bp: 990 },
-        { forecastDt: new Date(2021, 8, 6, 14), lat: 116.9, lon: 24.7, bp: 991 },
-        { forecastDt: new Date(2021, 8, 6, 20), lat: 117.0, lon: 24.8, bp: 992 },
-        { forecastDt: new Date(2021, 8, 7, 2), lat: 117.3, lon: 25.0, bp: 992 }
+        { forecastDt: new Date(2021, 8, 4, 14), lon: 115.7, lat: 21.5, bp: 990 },
+        { forecastDt: new Date(2021, 8, 4, 20), lon: 116.3, lat: 22.0, bp: 988 },
+        { forecastDt: new Date(2021, 8, 5, 8), lon: 116.8, lat: 22.6, bp: 985 },
+        { forecastDt: new Date(2021, 8, 5, 14), lon: 117.0, lat: 23.0, bp: 980 },
+        { forecastDt: new Date(2021, 8, 5, 20), lon: 117.0, lat: 23.5, bp: 985 },
+        { forecastDt: new Date(2021, 8, 6, 2), lon: 116.9, lat: 24.1, bp: 989 },
+        { forecastDt: new Date(2021, 8, 6, 8), lon: 116.9, lat: 24.5, bp: 990 },
+        { forecastDt: new Date(2021, 8, 6, 14), lon: 116.9, lat: 24.7, bp: 991 },
+        { forecastDt: new Date(2021, 8, 6, 20), lon: 117.0, lat: 24.8, bp: 992 },
+        { forecastDt: new Date(2021, 8, 7, 2), lon: 117.3, lat: 25.0, bp: 992 }
     ]
     deviationRadiusLenMin = 0
     deviationRadiusLenMax = 100
