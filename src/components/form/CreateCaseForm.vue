@@ -197,16 +197,12 @@ export default class CreateCaseForm extends Vue {
         bp: number
         // radius: number
     }[] = [
-        { forecastDt: new Date(2021, 8, 4, 14), lon: 115.7, lat: 21.5, bp: 990 },
-        { forecastDt: new Date(2021, 8, 4, 20), lon: 116.3, lat: 22.0, bp: 988 },
-        { forecastDt: new Date(2021, 8, 5, 8), lon: 116.8, lat: 22.6, bp: 985 },
-        { forecastDt: new Date(2021, 8, 5, 14), lon: 117.0, lat: 23.0, bp: 980 },
-        { forecastDt: new Date(2021, 8, 5, 20), lon: 117.0, lat: 23.5, bp: 985 },
-        { forecastDt: new Date(2021, 8, 6, 2), lon: 116.9, lat: 24.1, bp: 989 },
-        { forecastDt: new Date(2021, 8, 6, 8), lon: 116.9, lat: 24.5, bp: 990 },
-        { forecastDt: new Date(2021, 8, 6, 14), lon: 116.9, lat: 24.7, bp: 991 },
-        { forecastDt: new Date(2021, 8, 6, 20), lon: 117.0, lat: 24.8, bp: 992 },
-        { forecastDt: new Date(2021, 8, 7, 2), lon: 117.3, lat: 25.0, bp: 992 }
+        { forecastDt: new Date(2020, 8, 18, 5), lon: 116, lat: 20.5, bp: 995 },
+        { forecastDt: new Date(2020, 8, 18, 11), lon: 115.1, lat: 21.1, bp: 980 },
+        { forecastDt: new Date(2020, 8, 18, 17), lon: 114, lat: 21.4, bp: 970 },
+        { forecastDt: new Date(2020, 8, 18, 12), lon: 113.2, lat: 22.1, bp: 970 },
+        { forecastDt: new Date(2020, 8, 19, 5), lon: 112.3, lat: 22.8, bp: 992 },
+        { forecastDt: new Date(2020, 8, 19, 11), lon: 111.2, lat: 23.7, bp: 998 }
     ]
     deviationRadiusLenMin = 0
     deviationRadiusLenMax = 100
