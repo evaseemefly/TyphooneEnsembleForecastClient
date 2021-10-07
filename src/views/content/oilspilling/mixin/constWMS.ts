@@ -16,11 +16,11 @@ class WMSMixin extends Vue {
         new WMSOptionsMidModel('nmefc_current:land_china')
     )
     ninelineWMS: WMSMidModel = new WMSMidModel(
-        'http://localhost:8082/geoserver/nmefc_current/wms?',
+        'http://localhost:8084/geoserver/nmefc_current/wms?',
         new WMSOptionsMidModel('nmefc_current:9line')
     )
     southlandWMS: WMSMidModel = new WMSMidModel(
-        'http://localhost:8082/geoserver/nmefc_current/wms?',
+        'http://localhost:8084/geoserver/nmefc_current/wms?',
         new WMSOptionsMidModel('nmefc_current:southsea_land')
     )
     // 20-07-29 新加入的东中海的区域
@@ -50,7 +50,7 @@ class WMSMixin extends Vue {
 
     // TODO:[-] 20-08-26 新加入的全球国境线
     worldLineWMS: WMSMidModel = new WMSMidModel(
-        'http://localhost:8082/geoserver/nmefc_common/wms?',
+        'http://localhost:8084/geoserver/nmefc_common/wms?',
         new WMSOptionsMidModel('nmefc_common:world_map_line', 1500)
     )
 
