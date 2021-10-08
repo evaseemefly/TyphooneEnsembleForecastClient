@@ -11,6 +11,8 @@ class TyphoonCircleStatus {
     // color_enum=Color
     // 最大风速
     radius = DEFAULT_RADIUS
+    // + 21-10-08 有效数字保留的位数
+    EFFECTIVE_UNIT = 3
     // 气压
     bp: number
     forecastDt: Date
@@ -23,6 +25,37 @@ class TyphoonCircleStatus {
         this.forecastDt = forecastDt
         this.lat = lat
         this.lon = lon
+    }
+
+    public get latFiltered(): number | string {
+        let filteredVal: number | string = ''
+        if (this.lat) {
+            filteredVal = parseFloat(this.lat.toFixed(this.EFFECTIVE_UNIT))
+        }
+        return filteredVal
+    }
+
+    public get lonFiltered(): number | string {
+        let filteredVal: number | string = ''
+        if (this.lon) {
+            filteredVal = parseFloat(this.lon.toFixed(this.EFFECTIVE_UNIT))
+        }
+        return filteredVal
+    }
+
+    public get bpFiltered(): number | string {
+        let filteredVal: number | string = ''
+        if (this.bp) {
+            filteredVal = parseFloat(this.bp.toFixed(this.EFFECTIVE_UNIT))
+        }
+        return filteredVal
+    }
+    public get radiusFiltered(): number | string {
+        let filteredVal: number | string = ''
+        if (this.radius) {
+            filteredVal = parseFloat(this.radius.toFixed(this.EFFECTIVE_UNIT))
+        }
+        return filteredVal
     }
 
     //获取颜色（string）
@@ -77,18 +110,18 @@ class TyphoonCircleStatus {
 					</div>
 					<div class='row'>
 						<div class='col-md-4'>中心位置</div>
-						<div class='col-md-8'>${(that.lat, that.lon)}</div>
+						<div class='col-md-8'>${that.latFiltered}, ${that.lonFiltered}</div>
 					</div>
 					
 				</div>
 				<div class='row_footer'>
 						<div class='typhoon_footer'>
 							<div class='columnar'>
-								<div class='subitem_top'>${that.bp}</div>
+								<div class='subitem_top'>${that.bpFiltered}</div>
 								<div class='subitem_foot'>气压</div>
 							</div>
 							<div class='columnar'>
-								<div class='subitem_top'>${that.radius}</div>
+								<div class='subitem_top'>${that.radiusFiltered}</div>
 								<div class='subitem_foot'>大风半径</div>
 							</div>
 						</div>

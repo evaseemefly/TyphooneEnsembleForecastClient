@@ -74,7 +74,8 @@ import {
     DEFAULT_NUMBER,
     DEFAULT_SELECT_KEY,
     DEFAULT_SELECT_VAL,
-    DEFAULT_TYPHOON_CODE
+    DEFAULT_TYPHOON_ID, // 默认未赋值时的台风id
+    DEFAULT_TYPHOON_CODE // 默认未赋值时的台风code
 } from '@/const/common'
 import { DEFAULTTIMESTAMP } from '@/const/typhoon'
 import { SET_TYPHOON_CODE, SET_TYPHOON_ID, SET_TYPHOON_TIMESTAMP } from '@/store/types'
@@ -133,7 +134,7 @@ export default class TyphoonSearch extends Vue {
     @Watch('selectedTyCode')
     onSelectTyCode(val: string): void {
         // console.log(val)
-        this.typhoonList = []
+        // this.typhoonList = []
         this.setTyphoonCode(val)
         this.loadTyCaseListByTyCode(val)
     }
@@ -200,8 +201,8 @@ export default class TyphoonSearch extends Vue {
             this.selectedTyCode = val.tyCode
             this.selectedTyTimeStampStr = val.timestamp
         } else {
-            this.selectedTyId = DEFAULT_SELECT_KEY
-            this.selectedTyCode = DEFAULT_SELECT_VAL
+            this.selectedTyId = DEFAULT_TYPHOON_ID
+            this.selectedTyCode = DEFAULT_TYPHOON_CODE
             this.selectedTyTimeStampStr = DEFAULTTIMESTAMP
         }
     }

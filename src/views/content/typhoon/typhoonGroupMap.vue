@@ -572,7 +572,7 @@ export default class TyGroupMap extends mixins(
     }
     // TODO:[-] + 21-05-31 中间路径的 cirleLayers 集合
     tyGroupCenterCirleLayers: L.Layer[] = []
-    // TODO:[-] + 21-05-12 台风集合预报路径的概率半径集合 24: 60, 48:100,72:120,96:150,120:180
+    // + 21-05-12 台风集合预报路径的概率半径集合 24: 60, 48:100,72:120,96:150,120:180
     tyGroupProPathCircles: { lat: number; lon: number; radius: number }[] = []
     // 当前的大风半径范围
     currentGaleRadius: L.Circle = null
@@ -580,6 +580,17 @@ export default class TyGroupMap extends mixins(
     // 台风大风半径的范围
     // 当前显示的 台风realdata div icon
     tyRealDataDivIcon: L.Marker = null
+
+    // TODO:[-] 21-10-08 当前的台风集合折线
+    currentGroupPathPolyLine: L.Polyline = null
+    // TODO:[-] 21-10-08 当前的台风集合预报路径 折线集合 group layer
+    currentGroupPathPolyLineLayerGroup: L.LayerGroup = null
+    currentGroupPathPulsingLayerGroup: L.LayerGroup = null
+
+    // 21-10-08 当前的台风集合预报路径 间隔点集合 group layer
+    currentGroupPathProPathCirclesGroup: L.LayerGroup = null
+
+    currentGroupPathPolyLineLayerGroupId = DEFAULT_NUMBER
 
     // + 21-05-10 当前的 逐时风暴增水场 layer，每次切换时会替换，且从 map 中清除
     fieldSurgeRasterLayer: L.Layer = null
@@ -864,6 +875,15 @@ export default class TyGroupMap extends mixins(
         this.groupLayerSurgeStationDivForm = null
     }
 
+    // TODO:[-] 21-10-08 清除当前台风折线群组 layer
+    clearGroupLayer(tempPolyLine: L.LayerGroup | null): void {
+        const mymap: L.Map = this.$refs.basemap['mapObject']
+        if (tempPolyLine) {
+            // mymap.remove(tempPolyLine)
+            mymap.removeLayer(tempPolyLine)
+        }
+    }
+
     // + 21-05-20 清除掉 逐时的风暴潮增水栅格图层
     clearSurgeHourlyRasterLayer(): void {
         const that = this
@@ -1086,6 +1106,19 @@ export default class TyGroupMap extends mixins(
         )
     }
 
+    // TODO:[-] 21-10-08 清除所有 当前 台风集合路径的相关 layer
+    clearGroupPathAllLayer(): void {
+        if (
+            this.currentGroupPathPolyLineLayerGroup &&
+            this.currentGroupPathProPathCirclesGroup &&
+            this.currentGroupPathPulsingLayerGroup
+        ) {
+            this.clearGroupLayer(this.currentGroupPathPolyLineLayerGroup)
+            this.clearGroupLayer(this.currentGroupPathProPathCirclesGroup)
+            this.clearGroupLayer(this.currentGroupPathPulsingLayerGroup)
+        }
+    }
+
     // loadTy
     testGetAddTyGroupPath2Map(tyId: number): void {
         const that = this
@@ -1093,6 +1126,8 @@ export default class TyGroupMap extends mixins(
         // 每次处理签需要先清除当前的 台风集合预报路径概率半径集合
         this.tyGroupProPathCircles = []
 
+        // TODO:[-] 21-10-08 注意每次加载之前需要先清除一下之前的 group 折线
+        this.clearGroupPathAllLayer()
         getTargetTyGroupComplexModel(tyId).then((res) => {
             if (res.status === 200) {
                 /*
@@ -1187,6 +1222,7 @@ export default class TyGroupMap extends mixins(
                 that.tyGroupLineList = arrTyComplexGroupRealdata
                 // TODO:[*] ! WARNING 21-05-07 此处注意需要动态的获取 tyTimestamp 与 tyCode
                 that.loadTyphoonLine('2022', '2021010416')
+                that.addTyGroupProPathCircles()
                 // console.log(arrTyComplexGroupRealdata)
             }
         })
@@ -1219,6 +1255,8 @@ export default class TyGroupMap extends mixins(
         // )
         this.sortTyGroupLineList()
 
+        // TODO:[-] 21-10-08 将当前台风的所有折线放在 一个 layer group 中
+        const tyGroupPolyLineLayer: L.Layer[] = []
         this.tyGroupLineList.map((temp) => {
             indexTyGroup++
             const polygonPoint: L.LatLng[] = []
@@ -1259,6 +1297,7 @@ export default class TyGroupMap extends mixins(
                         forecastDtStart = tempRealdata.forecastDt
                     }
                     // 根据传入的 时间 index 返回当前 dateIndex 对应的 大风概率半径
+                    // 只对应时刻 24,48,72,96,120 且对应的 大风概率半径是写死的,注意！！
                     const tempProPathRadius: number = that.getTyProPathRadius(indexDate)
                     if (tempProPathRadius !== 0) {
                         that.tyGroupProPathCircles.push({
@@ -1399,30 +1438,19 @@ export default class TyGroupMap extends mixins(
             if (temp.tyPathType === 'c' && temp.tyPathMarking === 0 && temp.bp === 0) {
                 // groupPolyLine.setStyle({ zIndex: 9999 })
                 // groupPolyLine.setStyle({ zIndexOffset: 9999 })
-                groupPolyLine.addTo(mymap)
-                // TODO:[-] 21-05-12 尝试只针对折线 修改其 zindex
-
-                // .setZIndex(19999)
-                // // .on('mouseover', (event: any) => {
-                // //     console.log(event)
-                // // })
-                // .addTo(mymap)
+                // groupPolyLine.addTo(mymap)
+                tyGroupPolyLineLayer.push(groupPolyLine)
                 let tempLayer = L.layerGroup([...cirleLayers])
                 let tyPointsLayersGroup = L.layerGroup([...tyPointsLayers])
                 tempLayer = tempLayer.setZIndex(9999)
                 tyPointsLayersGroup = tyPointsLayersGroup.setZIndex(9999)
-                // tempLayer.setStyle({ zIndexOffset: 9999 })
-                // TODO:[-] 21-08-26 暂时不在显示 台风风圈
-                // tempLayer.addTo(mymap)
-                tyPointsLayersGroup.addTo(mymap)
-                // console.log(tempLayer)
+                this.currentGroupPathPulsingLayerGroup = tyPointsLayersGroup.addTo(mymap)
             } else {
                 let tempLayer = L.layerGroup([...cirleLayers])
                 tempLayer = tempLayer.setZIndex(2000)
-                // TODO:[-] 21-08-26 暂时不在显示 台风风圈
-                // tempLayer.addTo(mymap)
-                groupPolyLine.addTo(mymap)
-                // console.log(tempLayer)
+                // 21-08-26 暂时不在显示 台风风圈
+                // groupPolyLine.addTo(mymap)
+                tyGroupPolyLineLayer.push(groupPolyLine)
             }
 
             // TODO:[-] + 21-05-31 只有 center 路径 cirleLayers.length > 0,将 center 路径赋值给 this.tyGroupCenterCirleLayers
@@ -1430,7 +1458,11 @@ export default class TyGroupMap extends mixins(
                 that.tyGroupCenterCirleLayers = cirleLayers
             }
         })
-        this.addTyGroupProPathCircles()
+        // 添加 24,,48,72,96,120 对应的大风概率半径(注意此半径目前是写死的)，相当于是集合预报路径的一个显示轮廓的半径
+        const tempTyGroupPolyLineLayerGroup = L.layerGroup([...tyGroupPolyLineLayer]).addTo(mymap)
+        this.currentGroupPathPolyLineLayerGroup = tempTyGroupPolyLineLayerGroup
+        // const tempTyGroupPolyLineLayerGroupId = tempTyGroupPolyLineLayerGroup._leaflet_id
+        // this.currentGroupPathPolyLineLayerGroupId = tempTyGroupPolyLineLayerGroupId
     }
 
     // + 21-05-12 添加 中间路径的概率半径 -> map
@@ -1456,7 +1488,8 @@ export default class TyGroupMap extends mixins(
                 })
                 cirleLayers.push(circleTemp)
             })
-            L.layerGroup([...cirleLayers]).addTo(mymap)
+            const tempTyGroupProPathCircles = L.layerGroup([...cirleLayers]).addTo(mymap)
+            this.currentGroupPathProPathCirclesGroup = tempTyGroupProPathCircles
         }
     }
 
@@ -1481,6 +1514,7 @@ export default class TyGroupMap extends mixins(
     }
 
     // 根据传入的 时间 index 返回当前 dateIndex 对应的 大风概率半径
+    // 只对应时刻 24,48,72,96,120 且对应的 大风概率半径是写死的,注意！！
     getTyProPathRadius(index: number, options: { interval: number } = { interval: 6 }): number {
         let radius = 0
         const indexTemp = index - 1
@@ -1608,12 +1642,12 @@ export default class TyGroupMap extends mixins(
     }
 
     // 找到当前时间对应的 tyGroup 对应的 realdata,信息,并添加至map
-    // TODO:[*] 21-08-15 需要加入差值
+    // 21-08-15 加入差值
     addTyTargetDtRealData2Map(targetDt: Date): void {
         const that = this
         const mymap: any = this.$refs.basemap['mapObject']
         this.clearTyRealDataLayer()
-        // TODO:[-] 21-08-15 此处需要加入差值，若未存在对应时间的 layer , 则需要手动找到差值后的对象
+        // 21-08-15 此处需要加入差值，若未存在对应时间的 layer , 则需要手动找到差值后的对象
         // const targetCircle: L.Layer = this.tyGroupCenterCirleLayers.find((temp) => {
         //     return temp.options.customData.forecastDt - targetDt === 0
         // })
@@ -1668,7 +1702,7 @@ export default class TyGroupMap extends mixins(
             )
             const tyMax = 10
             const tyMin = 1
-            // TODO:[-] 21-08-13 对于当前台风位置的脉冲icon
+            // + 21-08-13 对于当前台风位置的脉冲icon
             const tyCirleIcon = new IconTyphoonCirlePulsing({
                 val: 10,
                 max: tyMax,
@@ -1938,6 +1972,9 @@ export default class TyGroupMap extends mixins(
             //     this.finishDate = new Date(Math.max(...res))
             //     this.startDate = new Date(Math.min(...res))
             // })
+        } else {
+            // 对于未选中的 ty 的情况 ，清除 typhoonlie
+            this.clearGroupPathAllLayer()
         }
     }
 
