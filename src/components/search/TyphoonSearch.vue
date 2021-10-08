@@ -104,7 +104,7 @@ export default class TyphoonSearch extends Vue {
         tyId: number
     } = { gmtCreated: new Date(), timestamp: '', tyCode: '', tyId: -1 }
     selectedTyCode: string = DEFAULT_TYPHOON_CODE
-    selectedTyId: number = DEFAULT_SELECT_KEY
+    selectedTyId: number = DEFAULT_TYPHOON_ID
     selectedTyTimeStampStr: string = DEFAULTTIMESTAMP
     mounted() {
         const now = new Date()

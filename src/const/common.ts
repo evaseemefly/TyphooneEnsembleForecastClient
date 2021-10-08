@@ -21,6 +21,7 @@ const DEFAULT_NUMBER = -1
 /** @type {*} 默认未赋值时的台风id */
 const DEFAULT_TYPHOON_ID = -1
 
+/** @type {*} 默认未赋值时的台风code */
 const DEFAULT_TYPHOON_CODE = 'DEFAULT'
 
 const DEFAULT_CELERY_ID = 'DEFAULT_CELERY_ID'
