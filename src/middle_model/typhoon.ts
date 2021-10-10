@@ -15,7 +15,7 @@ class TyphoonForecastRealDataMidModel {
     forecastIndex: number
     lat: number
     lon: number
-    bp: number
+    realdataBp: number
     galeRadius: number
 
     constructor(
@@ -34,7 +34,7 @@ class TyphoonForecastRealDataMidModel {
         this.forecastIndex = forecastIndex
         this.lat = lat
         this.lon = lon
-        this.bp = bp
+        this.realdataBp = bp
         this.galeRadius = galeRadius
     }
 
@@ -57,7 +57,7 @@ class TyphoonForecastRealDataMidModel {
 				<div class='row row_footer'>
 						<div class='typhoon_footer'>
 							<div class='columnar'>
-								<div class='subitem_top'>${that.bp}</div>
+								<div class='subitem_top'>${that.realdataBp}</div>
 								<div class='subitem_foot'>气压</div>
 							</div>
 							<div class='columnar'>
@@ -84,12 +84,15 @@ class TyphoonComplexGroupRealDataMidModel {
     timestamp: string
     tyPathMarking: number
     tyPathType: string
-    bp: number
+    groupBp: number
     isBpIncrease: boolean
+    // + 21-10-10 新加入的 group_id 之前在 listRealdata 中
+    gpId: number
     listRealdata: Array<TyphoonForecastRealDataMidModel>
 
     constructor(
         tyId: number,
+        gpId: number,
         tyCode: string,
         timestamp: string,
         tyPathMarking: number,
@@ -104,7 +107,8 @@ class TyphoonComplexGroupRealDataMidModel {
         this.tyPathMarking = tyPathMarking
         this.tyPathType = tyPathType
         this.isBpIncrease = isBpIncrease
-        this.bp = bp
+        this.groupBp = bp
+        this.gpId = gpId
         this.listRealdata = listRealdata
     }
 }

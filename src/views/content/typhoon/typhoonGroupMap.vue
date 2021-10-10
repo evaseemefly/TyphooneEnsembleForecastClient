@@ -1149,14 +1149,38 @@ export default class TyGroupMap extends mixins(
                   ty_path_type: "c"
                   */
 
+                // TODO:[-] 21-10-10 重新修改了后台返回的 json
+                // eg
+                /*
+                {
+                    "gp_id": 2612,
+                    "group_bp": 0.0,
+                    "ty_path_type": "c",
+                    "ty_path_marking": 0,
+                    "is_bp_increase": true,
+                    "list_realdata": [
+                            {
+                                "timestamp": "1633659195",
+                                "forecast_dt": "2020-09-17T21:00:00Z",
+                                "lat": 20.5,
+                                "lon": 116.0,
+                                "realdata_bp": 995.0,
+                                "gale_radius": 80.0,
+                                "ty_path_type": "c",
+                                "ty_path_marking": 0,
+                                "is_bp_increase": true
+                            },
+                    ]
+                }
+                */
                 if (res.data.length > 0) {
                     res.data.map(
                         (temp: {
                             area: number
-                            bp: number
+                            group_bp: number
                             is_bp_increase: boolean
                             list_realdata: Array<{
-                                bp: number
+                                realdata_bp: number
                                 forecast_dt: string
                                 gale_radius: number
                                 gp_id: number
@@ -1168,12 +1192,13 @@ export default class TyGroupMap extends mixins(
                             ty_id: number
                             ty_path_marking: number
                             ty_path_type: string
+                            gp_id: number
                         }) => {
                             const arrTyphoonRealdata: Array<TyphoonForecastRealDataMidModel> = []
 
                             temp.list_realdata.forEach(
                                 (tempRealdata: {
-                                    bp: number
+                                    realdata_bp: number
                                     forecast_dt: string
                                     gale_radius: number
                                     gp_id: number
@@ -1189,7 +1214,7 @@ export default class TyGroupMap extends mixins(
                                             0,
                                             tempRealdata.lat,
                                             tempRealdata.lon,
-                                            tempRealdata.bp,
+                                            tempRealdata.realdata_bp,
                                             tempRealdata.gale_radius
                                         )
                                     )
@@ -1197,11 +1222,12 @@ export default class TyGroupMap extends mixins(
                             )
                             const tempComplexGroup = new TyphoonComplexGroupRealDataMidModel(
                                 temp.ty_id,
+                                temp.gp_id,
                                 temp.ty_code,
                                 '',
                                 temp.ty_path_marking,
                                 temp.ty_path_type,
-                                temp.bp,
+                                temp.group_bp,
                                 temp.is_bp_increase,
                                 arrTyphoonRealdata
                             )
@@ -1209,13 +1235,15 @@ export default class TyGroupMap extends mixins(
                         }
                     )
                 }
-                // TODO:[-] 21-07-28 此处需要通过将生成的 145 条集合预报路径，找到中心路径，并找到对应的 gp_id
+                // 21-07-28 此处需要通过将生成的 145 条集合预报路径，找到中心路径，并找到对应的 gp_id
+
                 const centerGroupPath = arrTyComplexGroupRealdata.find((temp) => {
-                    return temp.bp === 0 && temp.tyPathMarking === 0 && temp.tyPathType === 'c'
+                    return temp.tyPathMarking === 0 && temp.tyPathType === 'c' && temp.groupBp === 0
                 })
                 let centerGpId = DEFAULT_TYPHOON_GROUP_PATH_ID
                 if (centerGroupPath) {
-                    centerGpId = centerGroupPath.listRealdata[0].gpId
+                    // TODO:[-] 21-10-10 修改了此处获取 gpId
+                    centerGpId = centerGroupPath.gpId
                 }
                 this.tyGroupOptions.gpId = centerGpId
                 this.stationSurgeIconOptions.gpId = centerGpId
@@ -1271,7 +1299,7 @@ export default class TyGroupMap extends mixins(
                 indexDate++
                 const typhoonStatus = new TyphoonCircleStatus(
                     tempRealdata.galeRadius,
-                    tempRealdata.bp,
+                    tempRealdata.realdataBp,
                     tempRealdata.forecastDt,
                     tempRealdata.lat,
                     tempRealdata.lon
@@ -1279,7 +1307,7 @@ export default class TyGroupMap extends mixins(
                 polygonPoint.push(new L.LatLng(tempRealdata.lat, tempRealdata.lon))
                 // TODO:[-] 21-05-12 此处加入判断，对于 非中心路径不做 circle 的 push操作
                 // 注意! 还需要加入bp==0的判断条件
-                if (temp.tyPathType === 'c' && temp.tyPathMarking === 0 && temp.bp === 0) {
+                if (temp.tyPathType === 'c' && temp.tyPathMarking === 0 && temp.groupBp === 0) {
                     const circleTemp = L.circle(new L.LatLng(tempRealdata.lat, tempRealdata.lon), {
                         color: cirleScaleColor.getColor(indexDate),
                         // radius: 20
@@ -1417,7 +1445,7 @@ export default class TyGroupMap extends mixins(
                 weight: 3,
                 customData: indexTyGroup
             })
-            if (temp.tyPathType === 'c' && temp.tyPathMarking === 0 && temp.bp === 0) {
+            if (temp.tyPathType === 'c' && temp.tyPathMarking === 0 && temp.groupBp === 0) {
                 // groupPolyLine.options['weight'] = 5
                 groupPolyLine = L.polyline(polygonPoint, {
                     color: polyColor,
@@ -1435,7 +1463,7 @@ export default class TyGroupMap extends mixins(
             }
             // TODO:[-] 21-04-21 此处尝试将同一个 集合路径的 折线 + points 统一 add -> groupLayer
             // 目前看均无法设置 折线的 zindex
-            if (temp.tyPathType === 'c' && temp.tyPathMarking === 0 && temp.bp === 0) {
+            if (temp.tyPathType === 'c' && temp.tyPathMarking === 0 && temp.groupBp === 0) {
                 // groupPolyLine.setStyle({ zIndex: 9999 })
                 // groupPolyLine.setStyle({ zIndexOffset: 9999 })
                 // groupPolyLine.addTo(mymap)
