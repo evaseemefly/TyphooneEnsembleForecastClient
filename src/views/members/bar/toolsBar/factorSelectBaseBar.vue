@@ -22,45 +22,45 @@ export default class FactorSelectBaseBar extends Vue {
     valueShowTypes = ToolBarOptionsEnum.SCATTER
 
     toolsFactorBar: IExpandModel[] = [
-        {
-            isExpanded: false,
-            html: '',
-            iconClass: 'fas fa-vial',
-            title: '权重',
-            hasChildren: true,
-            isChildren: false,
-            toolType: ToolTypeEnum.OPTION,
-            val: '',
-            checked: false,
-            children: [
-                {
-                    isExpanded: false,
-                    html: '',
-                    iconClass: 'fas fa-weight',
-                    title: '油膜厚度',
-                    hasChildren: false,
-                    isChildren: true,
-                    toolType: ToolTypeEnum.OILFACTOR,
-                    optionsType: ToolBarOptionsEnum.THICKNESS,
-                    val: '',
-                    checked: true,
-                    isRadio: true
-                },
-                {
-                    isExpanded: false,
-                    html: '',
-                    iconClass: 'fas fa-flask',
-                    title: '油膜质量',
-                    hasChildren: false,
-                    isChildren: true,
-                    toolType: ToolTypeEnum.OILFACTOR,
-                    optionsType: ToolBarOptionsEnum.MASS,
-                    val: '',
-                    checked: false,
-                    isRadio: true
-                }
-            ]
-        }
+        // {
+        //     isExpanded: false,
+        //     html: '',
+        //     iconClass: 'fas fa-vial',
+        //     title: '权重',
+        //     hasChildren: true,
+        //     isChildren: false,
+        //     toolType: ToolTypeEnum.OPTION,
+        //     val: '',
+        //     checked: false,
+        //     children: [
+        //         {
+        //             isExpanded: false,
+        //             html: '',
+        //             iconClass: 'fas fa-weight',
+        //             title: '油膜厚度',
+        //             hasChildren: false,
+        //             isChildren: true,
+        //             toolType: ToolTypeEnum.OILFACTOR,
+        //             optionsType: ToolBarOptionsEnum.THICKNESS,
+        //             val: '',
+        //             checked: true,
+        //             isRadio: true
+        //         },
+        //         {
+        //             isExpanded: false,
+        //             html: '',
+        //             iconClass: 'fas fa-flask',
+        //             title: '油膜质量',
+        //             hasChildren: false,
+        //             isChildren: true,
+        //             toolType: ToolTypeEnum.OILFACTOR,
+        //             optionsType: ToolBarOptionsEnum.MASS,
+        //             val: '',
+        //             checked: false,
+        //             isRadio: true
+        //         }
+        //     ]
+        // }
     ]
 
     // TODO:[*] 19-11-08

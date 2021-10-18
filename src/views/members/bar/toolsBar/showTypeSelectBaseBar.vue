@@ -17,45 +17,45 @@ export default class OilShowTypeSelectBar extends Vue {
 
     // 当前组件的 toolsBar 对象数组
     toolsShowTypeBar: IExpandModel[] = [
-        {
-            isExpanded: false,
-            html: '',
-            iconClass: 'fas fa-desktop',
-            title: '显示模式',
-            hasChildren: true,
-            isChildren: false,
-            toolType: ToolTypeEnum.OPTION,
-            val: '',
-            checked: false,
-            children: [
-                {
-                    isExpanded: false,
-                    html: '',
-                    iconClass: 'fas fa-braille',
-                    title: '散点',
-                    hasChildren: false,
-                    isChildren: true,
-                    toolType: ToolTypeEnum.SHOWTYPEOPTION,
-                    optionsType: ToolBarOptionsEnum.SCATTER,
-                    val: '',
-                    checked: true,
-                    isRadio: true
-                },
-                {
-                    isExpanded: false,
-                    html: '',
-                    iconClass: 'fas fa-thermometer-half',
-                    title: '热图',
-                    hasChildren: false,
-                    isChildren: true,
-                    toolType: ToolTypeEnum.SHOWTYPEOPTION,
-                    optionsType: ToolBarOptionsEnum.HEATMAP,
-                    val: '',
-                    checked: false,
-                    isRadio: true
-                }
-            ]
-        }
+        // {
+        //     isExpanded: false,
+        //     html: '',
+        //     iconClass: 'fas fa-desktop',
+        //     title: '显示模式',
+        //     hasChildren: true,
+        //     isChildren: false,
+        //     toolType: ToolTypeEnum.OPTION,
+        //     val: '',
+        //     checked: false,
+        //     children: [
+        //         {
+        //             isExpanded: false,
+        //             html: '',
+        //             iconClass: 'fas fa-braille',
+        //             title: '散点',
+        //             hasChildren: false,
+        //             isChildren: true,
+        //             toolType: ToolTypeEnum.SHOWTYPEOPTION,
+        //             optionsType: ToolBarOptionsEnum.SCATTER,
+        //             val: '',
+        //             checked: true,
+        //             isRadio: true
+        //         },
+        //         {
+        //             isExpanded: false,
+        //             html: '',
+        //             iconClass: 'fas fa-thermometer-half',
+        //             title: '热图',
+        //             hasChildren: false,
+        //             isChildren: true,
+        //             toolType: ToolTypeEnum.SHOWTYPEOPTION,
+        //             optionsType: ToolBarOptionsEnum.HEATMAP,
+        //             val: '',
+        //             checked: false,
+        //             isRadio: true
+        //         }
+        //     ]
+        // }
     ]
     mounted() {}
 

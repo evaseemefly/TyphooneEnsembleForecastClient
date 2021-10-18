@@ -92,17 +92,17 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         this.getToolsBar()
     }
     toolsBar: IExpandModel[] = [
-        {
-            isExpanded: false,
-            html: 'MakePointBtn',
-            iconClass: 'fas fa-map-marked-alt',
-            title: '选取位置',
-            hasChildren: false,
-            isChildren: false,
-            toolType: ToolTypeEnum.SELECTPOSITION,
-            val: '',
-            checked: false
-        },
+        // {
+        //     isExpanded: false,
+        //     html: 'MakePointBtn',
+        //     iconClass: 'fas fa-map-marked-alt',
+        //     title: '选取位置',
+        //     hasChildren: false,
+        //     isChildren: false,
+        //     toolType: ToolTypeEnum.SELECTPOSITION,
+        //     val: '',
+        //     checked: false
+        // },
         {
             isExpanded: false,
             html: '',

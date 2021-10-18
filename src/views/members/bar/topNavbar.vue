@@ -133,7 +133,7 @@ export default class TopNavbar extends Vue {
                 text-shadow: 2px 2px 10px #000;
                 font-size: 1.3rem;
                 margin: 0px;
-                line-height: 1.1;
+                line-height: 1.5;
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
