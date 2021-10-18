@@ -12,24 +12,24 @@ import { WMSOptionsMidModel, WMSMidModel } from '@/middle_model/geo'
 class WMSMixin extends Vue {
     // mixin definition here
     landWMS: WMSMidModel = new WMSMidModel(
-        'http://localhost:8082/geoserver/nmefc_current/wms?',
+        'http://128.5.10.21:8084/geoserver/nmefc_current/wms?',
         new WMSOptionsMidModel('nmefc_current:land_china')
     )
     ninelineWMS: WMSMidModel = new WMSMidModel(
-        'http://localhost:8082/geoserver/nmefc_current/wms?',
+        'http://128.5.10.21:8084/geoserver/nmefc_current/wms?',
         new WMSOptionsMidModel('nmefc_current:9line')
     )
     southlandWMS: WMSMidModel = new WMSMidModel(
-        'http://localhost:8082/geoserver/nmefc_current/wms?',
+        'http://128.5.10.21:8084/geoserver/nmefc_current/wms?',
         new WMSOptionsMidModel('nmefc_current:southsea_land')
     )
     // 20-07-29 新加入的东中海的区域
     ecsLineWMS: WMSMidModel = {
-        url: 'http://localhost:8082/geoserver/nmefc_current/wms?',
+        url: 'http://128.5.10.21:8084/geoserver/nmefc_current/wms?',
         options: new WMSOptionsMidModel('nmefc_current:ecs_shp')
     }
 
-    ecsLineWMSUrl = 'http://localhost:8082/geoserver/nmefc_current/wms?'
+    ecsLineWMSUrl = 'http://128.5.10.21:8084/geoserver/nmefc_current/wms?'
 
     ecsLineWMSOptions = {
         layers: 'nmefc_current:ecs_shp', //需要加载的图层
@@ -38,19 +38,19 @@ class WMSMixin extends Vue {
     }
 
     windWMS: WMSMidModel = {
-        url: 'http://localhost:8082/geoserver//wms?TIME=2020-06-18T10:00:00.000Z',
+        url: 'http://128.5.10.21:8084/geoserver//wms?TIME=2020-06-18T10:00:00.000Z',
         options: new WMSOptionsMidModel('nmefc_wind:nmefc_wrf_2020061800')
     }
 
     // TODO:[-] 20-07-31 新加入的台湾区域的land 多边形 现改为 china
     landTwPoygonsWMS: WMSMidModel = new WMSMidModel(
-        'http://localhost:8082/geoserver/nmefc_common/wms?',
+        'http://128.5.10.21:8084/geoserver/nmefc_common/wms?',
         new WMSOptionsMidModel('nmefc_common:new_china_land', 1500)
     )
 
     // TODO:[-] 20-08-26 新加入的全球国境线
     worldLineWMS: WMSMidModel = new WMSMidModel(
-        'http://localhost:8082/geoserver/nmefc_common/wms?',
+        'http://128.5.10.21:8084/geoserver/nmefc_common/wms?',
         new WMSOptionsMidModel('nmefc_common:world_map_line', 1500)
     )
 

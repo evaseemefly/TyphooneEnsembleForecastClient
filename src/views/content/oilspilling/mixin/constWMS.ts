@@ -12,24 +12,24 @@ import { WMSOptionsMidModel, WMSMidModel } from '@/middle_model/geo'
 class WMSMixin extends Vue {
     // mixin definition here
     landWMS: WMSMidModel = new WMSMidModel(
-        'http://localhost:8082/geoserver/nmefc_current/wms?',
+        'http://128.5.10.21:8082/geoserver/nmefc_current/wms?',
         new WMSOptionsMidModel('nmefc_current:land_china')
     )
     ninelineWMS: WMSMidModel = new WMSMidModel(
-        'http://localhost:8084/geoserver/nmefc_current/wms?',
+        'http://128.5.10.21:8084/geoserver/nmefc_current/wms?',
         new WMSOptionsMidModel('nmefc_current:9line')
     )
     southlandWMS: WMSMidModel = new WMSMidModel(
-        'http://localhost:8084/geoserver/nmefc_current/wms?',
+        'http://128.5.10.21:8084/geoserver/nmefc_current/wms?',
         new WMSOptionsMidModel('nmefc_current:southsea_land')
     )
     // 20-07-29 新加入的东中海的区域
     ecsLineWMS: WMSMidModel = {
-        url: 'http://localhost:8082/geoserver/nmefc_current/wms?',
+        url: 'http://128.5.10.21:8082/geoserver/nmefc_current/wms?',
         options: new WMSOptionsMidModel('nmefc_current:ecs_shp')
     }
 
-    ecsLineWMSUrl = 'http://localhost:8082/geoserver/nmefc_current/wms?'
+    ecsLineWMSUrl = 'http://128.5.10.21:8082/geoserver/nmefc_current/wms?'
 
     ecsLineWMSOptions = {
         layers: 'nmefc_current:ecs_shp', //需要加载的图层
@@ -50,13 +50,13 @@ class WMSMixin extends Vue {
 
     // TODO:[-] 20-08-26 新加入的全球国境线
     worldLineWMS: WMSMidModel = new WMSMidModel(
-        'http://localhost:8084/geoserver/nmefc_common/wms?',
+        'http://128.5.10.21:8084/geoserver/nmefc_common/wms?',
         new WMSOptionsMidModel('nmefc_common:world_map_line', 1500)
     )
 
     // TODO:[-] 21-03-05 新加入的测试西北太剪切过的网格
     ewtDiffPoygonsWMS: WMSMidModel = new WMSMidModel(
-        'http://localhost:8082/geoserver/SearchRescue/wms?',
+        'http://128.5.10.21:8082/geoserver/SearchRescue/wms?',
         new WMSOptionsMidModel('SearchRescue:020Grid_TEST_EWT_DIFF', 1500)
     )
     // TODO:[-] 20-08-26 使用本地 nginx 映射的文件系统
