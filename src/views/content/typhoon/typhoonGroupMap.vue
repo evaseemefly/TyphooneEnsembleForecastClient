@@ -1122,7 +1122,10 @@ export default class TyGroupMap extends mixins(
     // loadTy
     testGetAddTyGroupPath2Map(tyId: number): void {
         const that = this
+        // TODO:[-] 21-10-18 非中间路径的台风集合预报路径集合
         const arrTyComplexGroupRealdata: Array<TyphoonComplexGroupRealDataMidModel> = []
+        // 中间路径的台风预报路径集合
+        const arrTyCenterGroupRealdata: Array<TyphoonComplexGroupRealDataMidModel> = []
         // 每次处理签需要先清除当前的 台风集合预报路径概率半径集合
         this.tyGroupProPathCircles = []
 
@@ -1130,25 +1133,6 @@ export default class TyGroupMap extends mixins(
         this.clearGroupPathAllLayer()
         getTargetTyGroupComplexModel(tyId).then((res) => {
             if (res.status === 200) {
-                /*
-                  area: -1
-                  bp: 0
-                  is_bp_increase: true
-                  list_realdata: (9) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
-                    0:
-                    bp: 945
-                    forecast_dt: "2020-09-15T17:00:00Z"
-                    gale_radius: 39
-                    gp_id: 1
-                    lat: 18.9
-                    lon: 119.2
-                    ty_id: 1
-                  ty_code: "2022"
-                  ty_id: 1
-                  ty_path_marking: 0
-                  ty_path_type: "c"
-                  */
-
                 // TODO:[-] 21-10-10 重新修改了后台返回的 json
                 // eg
                 /*
@@ -1173,6 +1157,7 @@ export default class TyGroupMap extends mixins(
                     ]
                 }
                 */
+                // TODO:[-] 21-10-18 中间路径放在 arrTyCenterGroupRealdata 数组中|其余144条存储在 arrTyComplexGroupRealdata。中间路径一旦添加，除非更换 tyId，否则不可消除;其余的144条概率路径可去掉
                 if (res.data.length > 0) {
                     res.data.map(
                         (temp: {
@@ -1195,7 +1180,6 @@ export default class TyGroupMap extends mixins(
                             gp_id: number
                         }) => {
                             const arrTyphoonRealdata: Array<TyphoonForecastRealDataMidModel> = []
-
                             temp.list_realdata.forEach(
                                 (tempRealdata: {
                                     realdata_bp: number
@@ -1231,7 +1215,11 @@ export default class TyGroupMap extends mixins(
                                 temp.is_bp_increase,
                                 arrTyphoonRealdata
                             )
-                            arrTyComplexGroupRealdata.push(tempComplexGroup)
+                            if (temp.ty_path_type === 'c') {
+                                arrTyCenterGroupRealdata.push(tempComplexGroup)
+                            } else {
+                                arrTyComplexGroupRealdata.push(tempComplexGroup)
+                            }
                         }
                     )
                 }
@@ -1266,6 +1254,7 @@ export default class TyGroupMap extends mixins(
         // 2-2 由于不同的集合路径需要使用不同的颜色区分，此处使用 scale 动态生成，目前只是针对编号进行颜色的过渡依据
         const tyGroupListCount = this.tyGroupLineList.length
         let indexTyGroup = 0
+        // TODO:[*] 21-10-18 需要将色标放在外侧，为center line提供动态色标
         const polyScaleColor = new TyGroupPathScaleColor(0, tyGroupListCount)
         polyScaleColor.setScale('Viridis')
         // galeRadius sCaleColor
