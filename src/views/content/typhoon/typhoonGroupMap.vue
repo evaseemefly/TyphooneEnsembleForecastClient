@@ -1703,10 +1703,14 @@ export default class TyGroupMap extends mixins(
     // TODO:[-] 21-05-19 根据监听当前的 tyGroupOptions 来确定 指定 tyGroupPath(center) 对应的时间与 tyCode,timeStamp
     @Watch('tyGroupOptions', { immediate: true, deep: true })
     onTyGroupOptions(val: ITyGroupPathOptions, oldVal: ITyGroupPathOptions): void {
-        if (!val.isShow) {
-            this.clearGroupLayer(this.currentGroupPathPolyLineLayerGroup)
-        } else if (val.isShow) {
-            this.loadGroupTyphoonLine()
+        // 现在 isShow=true 且 old isShow=false
+        // 需要前后两次 isShow 发生了变化才会触发以下操作
+        if (val.isShow != oldVal.isShow) {
+            if (!val.isShow) {
+                this.clearGroupLayer(this.currentGroupPathPolyLineLayerGroup)
+            } else if (val.isShow) {
+                this.loadGroupTyphoonLine()
+            }
         }
     }
 
@@ -1965,7 +1969,9 @@ export default class TyGroupMap extends mixins(
             if (layers.findIndex((temp) => temp === lastLayer) < 0) {
                 // 说明没有
                 if (lastLayer === LayerTypeEnum.GROUP_PATH_LAYER) {
-                    this.tyGroupOptions.isShow = false
+                    const tempTyGroupOptions = { ...this.tyGroupOptions }
+                    tempTyGroupOptions.isShow = false
+                    this.tyGroupOptions = tempTyGroupOptions
                 } else if (lastLayer === LayerTypeEnum.STATION_ICON_LAYER) {
                     this.stationSurgeIconOptions.isShow = false
                 } else if (lastLayer === LayerTypeEnum.RASTER_MAX_SURGE_LAYER) {
@@ -1983,7 +1989,9 @@ export default class TyGroupMap extends mixins(
             switch (tempLayerType) {
                 case LayerTypeEnum.GROUP_PATH_LAYER:
                     this.existLayers.push(tempLayerType)
-                    this.tyGroupOptions.isShow = true
+                    const tempTyGroupOptions = { ...this.tyGroupOptions }
+                    tempTyGroupOptions.isShow = true
+                    this.tyGroupOptions = tempTyGroupOptions
                     break
                 case LayerTypeEnum.STATION_ICON_LAYER:
                     this.existLayers.push(tempLayerType)
