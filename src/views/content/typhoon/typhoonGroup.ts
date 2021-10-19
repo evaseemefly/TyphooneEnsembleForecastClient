@@ -2,8 +2,11 @@ import * as L from 'leaflet'
 /*
 + 21-05-18 关于 tyGroupPath 相关的class
 */
+import { IconTypeEnum } from '@/enum/common'
 import { DEFAULTTYCODE, DEFAULTTIMESTAMP } from '@/const/typhoon'
+import { ScaleColor, TyGroupPathScaleColor } from '@/common/scaleColor'
 import { getTargetTyGroupDistDate, getTargetTyGroupDateRange } from '@/api/tyhoon'
+import { IconTyphoonCirlePulsing } from '@/views/members/icon/pulsingIcon'
 import moment from 'moment'
 export interface ITyGroupPathOptions {
     tyCode: string
@@ -69,6 +72,190 @@ class TyGroupPath {
             }
         })
         return dateList
+    }
+}
+
+/**
+ * + 21-10-19 添加的台风集合路径 line
+ *
+ * @class TyGroupPathLine
+ */
+class TyGroupPathLine {
+    tyGroupPathLines: Array<any>
+    myMap: L.Map
+    tyColorScale: any
+    protected tyGroupPolyLineLayer: L.Layer[]
+    // tyCenterPath:any
+    constructor(mymap: L.Map, tyGroupPathLines: Array<any>) {
+        this.tyGroupPathLines = tyGroupPathLines
+        this.myMap = mymap
+        this.tyGroupPolyLineLayer = []
+        this.initColorScale()
+        this.initTyGroupPolyLineLayer()
+    }
+
+    get tyGroupPathListCount(): number {
+        return this.tyGroupPathLines.length
+    }
+
+    protected initColorScale(): void {
+        this.tyColorScale = new TyGroupPathScaleColor(0, this.tyGroupPathListCount)
+    }
+
+    public getTyColor(index: number): string {
+        return this.tyColorScale.getColor(index)
+    }
+
+    protected initTyGroupPolyLineLayer(): void {
+        let indexTyGroup = 0
+
+        this.tyGroupPathLines.map((temp) => {
+            indexTyGroup++
+            const polygonPoint: L.LatLng[] = []
+            const cirleScaleColor = new ScaleColor(0, temp.listRealdata.length)
+            cirleScaleColor.setScale('Viridis')
+            let indexDate = 0
+            const cirleLayers: L.Layer[] = []
+            // TODO:[-] 21-08-26 新加入的台风所在位置 point
+            const tyPointsLayers: L.Layer[] = []
+
+            temp.listRealdata.forEach((tempRealdata) => {
+                indexDate++
+                polygonPoint.push(new L.LatLng(tempRealdata.lat, tempRealdata.lon))
+                // TODO:[-] 21-05-12 此处加入判断，对于 非中心路径不做 circle 的 push操作
+            })
+
+            // 添加折线
+            const polyColor = this.getTyColor(indexTyGroup)
+            // 设置鼠标移入时触发的事件
+            // 为当前 线段添加 自定义 data
+            const groupPolyLine = L.polyline(polygonPoint, {
+                color: polyColor,
+                opacity: 0.2,
+                fillOpacity: 0.2,
+                weight: 3
+            })
+            // TODO:[-] 21-04-21 此处尝试将同一个 集合路径的 折线 + points 统一 add -> groupLayer
+            // 目前看均无法设置 折线的 zindex
+            let tempLayer = L.layerGroup([...cirleLayers])
+            tempLayer = tempLayer.setZIndex(2000)
+            // 21-08-26 暂时不在显示 台风风圈
+            // groupPolyLine.addTo(mymap)
+            this.tyGroupPolyLineLayer.push(groupPolyLine)
+        })
+        // 添加 24,,48,72,96,120 对应的大风概率半径(注意此半径目前是写死的)，相当于是集合预报路径的一个显示轮廓的半径
+    }
+
+    public getTyGroupPolyLineLayers(): L.Layer[] {
+        return this.tyGroupPolyLineLayer
+    }
+
+    public addPolyLines2MapByGroup(): L.LayerGroup<any> {
+        const tyGroupPolyLineLayers = this.getTyGroupPolyLineLayers()
+        const tempTyGroupPolyLineLayerGroup = L.layerGroup([...tyGroupPolyLineLayers]).addTo(
+            this.myMap
+        )
+        return tempTyGroupPolyLineLayerGroup
+    }
+}
+
+/**
+ * + 21-10-19 台风集合路径 中间路径 类
+ *   有高亮 + 差值后的路径示意脉冲原点显示
+ *
+ * @class TyGroupCenterPathLine
+ * @extends {TyGroupPathLine}
+ */
+class TyGroupCenterPathLine extends TyGroupPathLine {
+    protected tyCenterPointsLayers: L.Layer[] = []
+    constructor(mymap: L.Map, tyGroupPathLines: Array<any>) {
+        super(mymap, tyGroupPathLines)
+        this.initCenterPulsingIcon()
+    }
+    /**
+     * 初始化 中间 路径的路径线段 layer
+     *
+     * @protected
+     * @memberof TyGroupCenterPathLine
+     */
+    // protected initTyGroupPolyLineLayer(): void {
+    //     let indexTyGroup = 0
+    //     this.tyGroupPathLines.map((temp) => {
+    //         indexTyGroup++
+    //         const polygonPoint: L.LatLng[] = []
+    //         const cirleScaleColor = new ScaleColor(0, temp.listRealdata.length)
+    //         cirleScaleColor.setScale('Viridis')
+    //         let indexDate = 0
+    //         const cirleLayers: L.Layer[] = []
+    //         // TODO:[-] 21-08-26 新加入的台风所在位置 point
+    //         const tyPointsLayers: L.Layer[] = []
+    //         temp.listRealdata.forEach((tempRealdata) => {
+    //             indexDate++
+    //             polygonPoint.push(new L.LatLng(tempRealdata.lat, tempRealdata.lon))
+    //             // TODO:[-] 21-05-12 此处加入判断，对于 非中心路径不做 circle 的 push操作
+    //         })
+    //         // 添加折线
+    //         const polyColor = this.getTyColor(indexTyGroup)
+    //         // 设置鼠标移入时触发的事件
+    //         // 为当前 线段添加 自定义 data
+    //         const groupPolyLine = L.polyline(polygonPoint, {
+    //             color: polyColor,
+    //             opacity: 0.2,
+    //             fillOpacity: 0.2,
+    //             weight: 3
+    //         })
+    //         // TODO:[-] 21-04-21 此处尝试将同一个 集合路径的 折线 + points 统一 add -> groupLayer
+    //         // 目前看均无法设置 折线的 zindex
+    //         let tempLayer = L.layerGroup([...cirleLayers])
+    //         tempLayer = tempLayer.setZIndex(2000)
+    //         // 21-08-26 暂时不在显示 台风风圈
+    //         // groupPolyLine.addTo(mymap)
+    //         this.tyGroupPolyLineLayer.push(groupPolyLine)
+    //     })
+    //     // 添加 24,,48,72,96,120 对应的大风概率半径(注意此半径目前是写死的)，相当于是集合预报路径的一个显示轮廓的半径
+    // }
+
+    /**
+     * 初始化中间路径的脉冲icon
+     *
+     * @protected
+     * @memberof TyGroupCenterPathLine
+     */
+    protected initCenterPulsingIcon(): void {
+        let indexTyGroup = 0
+        const tyPointsLayers: L.Layer[] = []
+        this.tyGroupPathLines.map((temp) => {
+            {
+                indexTyGroup++
+                temp.listRealdata.forEach((tempRealdata) => {
+                    // TODO:[-] 21-08-26 新加入的台风所在位置 point
+                    const tyMax = 10
+                    const tyMin = 1
+                    // TODO:[-] 21-08-13 对于当前台风位置的脉冲icon
+                    const tyCirleIcon = new IconTyphoonCirlePulsing({
+                        val: 10,
+                        max: tyMax,
+                        min: tyMin,
+                        iconType: IconTypeEnum.TY_PATH_ICON
+                    })
+                    const tyDivIcon = L.divIcon({
+                        className: 'surge_pulsing_icon_default',
+                        html: tyCirleIcon.toHtml()
+                    })
+                    const tyPulsingMarker = L.marker([tempRealdata.lat, tempRealdata.lon], {
+                        icon: tyDivIcon
+                    })
+                    tyPointsLayers.push(tyPulsingMarker)
+                })
+            }
+        })
+        this.tyCenterPointsLayers = tyPointsLayers
+    }
+
+    addCenterCirlePulsing2MapByGroup(): L.LayerGroup<any> {
+        const tyCenterPointsLayersGroup = L.layerGroup([...this.tyCenterPointsLayers])
+        tyCenterPointsLayersGroup.addTo(this.myMap)
+        return tyCenterPointsLayersGroup
     }
 }
 
@@ -178,4 +365,4 @@ const getTyCenterGroupDiffLayer = (
     return customData
 }
 
-export { TyGroupPath, getTyCenterGroupDiffLayer }
+export { TyGroupPath, getTyCenterGroupDiffLayer, TyGroupPathLine, TyGroupCenterPathLine }
