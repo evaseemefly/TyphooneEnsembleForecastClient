@@ -40,6 +40,8 @@ const DEFAULT_SELECT_ITEM = {
     did: -1
 }
 
+const DEFAULT_COLOR = '#6bd9b4'
+
 // 默认的未选中的 coverage area
 const DEFAULT_COVERAGE_AREA = -1
 
@@ -66,5 +68,6 @@ export {
     DEFAULT_TYPHOON_GROUP_PATH_ID,
     DEFAULT_DATE,
     DEFAULT_TIMESTAMP,
-    DEFAULT_CELERY_ID
+    DEFAULT_CELERY_ID,
+    DEFAULT_COLOR
 }

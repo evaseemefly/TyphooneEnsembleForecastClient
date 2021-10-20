@@ -588,6 +588,7 @@ export default class TyGroupMap extends mixins(
     currentGroupPathPolyLineLayerGroup: L.LayerGroup = null
     // - 21-10-19 台风中间路径的脉冲 layer
     currentGroupPathPulsingLayerGroup: L.LayerGroup = null
+    currentCenterGroupPathPolyLineLayerGroup: L.LayerGroup = null
 
     // 21-10-08 当前的台风集合预报路径 间隔点集合 group layer
     currentGroupPathProPathCirclesGroup: L.LayerGroup = null
@@ -883,6 +884,16 @@ export default class TyGroupMap extends mixins(
         if (tempPolyLine) {
             // mymap.remove(tempPolyLine)
             mymap.removeLayer(tempPolyLine)
+        }
+    }
+
+    // + 21-10-20 清除中间路径的 脉冲icon layers + 路线折线layers
+    clearCenterGroupAllLayer(): void {
+        if (this.currentGroupPathPulsingLayerGroup) {
+            this.clearGroupLayer(this.currentGroupPathPulsingLayerGroup)
+        }
+        if (this.currentCenterGroupPathPolyLineLayerGroup) {
+            this.clearGroupLayer(this.currentCenterGroupPathPolyLineLayerGroup)
         }
     }
 
@@ -1270,6 +1281,7 @@ export default class TyGroupMap extends mixins(
         // TODO:[*] 注意此处若使用 this.mymap 会出错
         const tyGroupCenterPathLine = new TyGroupCenterPathLine(mymap, [...centerGroupLineList])
         const tempTyGroupCenterPathIconLayerGroup = tyGroupCenterPathLine.addCenterCirlePulsing2MapByGroup()
+        this.currentCenterGroupPathPolyLineLayerGroup = tyGroupCenterPathLine.addPolyLines2MapByGroup() // 添加中间路径的折线到map
         this.currentGroupPathPulsingLayerGroup = tempTyGroupCenterPathIconLayerGroup
     }
 
@@ -1463,6 +1475,7 @@ export default class TyGroupMap extends mixins(
         //     this.tyGroupCenterCirleLayers,
         //     targetDt
         // )
+        // TODO:[-] 21-10-20 注意此处使用 this.currentGroupPathPulsingLayerGroup.getLayers()
         const diffCustomData:
             | {
                   bp: number
@@ -1471,7 +1484,10 @@ export default class TyGroupMap extends mixins(
                   lon: number
                   forecastDt: Date
               }
-            | undefined = getTyCenterGroupDiffLayer(this.tyGroupCenterCirleLayers, targetDt)
+            | undefined = getTyCenterGroupDiffLayer(
+            this.currentGroupPathPulsingLayerGroup.getLayers(),
+            targetDt
+        )
         if (diffCustomData !== undefined) {
             const galeRadiusScaleColor = new ScaleColor(
                 that.tyGroupGaleRadiusRange.min,
@@ -1793,6 +1809,7 @@ export default class TyGroupMap extends mixins(
         } else {
             // 对于未选中的 ty 的情况 ，清除 typhoonlie
             this.clearGroupPathAllLayer()
+            this.clearCenterGroupAllLayer()
         }
     }
 

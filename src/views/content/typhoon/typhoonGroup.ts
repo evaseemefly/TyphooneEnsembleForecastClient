@@ -3,6 +3,8 @@ import * as L from 'leaflet'
 + 21-05-18 关于 tyGroupPath 相关的class
 */
 import { IconTypeEnum } from '@/enum/common'
+import { DEFAULT_COLOR } from '@/const/common'
+import { TyphoonCircleStatus } from '@/common/circleStatus'
 import { DEFAULTTYCODE, DEFAULTTIMESTAMP } from '@/const/typhoon'
 import { ScaleColor, TyGroupPathScaleColor } from '@/common/scaleColor'
 import { getTargetTyGroupDistDate, getTargetTyGroupDateRange } from '@/api/tyhoon'
@@ -85,13 +87,14 @@ class TyGroupPathLine {
     myMap: L.Map
     tyColorScale: any
     protected tyGroupPolyLineLayer: L.Layer[]
+    polyColor = DEFAULT_COLOR
     // tyCenterPath:any
-    constructor(mymap: L.Map, tyGroupPathLines: Array<any>) {
+    constructor(mymap: L.Map, tyGroupPathLines: Array<any>, isDynamicColorScale = true) {
         this.tyGroupPathLines = tyGroupPathLines
         this.myMap = mymap
         this.tyGroupPolyLineLayer = []
         this.initColorScale()
-        this.initTyGroupPolyLineLayer()
+        this.initTyGroupPolyLineLayer(isDynamicColorScale)
     }
 
     get tyGroupPathListCount(): number {
@@ -106,7 +109,7 @@ class TyGroupPathLine {
         return this.tyColorScale.getColor(index)
     }
 
-    protected initTyGroupPolyLineLayer(): void {
+    protected initTyGroupPolyLineLayer(isDynamicColorScale = true): void {
         let indexTyGroup = 0
 
         this.tyGroupPathLines.map((temp) => {
@@ -126,7 +129,7 @@ class TyGroupPathLine {
             })
 
             // 添加折线
-            const polyColor = this.getTyColor(indexTyGroup)
+            const polyColor = isDynamicColorScale ? this.getTyColor(indexTyGroup) : this.polyColor
             // 设置鼠标移入时触发的事件
             // 为当前 线段添加 自定义 data
             const groupPolyLine = L.polyline(polygonPoint, {
@@ -169,7 +172,7 @@ class TyGroupPathLine {
 class TyGroupCenterPathLine extends TyGroupPathLine {
     protected tyCenterPointsLayers: L.Layer[] = []
     constructor(mymap: L.Map, tyGroupPathLines: Array<any>) {
-        super(mymap, tyGroupPathLines)
+        super(mymap, tyGroupPathLines, false)
         this.initCenterPulsingIcon()
     }
     /**
@@ -238,12 +241,20 @@ class TyGroupCenterPathLine extends TyGroupPathLine {
                         min: tyMin,
                         iconType: IconTypeEnum.TY_PATH_ICON
                     })
+                    const typhoonStatus = new TyphoonCircleStatus(
+                        tempRealdata.galeRadius,
+                        tempRealdata.realdataBp,
+                        tempRealdata.forecastDt,
+                        tempRealdata.lat,
+                        tempRealdata.lon
+                    )
                     const tyDivIcon = L.divIcon({
                         className: 'surge_pulsing_icon_default',
                         html: tyCirleIcon.toHtml()
                     })
                     const tyPulsingMarker = L.marker([tempRealdata.lat, tempRealdata.lon], {
-                        icon: tyDivIcon
+                        icon: tyDivIcon,
+                        customData: typhoonStatus
                     })
                     tyPointsLayers.push(tyPulsingMarker)
                 })
