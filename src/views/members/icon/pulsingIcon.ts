@@ -245,7 +245,7 @@ class IconTyphoonCirlePulsing {
      * @memberof IconCirlePulsing
      */
     getPlusingIconRectangle(): number[] {
-        const confficient = 1.5
+        const confficient = 1.8
         const width = confficient * (this.getPlusingIconAbsRadius() + this.shiftX)
         const height = confficient * (this.getPlusingIconAbsRadius() + this.shiftY)
         return [width, height]
