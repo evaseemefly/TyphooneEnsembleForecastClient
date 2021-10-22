@@ -139,16 +139,19 @@ class IconCirlePulsing {
         let colorStr = 'green'
         if (surge) {
             switch (true) {
-                case surge <= -2:
+                case surge <= 100:
                     colorStr = 'green'
                     break
-                case surge <= 40:
+                case surge <= 150:
+                    colorStr = 'blue'
+                    break
+                case surge <= 200:
                     colorStr = 'yellow'
                     break
-                case surge <= 60:
+                case surge <= 250:
                     colorStr = 'orange'
                     break
-                case surge > 60:
+                case surge > 250:
                     colorStr = 'red'
                     break
             }
@@ -277,16 +280,19 @@ class IconTyphoonCirlePulsing {
         let colorStr = 'green'
         if (surge) {
             switch (true) {
-                case surge <= -2:
+                case surge <= 100:
                     colorStr = 'green'
                     break
-                case surge <= 40:
+                case surge <= 150:
+                    colorStr = 'blue'
+                    break
+                case surge <= 200:
                     colorStr = 'yellow'
                     break
-                case surge <= 60:
+                case surge <= 250:
                     colorStr = 'orange'
                     break
-                case surge > 60:
+                case surge > 250:
                     colorStr = 'red'
                     break
             }
@@ -322,16 +328,19 @@ class IconMinStationSurge {
         const surge = this.surge
         let colorStr = 'green'
         switch (true) {
-            case surge <= -2:
+            case surge <= 100:
                 colorStr = 'green'
                 break
-            case surge <= 40:
+            case surge <= 150:
+                colorStr = 'blue'
+                break
+            case surge <= 200:
                 colorStr = 'yellow'
                 break
-            case surge <= 60:
+            case surge <= 250:
                 colorStr = 'orange'
                 break
-            case surge > 60:
+            case surge > 250:
                 colorStr = 'red'
                 break
         }
