@@ -101,6 +101,30 @@ const getAstronomictideTideRealDataList = (
 }
 
 /**
+ * + 21-10-29
+ * 加入 对于 中位数 ,1/4,3/4 百分位数的统计
+ * @param {string} tyCode
+ * @param {string} timestamp
+ * @param {string} stationCode
+ * @return {*}
+ */
+const getStationSurgeRealDataQuarterList = (
+    tyCode: string,
+    timestamp: string,
+    stationCode: string
+) => {
+    const url = `${host}${area}/realdata/quarter/list`
+    return axios.get(url, {
+        headers: authHeader(),
+        params: {
+            ty_code: tyCode,
+            timestamp: timestamp,
+            station_code: stationCode
+        }
+    })
+}
+
+/**
  * + 21-08-25
  *  获取对应站点的警戒潮位值
  *
@@ -122,5 +146,6 @@ export {
     getStationSurgeRangeListByGroupPath,
     getStationSurgeRealDataListAndRange,
     getAstronomictideTideRealDataList,
-    getStationAlert
+    getStationAlert,
+    getStationSurgeRealDataQuarterList
 }

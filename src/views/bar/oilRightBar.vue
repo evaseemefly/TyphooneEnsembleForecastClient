@@ -2,12 +2,19 @@
     <div id="container">
         <oilModelDetial :oilModelData="oilModelData"></oilModelDetial>
         <!-- <oilData :oilRealData="oilRealData"></oilData> -->
-        <StationCharts
+        <!-- TODO:[-] 21-10-29 暂时注释掉之前的 海洋站实时数据 charts -->
+        <!-- <StationCharts
             :tyCode="tyCode"
             :stationCode="stationCode"
             :timeStamp="timeStamp"
             :stationName="stationName"
-        ></StationCharts>
+        ></StationCharts> -->
+        <StationStatisticsCharts
+            :tyCode="tyCode"
+            :stationCode="stationCode"
+            :timeStamp="timeStamp"
+            :stationName="stationName"
+        ></StationStatisticsCharts>
         <RangePie :leftNum="scatterLeftNum" :currentNum="numsData.current"></RangePie>
         <!-- <timeBar :step="step" :index="index" :startDate="startDate" :count="count"></timeBar> -->
     </div>
@@ -20,6 +27,7 @@ import oilData from '@/views/oil/oilRealDataForm.vue'
 import oilModelDetial from '@/views/oil/oilModelDetailForm2.vue'
 // TODO:[-] 21-05-25 加入的 历史潮位数据 charts
 import StationCharts from '@/views/members/charts/StationCharts.vue'
+import StationStatisticsCharts from '@/views/members/charts/StationStatisticsCharts.vue'
 // import timeBar from "@/views/timebar/DayCardV1/DayComp.vue";
 import timeBar from '@/views/members/timebar/DaysComp.vue'
 import RangePie from '@/views/members/pie/rangePie.vue'
@@ -29,7 +37,16 @@ import { OilEquation } from '@/enum/Equation'
 import { XYMidMode, PointMidModel } from '@/middle_model/coordinate'
 import moment from 'moment'
 // 组件引入
-@Component({ components: { oilModelDetial, oilData, timeBar, RangePie, StationCharts } })
+@Component({
+    components: {
+        oilModelDetial,
+        oilData,
+        timeBar,
+        RangePie,
+        StationCharts,
+        StationStatisticsCharts
+    }
+})
 export default class RightInfoBar extends Vue {
     public mydata: any = null
     // 时间 bar 的间隔
