@@ -1669,12 +1669,17 @@ export default class TyGroupMap extends mixins(
 
     @Watch('stationSurgeIconOptions', { immediate: true, deep: true })
     onStationSurgeIconOptions(val: ITyStationLayerOptions): void {
-        console.log(val)
+        // console.log(val)
         const that = this
         const mymap: any = this.$refs.basemap['mapObject']
         // if(val)
         if (this.checkStationSurgeOptions(val)) {
             // 加载对应时刻的 潮位站数据
+            // this.$notify({
+            //     title: '成功',
+            //     message: `'这是一条成功的提示消息'`,
+            //     type: 'success'
+            // })
             this.loadStationList(this.zoom)
         } else {
             this.clearSurgeAllGroupLayers()
@@ -1703,6 +1708,14 @@ export default class TyGroupMap extends mixins(
                 scaleList: scaleList
             })
             this.clearSurgeHourlyRasterLayer()
+            const showMsg = `加载台风code:${val.tyCode},预报时间:${moment(val.forecastDt).format(
+                'yyyy-mm-dd HH'
+            )}`
+            this.$message({
+                message: showMsg,
+                center: true,
+                type: 'success'
+            })
             fieldSurgeGeoLayer
                 .add2map(mymap, () => {})
                 .then((res) => {
@@ -1725,6 +1738,8 @@ export default class TyGroupMap extends mixins(
             if (!val.isShow) {
                 this.clearGroupLayer(this.currentGroupPathPolyLineLayerGroup)
             } else if (val.isShow) {
+                const showMsg = `加载台风:${val.tyCode}集合路径`
+                this.$notify({ title: '成功', message: showMsg, type: 'success' })
                 this.loadGroupTyphoonLine()
             }
         }
@@ -1793,6 +1808,12 @@ export default class TyGroupMap extends mixins(
     onSelectedTyId(val: number): void {
         if (val != DEFAULT_TYPHOON_ID) {
             const testTyphoonId = val
+            const showMsg = '已加载对应台风信息'
+            this.$message({
+                message: showMsg,
+                center: true,
+                type: 'success'
+            })
 
             this.testGetAddTyGroupPath2Map(testTyphoonId)
 

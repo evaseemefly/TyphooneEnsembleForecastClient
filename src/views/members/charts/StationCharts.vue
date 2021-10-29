@@ -460,6 +460,11 @@ export default class StationCharts extends Vue {
         console.log(
             `options发生变化tyCode:${val.tyCode},stationCode:${val.stationCode},timeStamp:${val.timeStamp}发生变化`
         )
+        this.$notify({
+            title: '成功',
+            message: `加载海洋站:${val.stationCode}潮位数据`,
+            type: 'success'
+        })
         this.clearForecastSurge()
         if (
             val.tyCode !== DEFAULTTYCODE &&

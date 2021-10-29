@@ -304,7 +304,10 @@ export default class CreateCaseForm extends Vue {
         }
         createTyCase(postData).then((res) => {
             if (res.status === 200) {
-                console.log(res.data)
+                this.$message('提交成功')
+                // console.log(res.data)
+            } else {
+                this.$message.error('创建作业错误！')
             }
         })
     }
