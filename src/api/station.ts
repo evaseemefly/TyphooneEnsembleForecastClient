@@ -113,7 +113,7 @@ const getStationSurgeRealDataQuarterList = (
     timestamp: string,
     stationCode: string
 ) => {
-    const url = `${host}${area}/realdata/quarter/list`
+    const url = `${host}${area}/station/realdata/quarter/list`
     return axios.get(url, {
         headers: authHeader(),
         params: {

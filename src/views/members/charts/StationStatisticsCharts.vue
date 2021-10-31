@@ -127,7 +127,7 @@ export default class StationStatisticsCharts extends Vue {
         const nodeDiv = document.getElementById('station_charts')
         if (nodeDiv) {
             const myChart: echarts.ECharts = echarts.init(nodeDiv)
-            option = {
+            const option = {
                 xAxis: {
                     data: ['2017-10-24', '2017-10-25', '2017-10-26', '2017-10-27']
                 },
