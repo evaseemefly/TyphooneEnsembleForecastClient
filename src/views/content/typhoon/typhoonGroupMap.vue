@@ -139,9 +139,9 @@
             <TaskRateCard></TaskRateCard>
         </div>
 
-        <div class="dialog-create-case">
+        <!-- <div class="dialog-create-case">
             <CreatedCaseForm ref="caseForm"></CreatedCaseForm>
-        </div>
+        </div> -->
         <CreateCaseForm></CreateCaseForm>
         <!-- TODO:[-] 21-05-24 加入右侧 station bar -->
         <!-- <RightStationBar></RightStationBar> -->
@@ -231,7 +231,8 @@ import RightOilBar from '@/views/members/bar/rightOilBar.vue'
 // 屏幕右侧的各类信息栏
 import OilRightBar from '@/views/bar/oilRightBar.vue'
 // import OilFactorSelect from '@/views/members/select/OilFactorSelect.vue'
-import CreatedCaseForm from '@/views/members/form/create_case/CreateCaseForm.vue'
+// - 21-11-03 不再需要 该 form 组件
+// import CreatedCaseForm from '@/views/members/form/create_case/CreateCaseForm.vue'
 // 各类 btn
 import CurdBtn from '@/views/members/tools/CurdBtn.vue'
 import MakePointBtn from '@/views/members/tools/MakePointBtn.vue'
@@ -415,7 +416,7 @@ const DEFAULT_SCATTER_PAGE_COUNT = 1000
         RightOilBar,
         OilRightBar,
         CurdBtn,
-        CreatedCaseForm,
+        // CreatedCaseForm,
         // MakePointBtn,
         OceanMainToolsBar,
         RightOptToolsBar,
