@@ -1,6 +1,6 @@
 <template>
     <div id="container">
-        <oilModelDetial :oilModelData="oilModelData"></oilModelDetial>
+        <!-- <oilModelDetial :oilModelData="oilModelData"></oilModelDetial> -->
         <!-- <oilData :oilRealData="oilRealData"></oilData> -->
         <!-- TODO:[-] 21-10-29 暂时注释掉之前的 海洋站实时数据 charts -->
         <!-- <StationCharts
@@ -9,13 +9,21 @@
             :timeStamp="timeStamp"
             :stationName="stationName"
         ></StationCharts> -->
-        <StationStatisticsCharts
+        <!-- TODO:[-] 21-11-09 暂时注释掉 -->
+        <!-- <StationStatisticsCharts
             :tyCode="tyCode"
             :stationCode="stationCode"
             :timeStamp="timeStamp"
             :stationName="stationName"
-        ></StationStatisticsCharts>
-        <RangePie :leftNum="scatterLeftNum" :currentNum="numsData.current"></RangePie>
+        ></StationStatisticsCharts> -->
+        <QuarterView
+            :tyCode="tyCode"
+            :stationCode="stationCode"
+            :timeStamp="timeStamp"
+            :stationName="stationName"
+        >
+        </QuarterView>
+        <!-- <RangePie :leftNum="scatterLeftNum" :currentNum="numsData.current"></RangePie> -->
         <!-- <timeBar :step="step" :index="index" :startDate="startDate" :count="count"></timeBar> -->
     </div>
 </template>
@@ -28,6 +36,7 @@ import oilModelDetial from '@/views/oil/oilModelDetailForm2.vue'
 // TODO:[-] 21-05-25 加入的 历史潮位数据 charts
 import StationCharts from '@/views/members/charts/StationCharts.vue'
 import StationStatisticsCharts from '@/views/members/charts/StationStatisticsCharts.vue'
+import QuarterView from '@/components/charts/QuarterChartView.vue'
 // import timeBar from "@/views/timebar/DayCardV1/DayComp.vue";
 import timeBar from '@/views/members/timebar/DaysComp.vue'
 import RangePie from '@/views/members/pie/rangePie.vue'
@@ -44,7 +53,8 @@ import moment from 'moment'
         timeBar,
         RangePie,
         StationCharts,
-        StationStatisticsCharts
+        StationStatisticsCharts,
+        QuarterView
     }
 })
 export default class RightInfoBar extends Vue {

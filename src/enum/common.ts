@@ -26,5 +26,18 @@ export enum IconTypeEnum {
      */
     TY_PATH_ICON
 }
+/**
+ * 拉伸的方向
+ *
+ * @export
+ * @enum {number}
+ */
+export enum STRETCHDIRENUM {
+    LEFT,
+    RIGHT,
+    TOP,
+    BOTTOM,
+    LEFTTOP
+}
 
 export { getEnumVal }

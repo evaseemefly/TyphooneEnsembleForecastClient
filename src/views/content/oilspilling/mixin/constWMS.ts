@@ -1,6 +1,7 @@
 import { Component, Vue } from 'vue-property-decorator'
 // 20-08-11 wms 相关的中间 model
 import { WMSOptionsMidModel, WMSMidModel } from '@/middle_model/geo'
+import { hostGeo } from '@/api/common'
 
 /**
  * + 21-01-27 作为 mixin 的 wms常量
@@ -50,7 +51,7 @@ class WMSMixin extends Vue {
 
     // TODO:[-] 20-08-26 新加入的全球国境线
     worldLineWMS: WMSMidModel = new WMSMidModel(
-        'http://128.5.10.21:8084/geoserver/nmefc_common/wms?',
+        `${hostGeo}/nmefc_common/wms?`,
         new WMSOptionsMidModel('nmefc_common:world_map_line', 1500)
     )
 

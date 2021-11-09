@@ -106,9 +106,8 @@
         <div id="ocean-main-toolsbar">
             <OceanMainToolsBar></OceanMainToolsBar>
         </div>
-        <!-- <div id="right_opt_toolsbar"> -->
-        <div id="right-bar">
-            <!-- 19-10-28 加入右侧信息栏_v1版本 -->
+        <!-- 19-10-28 加入右侧信息栏_v1版本 -->
+        <!-- <div id="right-bar">
             <OilRightBar
                 :oilRealData="oilAvgRealData"
                 :days="days"
@@ -122,10 +121,16 @@
                 :stationName="stationName"
                 :timeStamp="tyTimeStamp"
             ></OilRightBar>
-
-            <!-- TODO:[-] 20-07-17 使用统一风格后的 右侧信息栏 -->
-            <!-- <RightOptToolsBar></RightOptToolsBar> -->
-        </div>
+        </div> -->
+        <!-- TODO:[-] 20-07-17 使用统一风格后的 右侧信息栏 -->
+        <!-- <RightOptToolsBar></RightOptToolsBar> -->
+        <QuarterView
+            :tyCode="tyCode"
+            :stationCode="stationCode"
+            :timestampStr="tyTimeStamp"
+            :stationName="stationName"
+        >
+        </QuarterView>
         <!-- TODO:[-] 20-07-14 去掉了地图点选功能 -->
         <!-- <div id="bottom_btn_make_point">
             <MakePointBtn></MakePointBtn>
@@ -250,6 +255,7 @@ import TaskRateCard from '@/components/card/TaskRateCard.vue'
 
 // + 21-07-01 加入了 createCaseForm
 import CreateCaseForm from '@/components/form/CreateCaseForm.vue'
+import QuarterView from '@/components/charts/QuarterChartView.vue'
 // -----
 // 各api
 import { loadOilSpillingAvgRealData, getTargetCodeDateRange } from '@/api/api'
@@ -424,7 +430,8 @@ const DEFAULT_SCATTER_PAGE_COUNT = 1000
         // + 21-05-24 新加入的 右侧显示 测站历史数据曲线的 charts
         RightStationBar,
         CreateCaseForm,
-        TaskRateCard
+        TaskRateCard,
+        QuarterView
         // GridDetailForm
         // LeafletHeatmap
     }
@@ -2219,13 +2226,13 @@ export default class TyGroupMap extends mixins(
     // flex: 1;
     // margin-right: 10px;
     // padding: 10px;
-    padding-top: 10px;
+    // padding-top: 10px;
 
-    position: absolute;
-    right: 10px;
-    z-index: 1500;
-    width: 300px;
-    top: 70px;
+    // position: absolute;
+    // right: 10px;
+    z-index: 1999;
+    // width: 300px;
+    // top: 70px;
     /* background: rgba(188, 143, 143, 0.507); */
 }
 
