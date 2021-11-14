@@ -124,13 +124,20 @@
         </div> -->
         <!-- TODO:[-] 20-07-17 使用统一风格后的 右侧信息栏 -->
         <!-- <RightOptToolsBar></RightOptToolsBar> -->
-        <QuarterView
+        <!-- <QuarterView
             :tyCode="tyCode"
             :stationCode="stationCode"
             :timestampStr="tyTimeStamp"
             :stationName="stationName"
         >
-        </QuarterView>
+        </QuarterView> -->
+        <!-- TODO:[-] 21-05-24 加入右侧 station bar -->
+        <RightStationBar
+            :tyCode="tyCode"
+            :stationCode="stationCode"
+            :timestampStr="tyTimeStamp"
+            :stationName="stationName"
+        ></RightStationBar>
         <!-- TODO:[-] 20-07-14 去掉了地图点选功能 -->
         <!-- <div id="bottom_btn_make_point">
             <MakePointBtn></MakePointBtn>
@@ -148,8 +155,7 @@
             <CreatedCaseForm ref="caseForm"></CreatedCaseForm>
         </div> -->
         <CreateCaseForm></CreateCaseForm>
-        <!-- TODO:[-] 21-05-24 加入右侧 station bar -->
-        <!-- <RightStationBar></RightStationBar> -->
+
         <!-- <div class="">
             <GridDetailForm ref="gridForm"></GridDetailForm>
         </div> -->

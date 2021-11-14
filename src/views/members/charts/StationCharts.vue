@@ -1,5 +1,5 @@
 <template>
-    <div
+    <!-- <div
         class="right-station-surge-form"
         :class="isExpanded ? 'mybar-right-in' : 'mybar-right-out'"
     >
@@ -9,6 +9,11 @@
             </el-switch>
             <div id="station_charts"></div>
         </div>
+    </div> -->
+    <div class="my-detail-form">
+        <el-switch v-model="isAdditionTide" active-text="总潮位" inactive-text="风暴增水">
+        </el-switch>
+        <div id="station_charts"></div>
     </div>
 </template>
 <script lang="ts">
@@ -40,7 +45,7 @@ export default class StationCharts extends Vue {
     @Prop()
     stationName: string
     @Prop()
-    timeStamp: string
+    timestampStr: string
 
     forecastDateList: Date[] = []
     forecastSurgeValList: number[] = []
@@ -54,11 +59,11 @@ export default class StationCharts extends Vue {
 
     async loadStationSurgeRealDataListAndRange(
         tyCode: string,
-        timeStamp: string,
+        timestampStr: string,
         stationCode: string
     ) {
         const that = this
-        await getStationSurgeRealDataListAndRange(tyCode, timeStamp, stationCode).then((res) => {
+        await getStationSurgeRealDataListAndRange(tyCode, timestampStr, stationCode).then((res) => {
             if (res.status == 200) {
                 // eg:
                 // forecast_dt: "2020-09-15T17:00:00Z"
@@ -84,7 +89,7 @@ export default class StationCharts extends Vue {
             }
         })
         // + 21-08-24 信加入的加载 天文潮位数据
-        await this.loadAstronomicTideList(tyCode, timeStamp, stationCode)
+        await this.loadAstronomicTideList(tyCode, timestampStr, stationCode)
         // TODO:[-] 21-08-25 将 三类潮位 分别叠加 天文潮计算一个总潮位
         if (this.isAdditionTide) {
             this.add2AstornomicTid()
@@ -94,9 +99,9 @@ export default class StationCharts extends Vue {
         that.initChart()
     }
 
-    async loadAstronomicTideList(tyCode: string, timestamp: string, stationCode: string) {
+    async loadAstronomicTideList(tyCode: string, timestampStr: string, stationCode: string) {
         const that = this
-        await getAstronomictideTideRealDataList(tyCode, timestamp, stationCode).then((res) => {
+        await getAstronomictideTideRealDataList(tyCode, timestampStr, stationCode).then((res) => {
             if (res.status == 200) {
                 /*
                 {
@@ -456,9 +461,9 @@ export default class StationCharts extends Vue {
         }
     }
     @Watch('getOptions')
-    onTimeStamp(val: { tyCode: string; stationCode: string; timeStamp: string }): void {
+    ontimestampStr(val: { tyCode: string; stationCode: string; timestampStr: string }): void {
         console.log(
-            `options发生变化tyCode:${val.tyCode},stationCode:${val.stationCode},timeStamp:${val.timeStamp}发生变化`
+            `options发生变化tyCode:${val.tyCode},stationCode:${val.stationCode},timestampStr:${val.timestampStr}发生变化`
         )
         this.$notify({
             title: '成功',
@@ -468,10 +473,10 @@ export default class StationCharts extends Vue {
         this.clearForecastSurge()
         if (
             val.tyCode !== DEFAULTTYCODE &&
-            val.timeStamp !== DEFAULTTIMESTAMP &&
+            val.timestampStr !== DEFAULTTIMESTAMP &&
             val.stationCode !== DEFAULT_STATION_CODE
         ) {
-            this.loadStationSurgeRealDataListAndRange(val.tyCode, val.timeStamp, val.stationCode)
+            this.loadStationSurgeRealDataListAndRange(val.tyCode, val.timestampStr, val.stationCode)
         }
     }
 
@@ -484,9 +489,9 @@ export default class StationCharts extends Vue {
         }
         this.initChart()
     }
-    get getOptions(): { tyCode: string; stationCode: string; timeStamp: string } {
-        const { tyCode, stationCode, timeStamp } = this
-        return { tyCode, stationCode, timeStamp }
+    get getOptions(): { tyCode: string; stationCode: string; timestampStr: string } {
+        const { tyCode, stationCode, timestampStr } = this
+        return { tyCode, stationCode, timestampStr }
     }
 
     get getForecastDtList(): string[] {
@@ -504,7 +509,7 @@ export default class StationCharts extends Vue {
 }
 </script>
 <style scoped lang="less">
-@import '../../../styles/station/surge-chart';
+// @import '../../../styles/station/surge-chart';
 .test {
     background: rgb(19, 184, 196);
 }

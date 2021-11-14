@@ -1,17 +1,5 @@
 <template>
-    <div
-        id="station_surge"
-        class="right-station-surge-form"
-        v-drag
-        :class="isExpanded ? 'mybar-right-in' : 'mybar-right-out'"
-    >
-        <div class="my-detail-title" @click="isExpanded = !isExpanded">
-            潮位分析数据
-        </div>
-        <div class="my-detail-form">
-            <div id="station_quarter_charts" style=""></div>
-        </div>
-    </div>
+    <div id="station_quarter_charts" style=""></div>
 </template>
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
@@ -155,6 +143,7 @@ export default class QuarterView extends Vue {
         // 基于准备好的dom，初始化echarts图表
         const nodeDiv = document.getElementById('station_quarter_charts')
         const myChart: echarts.ECharts = echarts.init(nodeDiv)
+        const StationCode: string = this.stationCode
 
         const xData: Date[] = []
         const xDataFormatted: string[] = []
@@ -189,7 +178,7 @@ export default class QuarterView extends Vue {
         const option = {
             title: [
                 {
-                    text: 'XXX潮位站增水分布图',
+                    text: `${StationCode}潮位站增水分布图`,
                     left: 'center',
                     textStyle: {
                         fontSize: 20,
