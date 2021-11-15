@@ -10,7 +10,7 @@
             <div id="station_charts"></div>
         </div>
     </div> -->
-    <div id="" class="my-detail-form">
+    <div id="station_chart_form" class="my-detail-form">
         <el-switch v-model="isAdditionTide" active-text="总潮位" inactive-text="风暴增水">
         </el-switch>
         <div id="station_charts"></div>
@@ -80,7 +80,7 @@ export default class StationCharts extends Vue {
             }
         }
         const erd = elementResizeDetectorMaker()
-        erd.listenTo(document.getElementById('station_surge'), function(element: HTMLElement) {
+        erd.listenTo(document.getElementById('station_chart_form'), function(element: HTMLElement) {
             that.size.divWidth = element.offsetWidth
             that.size.divHeight = element.offsetHeight
         })
@@ -559,25 +559,15 @@ export default class StationCharts extends Vue {
 }
 </script>
 <style scoped lang="less">
-// @import '../../../styles/station/surge-chart';
-.test {
-    background: rgb(19, 184, 196);
+.my-detail-form {
+    height: 100%;
+    width: 100%;
 }
-// .right-station-surge-form {
-//     border-radius: 5px;
-//     position: absolute;
-//     right: 10px;
-//     background: linear-gradient(
-//         to right,
-//         rgba(77, 142, 124, 0.726) 40%,
-//         rgba(74, 145, 148, 0.726),
-//         #34495e
-//     );
-//     box-shadow: 2px 3px 8px black;
-// }
 #station_charts {
-    width: 500px;
-    height: 300px;
+    min-width: 400px;
+    min-height: 400px;
+    height: 100%;
+    width: 100%;
 }
 // #station_charts {
 //     border-radius: 5px;
