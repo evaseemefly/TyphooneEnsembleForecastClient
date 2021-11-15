@@ -44,6 +44,7 @@ export default class QuarterView extends Vue {
     mydata: any = null
     myChart: echarts.ECharts = null
     mounted() {
+        console.log('QuarterChartView mounted!')
         const that = this
         this.screenHeight = window.innerHeight
         this.screenWidth = window.innerWidth
@@ -67,6 +68,13 @@ export default class QuarterView extends Vue {
             //   console.log("Size: " + width + "x" + height);
             // });
         })
+        if (
+            this.tyCode !== DEFAULT_TYPHOON_CODE &&
+            this.stationCode !== DEFAULT_STATION_CODE &&
+            this.timestampStr !== DEFAULT_TIMESTAMP
+        ) {
+            this.loadQuarterCharts(this.tyCode, this.stationCode, this.timestampStr)
+        }
     }
     get getQuaterOptions(): {
         tyCode: string
@@ -79,7 +87,7 @@ export default class QuarterView extends Vue {
     @Watch('getQuaterOptions')
     onQuaterOptions(val: { tyCode: string; stationCode: string; timestampStr: string }): void {
         console.log(
-            `监听到options发生变化:tyCode:${val.tyCode},stationCode:${val.stationCode},timestampStr:${val.timestampStr}`
+            `QuarterChartView 监听到options发生变化:tyCode:${val.tyCode},stationCode:${val.stationCode},timestampStr:${val.timestampStr}`
         )
         if (
             val.tyCode !== DEFAULT_TYPHOON_CODE &&
@@ -309,5 +317,6 @@ export default class QuarterView extends Vue {
     min-width: 400px;
     min-height: 400px;
     height: 100%;
+    width: 100%;
 }
 </style>

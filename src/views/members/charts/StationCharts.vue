@@ -10,7 +10,7 @@
             <div id="station_charts"></div>
         </div>
     </div> -->
-    <div class="my-detail-form">
+    <div id="" class="my-detail-form">
         <el-switch v-model="isAdditionTide" active-text="总潮位" inactive-text="风暴增水">
         </el-switch>
         <div id="station_charts"></div>
@@ -20,6 +20,7 @@
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 // import Echarts from 'echarts'
 import * as echarts from 'echarts'
+import * as elementResizeDetectorMaker from 'element-resize-detector'
 import moment from 'moment'
 import {
     getStationSurgeRealDataListAndRange,
@@ -56,6 +57,45 @@ export default class StationCharts extends Vue {
     alertYellow: number = DEFAULT_ALERT_TIDE
     alertOrange: number = DEFAULT_ALERT_TIDE
     alertRed: number = DEFAULT_ALERT_TIDE
+
+    screenHeight = 0
+    screenWidth = 0
+    size: { divWidth: number; divHeight: number } = {
+        divWidth: 0,
+        divHeight: 0
+    }
+    sizeDefault: { divWidth: number; divHeight: number } = {
+        divWidth: 400,
+        divHeight: 400
+    }
+    myChart: echarts.ECharts = null
+
+    mounted() {
+        console.log('StationCharts mounted!')
+        const that = this
+        window.onresize = () => {
+            return () => {
+                that.screenHeight = window.innerHeight
+                that.screenWidth = window.innerWidth
+            }
+        }
+        const erd = elementResizeDetectorMaker()
+        erd.listenTo(document.getElementById('station_surge'), function(element: HTMLElement) {
+            that.size.divWidth = element.offsetWidth
+            that.size.divHeight = element.offsetHeight
+        })
+        if (
+            this.tyCode !== DEFAULTTYCODE &&
+            this.timestampStr !== DEFAULTTIMESTAMP &&
+            this.stationCode !== DEFAULT_STATION_CODE
+        ) {
+            this.loadStationSurgeRealDataListAndRange(
+                this.tyCode,
+                this.timestampStr,
+                this.stationCode
+            )
+        }
+    }
 
     async loadStationSurgeRealDataListAndRange(
         tyCode: string,
@@ -458,12 +498,15 @@ export default class StationCharts extends Vue {
                 ]
             }
             myChart.setOption(option)
+            if (!this.myChart) {
+                this.myChart = myChart
+            }
         }
     }
     @Watch('getOptions')
     ontimestampStr(val: { tyCode: string; stationCode: string; timestampStr: string }): void {
         console.log(
-            `options发生变化tyCode:${val.tyCode},stationCode:${val.stationCode},timestampStr:${val.timestampStr}发生变化`
+            `StationCharts,options发生变化tyCode:${val.tyCode},stationCode:${val.stationCode},timestampStr:${val.timestampStr}发生变化`
         )
         this.$notify({
             title: '成功',
@@ -505,6 +548,13 @@ export default class StationCharts extends Vue {
     }
     get computedTest() {
         return null
+    }
+    @Watch('size', { immediate: true, deep: true })
+    onSize(val: { divWidth: number; divHeight: number }) {
+        console.log(`监听到width:${val.divWidth},height:${val.divHeight}`)
+        if (this.myChart) {
+            this.myChart.resize()
+        }
     }
 }
 </script>
