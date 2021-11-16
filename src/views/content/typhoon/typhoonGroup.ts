@@ -9,6 +9,8 @@ import { DEFAULTTYCODE, DEFAULTTIMESTAMP } from '@/const/typhoon'
 import { ScaleColor, TyGroupPathScaleColor } from '@/common/scaleColor'
 import { getTargetTyGroupDistDate, getTargetTyGroupDateRange } from '@/api/tyhoon'
 import { IconTyphoonCirlePulsing } from '@/views/members/icon/pulsingIcon'
+// mid models
+import { TyphoonComplexGroupRealDataMidModel } from '@/middle_model/typhoon'
 import moment from 'moment'
 export interface ITyGroupPathOptions {
     tyCode: string
@@ -83,16 +85,23 @@ class TyGroupPath {
  * @class TyGroupPathLine
  */
 class TyGroupPathLine {
-    tyGroupPathLines: Array<any>
+    tyGroupPathLines: Array<TyphoonComplexGroupRealDataMidModel>
     myMap: L.Map
     tyColorScale: any
     protected tyGroupPolyLineLayer: L.Layer[]
     polyColor = DEFAULT_COLOR
     // tyCenterPath:any
-    constructor(mymap: L.Map, tyGroupPathLines: Array<any>, isDynamicColorScale = true) {
+    constructor(
+        mymap: L.Map,
+        tyGroupPathLines: Array<TyphoonComplexGroupRealDataMidModel>,
+        isDynamicColorScale = true
+    ) {
         this.tyGroupPathLines = tyGroupPathLines
         this.myMap = mymap
         this.tyGroupPolyLineLayer = []
+        // + 21-11-16 对 grouppath 进行排序
+        this.sortTyGroupLinesList()
+        //
         this.initColorScale()
         this.initTyGroupPolyLineLayer(isDynamicColorScale)
     }
@@ -159,6 +168,46 @@ class TyGroupPathLine {
             this.myMap
         )
         return tempTyGroupPolyLineLayerGroup
+    }
+
+    /**
+     * + 21-11-16 对 this.tyGroupPathLines 进行排序，主要为了动态生成配色使用
+     *
+     * @protected
+     * @memberof TyGroupPathLine
+     */
+    protected sortTyGroupLinesList(): void {
+        let arr1: TyphoonComplexGroupRealDataMidModel[] = []
+        let arr2: TyphoonComplexGroupRealDataMidModel[] = []
+        // 将 标识符为 : [c,f,s] 提起出来存在 arr1 中
+        // 将 标识符为 : [r,l] 提取出来存在 arr2 中
+        this.tyGroupPathLines.forEach((temp) => {
+            if (['r', 'l'].includes(temp.tyPathType)) {
+                arr2.push(temp)
+            } else if (['c', 'f', 's'].includes(temp.tyPathType)) {
+                arr1.push(temp)
+            }
+        })
+        // 对于 arr2 对 数字进行排序
+        arr2 = arr2.sort((a, b) => {
+            return a.tyPathMarking - b.tyPathMarking
+        })
+        arr1 = arr1.sort((a, b) => {
+            if (a.tyPathType === 'c' && b.tyPathType !== 'c') {
+                return -1
+            } else if (a.tyPathType === 'c' && b.tyPathType === 'c') {
+                return 0
+            } else if (['f', 's'].includes(a.tyPathType) && ['f', 's'].includes(b.tyPathType)) {
+                return a.tyPathMarking - b.tyPathMarking
+            } else {
+                return 0
+            }
+        })
+        this.tyGroupPathLines = [...arr1, ...arr2]
+        // TODO:[-] 21-05-13 新加入一个对其倒叙，因为此种方式排序完的数组，中间路径会出现在最前，也就是最先被叠加
+        this.tyGroupPathLines = this.tyGroupPathLines.sort((a, b) => {
+            return -1
+        })
     }
 }
 

@@ -78,30 +78,16 @@
                 :timeStampStr="timestampStr"
                 :forecastDt="targetDate"
             ></BottomMainBar>
-            <div id="process">
-                <!-- TODO:[-] 20-01-27 使用eu的进度条 -->
-                <!-- <el-progress
-          :text-inside="true"
-          :stroke-width="18"
-          :percentage="processOptions.rate"
-        ></el-progress> -->
-                <!-- 使用bt的进度条 -->
-                <!-- <div
-          class="progress-bar progress-bar-striped progress-bar-animated"
-          role="progressbar"
-          aria-valuenow="{{processOptions.rate}}"
-          aria-valuenow="0"
-          aria-valuenow="100"
-          style="width: 75%"
-        ></div> -->
-                <!-- 使用bootstrap-vue的组件 -->
+            <!-- - 21-11-16 去掉了底部的进度条 -->
+            <!-- 使用bootstrap-vue的组件 -->
+            <!-- <div id="process">
                 <b-progress
                     :value="processOptions.rate"
                     :max="100"
                     show-progress
                     animated
                 ></b-progress>
-            </div>
+            </div> -->
         </div>
         <div id="ocean-main-toolsbar">
             <OceanMainToolsBar></OceanMainToolsBar>
@@ -1282,7 +1268,7 @@ export default class TyGroupMap extends mixins(
     // + 21-10-19 将获取色标提取到外面来
     loadGroupTyphoonLine(): void {
         const that = this
-        const mymap: any = this.$refs.basemap['mapObject']
+        const mymap: L.Map = this.$refs.basemap['mapObject']
         const tyGroupPathLine = new TyGroupPathLine(mymap, that.tyGroupLineList)
         const tempTyGroupPolyLineLayerGroup = tyGroupPathLine.addPolyLines2MapByGroup()
         this.currentGroupPathPolyLineLayerGroup = tempTyGroupPolyLineLayerGroup
