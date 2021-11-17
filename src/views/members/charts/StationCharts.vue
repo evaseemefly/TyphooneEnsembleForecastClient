@@ -10,7 +10,13 @@
             <div id="station_charts"></div>
         </div>
     </div> -->
-    <div id="station_chart_form" class="my-detail-form">
+    <div
+        id="station_chart_form"
+        class="my-detail-form"
+        v-loading="isLoading"
+        element-loading-spinner="el-icon-loading"
+        element-loading-background="#16a084bb"
+    >
         <el-switch v-model="isAdditionTide" active-text="总潮位" inactive-text="风暴增水">
         </el-switch>
         <div id="station_charts"></div>
@@ -58,6 +64,7 @@ export default class StationCharts extends Vue {
     alertOrange: number = DEFAULT_ALERT_TIDE
     alertRed: number = DEFAULT_ALERT_TIDE
 
+    isLoading = false // 是否在加载， true - 在加载状态 ; false - 未在加载
     screenHeight = 0
     screenWidth = 0
     size: { divWidth: number; divHeight: number } = {
@@ -89,11 +96,14 @@ export default class StationCharts extends Vue {
             this.timestampStr !== DEFAULTTIMESTAMP &&
             this.stationCode !== DEFAULT_STATION_CODE
         ) {
+            // this.isLoading = true
             this.loadStationSurgeRealDataListAndRange(
                 this.tyCode,
                 this.timestampStr,
                 this.stationCode
-            )
+            ).then((_) => {
+                // this.isLoading = false
+            })
         }
     }
 
@@ -103,6 +113,7 @@ export default class StationCharts extends Vue {
         stationCode: string
     ) {
         const that = this
+        that.isLoading = true
         await getStationSurgeRealDataListAndRange(tyCode, timestampStr, stationCode).then((res) => {
             if (res.status == 200) {
                 // eg:
@@ -137,6 +148,7 @@ export default class StationCharts extends Vue {
 
         await this.loadAlertTideList(stationCode)
         that.initChart()
+        this.isLoading = false
     }
 
     async loadAstronomicTideList(tyCode: string, timestampStr: string, stationCode: string) {

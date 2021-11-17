@@ -41,6 +41,7 @@ export default class QuarterView extends Vue {
         medianVal: number
         forecastDt: Date
     }[] = []
+    isLoading = false // 是否在加载， true - 在加载状态 ; false - 未在加载
     mydata: any = null
     myChart: echarts.ECharts = null
     mounted() {
@@ -142,9 +143,15 @@ export default class QuarterView extends Vue {
     }
 
     loadQuarterCharts(tyCode: string, stationCode: string, timestampStr: string) {
-        this.loadStationRealDataQuarterList(tyCode, stationCode, timestampStr).then((res) => {
-            this.initCharts()
-        })
+        const that = this
+        this.isLoading = true
+        this.loadStationRealDataQuarterList(tyCode, stationCode, timestampStr)
+            .then((res) => {
+                this.initCharts()
+            })
+            .then((_) => {
+                that.isLoading = false
+            })
     }
 
     initCharts(): void {
@@ -307,6 +314,9 @@ export default class QuarterView extends Vue {
 </script>
 <style scoped lang="less">
 @import '../../styles/station/surge-chart.less';
+.test {
+    background: #16a084bb;
+}
 #station_surge {
     z-index: 1999;
     top: 100px;
