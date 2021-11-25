@@ -52,9 +52,9 @@ interface IFather {
 }
 export enum ToolTypeEnum {
     // 图层
-    'LAYER' = 0,
+    LAYER = 0,
     // 选项
-    'OPTION' = 1,
+    OPTION = 1,
 
     /**
      *显示模式

@@ -90,19 +90,9 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
     mounted() {
         this.toolsBar = [...this.toolsBar, ...this.toolsShowTypeBar, ...this.toolsFactorBar]
         this.getToolsBar()
+        this.checkLayerInToolsBar(this.layers, [])
     }
     toolsBar: IExpandModel[] = [
-        // {
-        //     isExpanded: false,
-        //     html: 'MakePointBtn',
-        //     iconClass: 'fas fa-map-marked-alt',
-        //     title: '选取位置',
-        //     hasChildren: false,
-        //     isChildren: false,
-        //     toolType: ToolTypeEnum.SELECTPOSITION,
-        //     val: '',
-        //     checked: false
-        // },
         {
             isExpanded: false,
             html: '',
@@ -119,7 +109,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                 {
                     isExpanded: false,
                     html: '',
-                    iconClass: 'fas fa-wind',
+                    iconClass: 'fas fa-route',
                     title: '集合路径',
                     hasChildren: false,
                     isChildren: true,
@@ -131,7 +121,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                 {
                     isExpanded: false,
                     html: '',
-                    iconClass: 'fas fa-wind',
+                    iconClass: 'fas fa-infinity',
                     title: '最大风暴增水',
                     hasChildren: false,
                     isChildren: true,
@@ -143,7 +133,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                 {
                     isExpanded: false,
                     html: '',
-                    iconClass: 'fas fa-water',
+                    iconClass: 'fas fa-wave-square',
                     title: '逐时风暴增水',
                     hasChildren: false,
                     isChildren: true,
@@ -156,7 +146,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                 {
                     isExpanded: false,
                     html: '',
-                    iconClass: 'fas fa-water',
+                    iconClass: 'fas fa-percentage',
                     title: '概率风暴增水',
                     hasChildren: false,
                     isChildren: true,
@@ -203,7 +193,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                 {
                     isExpanded: false,
                     html: '',
-                    iconClass: 'fas fa-globe-asia',
+                    iconClass: 'fas fa-home',
                     title: '潮位站',
                     hasChildren: false,
                     isChildren: true,
@@ -234,7 +224,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         }
     ]
 
-    layers: LayerTypeEnum[] = []
+    layers: LayerTypeEnum[] = [LayerTypeEnum.GROUP_PATH_LAYER]
 
     proSurgeLayer: LayerTypeEnum = LayerTypeEnum.UN_LAYER
     proSurgeLayerVal: LayerTypeEnum = LayerTypeEnum.UN_LAYER
@@ -261,6 +251,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         isRadio?: boolean
         optionsType?: ToolBarOptionsEnum
         options?: { key: number; val: string }[]
+        layerType: LayerTypeEnum
     }[] = []
 
     // 将 toolsbar 转换 -> convertToolsBar
@@ -493,10 +484,58 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         }
     }
 
-    @Watch('layers')
-    onLayers(layers: LayerTypeEnum[]): void {
+    @Watch('getLayers')
+    onLayers(layers: LayerTypeEnum[], oldLayers: LayerTypeEnum[]): void {
         // console.log(layers)
+        console.log(`new:${layers},old:${oldLayers}`)
         this.setLayers(layers)
+        this.checkLayerInToolsBar(layers, oldLayers)
+    }
+
+    checkLayerInToolsBar(newLayers: LayerTypeEnum[], oldLayers: LayerTypeEnum[]): void {
+        const that = this
+        if (newLayers.length > 0) {
+            newLayers.forEach((tempLayer) => {
+                const convertedTool = that.converToolsBar.filter((tempTool) => {
+                    return (
+                        tempTool.toolType === ToolTypeEnum.LAYER &&
+                        tempTool.layerType &&
+                        tempTool.layerType === tempLayer
+                    )
+                })
+                const toolObj = that.converToolsBar.find((tempTool) => {
+                    return (
+                        tempTool.toolType === ToolTypeEnum.LAYER && tempTool.layerType === tempLayer
+                    )
+                })
+                if (convertedTool.length === 1) {
+                    convertedTool[0].checked = true
+                }
+                if (toolObj) {
+                    toolObj.checked = true
+                }
+            })
+        }
+        // 若 OldLayer 存在
+        if (oldLayers.length > 0) {
+            // 从旧的数组中找到在新数组中不存在的值
+            const newLayersSet = new Set([...newLayers])
+            const oldLayersSet = new Set([...oldLayers])
+            const delOldLayersSet = new Set([...oldLayers].filter((x) => !newLayersSet.has(x)))
+            const delOldLayers = Array.from(delOldLayersSet)
+            console.log(`layers中剔除掉的:${delOldLayers}`)
+            delOldLayers.forEach((tempDelLayer) => {
+                const toolObj = that.converToolsBar.find((tempTool) => {
+                    return (
+                        tempTool.toolType === ToolTypeEnum.LAYER &&
+                        tempTool.layerType === tempDelLayer
+                    )
+                })
+                if (toolObj) {
+                    toolObj.checked = false
+                }
+            })
+        }
     }
 
     checkexpandedStatue(item: {
@@ -517,6 +556,10 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         }
         // else if (item)
         return isShow
+    }
+
+    get getLayers(): LayerTypeEnum[] {
+        return [...this.layers]
     }
 }
 </script>
@@ -565,7 +608,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         }
     }
     .sub-title {
-        background: @sub-title-color;
+        // background: @sub-title-color;
         .checked {
             background: @sub-title-color;
         }
