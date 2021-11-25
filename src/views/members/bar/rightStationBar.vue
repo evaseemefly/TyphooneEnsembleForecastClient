@@ -2,11 +2,11 @@
     <div
         id="station_surge"
         class="right-station-surge-form"
-        @mousedown="drag($event, 'station_surge', 40, 45)"
+        @mousedown="drag($event, defaultFormId, 40, 45)"
         :class="isExpanded ? 'mybar-right-in' : 'mybar-right-out'"
     >
         <div class="my-detail-title" @click="isExpanded = !isExpanded">
-            收起
+            {{ isExpanded ? '收起' : '展开' }}
         </div>
         <div class="my-detail-form">
             <div class="sub-titles">
@@ -34,6 +34,7 @@
                     :stationCode="stationCode"
                     :timestampStr="timestampStr"
                     :stationName="stationName"
+                    :toResize="toResize"
                 ></component>
             </div>
         </div>
@@ -70,18 +71,20 @@ export default class TabContent extends Vue {
     isExpanded = false
     screenHeight = 0
     screenWidth = 0
+    defaultFormId = 'station_surge'
     size: { divWidth: number; divHeight: number } = {
         divWidth: 0,
         divHeight: 0
     }
     sizeDefault: { divWidth: number; divHeight: number } = {
-        divWidth: 400,
+        divWidth: 500,
         divHeight: 400
     }
     subTitles: Array<{ title: string; index: number; componetName: string }> = [
         { title: '潮位分析数据', index: 0, componetName: 'quarter-view' },
         { title: '潮位站预报', index: 1, componetName: 'station-chart' }
     ]
+    toResize = false
     subTitleIndex = 0
     //   quarterOptions: {
     //     tyCode: string;
@@ -166,14 +169,14 @@ export default class TabContent extends Vue {
                             ty_code: string
                         }) => {
                             /*
-                forecast_dt: "2020-09-15T09:00:00Z"
-                forecast_index: 0
-                median_val: 0
-                quarter_val: 0
-                station_code: "SHW"
-                three_quarters_val: 0
-                ty_code: "2022"
-              */
+                                forecast_dt: "2020-09-15T09:00:00Z"
+                                forecast_index: 0
+                                median_val: 0
+                                quarter_val: 0
+                                station_code: "SHW"
+                                three_quarters_val: 0
+                                ty_code: "2022"
+                            */
                             const pushTemp = {
                                 stationCode: element.station_code,
                                 quarterVal: element.quarter_val,
@@ -351,6 +354,28 @@ export default class TabContent extends Vue {
 
     drag(event: MouseEvent, elId: string, ignoreLeftSpace?: number, ignoreTopSpace?: number): void {
         mouseDrag(event, elId, ignoreLeftSpace, ignoreTopSpace)
+    }
+
+    // 重置当前 form 的大小(使用修改style的 height 与 width)
+    resetSize(): void {
+        const targetDiv: HTMLElement | null = document.getElementById(this.defaultFormId)
+        if (targetDiv) {
+            targetDiv.style.width = this.sizeDefault.divWidth + 'px'
+            targetDiv.style.height = this.sizeDefault.divHeight + 'px'
+        }
+    }
+
+    @Watch('isExpanded')
+    onIsExpanded(val: boolean): void {
+        // 收起时触发将 form 重置大小的操作
+        this.toResize = !val
+        if (this.toResize) {
+            this.resetSize()
+        }
+
+        // if (!val) {
+        //     this.toResize = true
+        // }
     }
 
     @Watch('size', { immediate: true, deep: true })

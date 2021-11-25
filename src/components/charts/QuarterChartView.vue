@@ -21,6 +21,8 @@ export default class QuarterView extends Vue {
     stationCode: string
     @Prop()
     timestampStr: string
+    @Prop()
+    toResize: boolean
     isExpanded = false
     screenHeight = 0
     screenWidth = 0
@@ -308,6 +310,14 @@ export default class QuarterView extends Vue {
         console.log(`监听到width:${val.divWidth},height:${val.divHeight}`)
         if (this.myChart) {
             this.myChart.resize()
+        }
+    }
+
+    @Watch('toResize')
+    onToResize(val: boolean): void {
+        if (val) {
+            this.size.divWidth = this.sizeDefault.divWidth
+            this.size.divHeight = this.sizeDefault.divHeight
         }
     }
 }

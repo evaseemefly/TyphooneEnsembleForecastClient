@@ -53,6 +53,8 @@ export default class StationCharts extends Vue {
     stationName: string
     @Prop()
     timestampStr: string
+    @Prop()
+    toResize: boolean
 
     forecastDateList: Date[] = []
     forecastSurgeValList: number[] = []
@@ -567,6 +569,13 @@ export default class StationCharts extends Vue {
         if (this.myChart) {
             this.myChart.resize()
         }
+    }
+    @Watch('toResize')
+    onToResize(val: boolean): void {
+        // if (val) {
+        //     this.size.divWidth = this.sizeDefault.divWidth
+        //     this.size.divHeight = this.sizeDefault.divHeight
+        // }
     }
 }
 </script>

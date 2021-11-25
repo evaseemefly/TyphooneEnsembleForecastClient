@@ -242,9 +242,9 @@ const mouseDrag = (
                         case velDir === STRETCHDIRENUM.TOP:
                             // 当拉动的是顶部
                             /*
-                  当前 div 的 bottom = mousemove.clientY - 当前的div的高度
-                  当前 div 的 height = 当前div的高度 + 鼠标移动的距离 mousemove.movementY
-                */
+                            当前 div 的 bottom = mousemove.clientY - 当前的div的高度
+                            当前 div 的 height = 当前div的高度 + 鼠标移动的距离 mousemove.movementY
+                            */
                             if (divHeight - veldisY > DIVMINHEIGHT) {
                                 odiv.style.height = divHeight - veldisY + 'px'
                                 odiv.style.width = divWidth + 'px'
