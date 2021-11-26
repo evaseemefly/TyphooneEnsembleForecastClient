@@ -78,26 +78,41 @@ export default class TaskRateCard extends Vue {
     }
     @Watch('getTyphoonId')
     onTyphoonId(tyId: number): void {
-        getTaskRateByTy(tyId).then(
-            (res: {
-                status: number
-                data: {
-                    celery_id: string
-                    case_state: number
-                    case_rate: number
-                    gmt_created: Date
-                }
-            }) => {
-                if (res.status === 200) {
-                    this.taskRate = {
-                        celeryId: res.data.celery_id,
-                        caseState: res.data.case_state,
-                        caseRate: res.data.case_rate,
-                        gmtCreated: res.data.gmt_created
+        getTaskRateByTy(tyId)
+            .then(
+                (res: {
+                    status: number
+                    data: {
+                        celery_id: string
+                        case_state: number
+                        case_rate: number
+                        gmt_created: Date
+                    }
+                }) => {
+                    if (res.status === 200) {
+                        this.taskRate = {
+                            celeryId: res.data.celery_id,
+                            caseState: res.data.case_state,
+                            caseRate: res.data.case_rate,
+                            gmtCreated: res.data.gmt_created
+                        }
                     }
                 }
-            }
-        )
+            )
+            .catch((res) => {
+                this.taskRate = {
+                    celeryId: DEFAULT_CELERY_ID,
+                    caseState: TaskStateEnum.UNLESS_INIT,
+                    caseRate: 0,
+                    gmtCreated: DEFAULT_DATE
+                }
+                this.$message({
+                    showClose: true,
+                    message: `获取当前台风编号:${this.tyCode}作业状态失败!`,
+                    type: 'warning'
+                    // duration: 0
+                })
+            })
     }
     @Getter(GET_TYPHOON_ID, { namespace: 'typhoon' })
     getTyphoonId
@@ -116,6 +131,24 @@ export default class TaskRateCard extends Vue {
 //         width: 100px;
 //     }
 // }
+// TODO:[-] 21-11-26 加入对于消息提示框的样式重写
+.el-message.el-message--warning.is-closable {
+    // background: linear-gradient(
+    //     to right,
+    //     #34495e 40%,
+    //     rgba(74, 145, 148, 0.726),
+    //     rgba(77, 142, 124, 0.739)
+    // );
+    background: rgba(216, 183, 37, 0.739);
+    border-radius: 10px;
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    border-width: 0px;
+    .el-message__content {
+        color: white;
+    }
+}
+
 .el-progress--circle {
     margin: 15px;
 }
