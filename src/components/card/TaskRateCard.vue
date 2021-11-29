@@ -32,11 +32,19 @@
                     </div>
                 </div>
             </div>
+            <div
+                class="my-card-subtitle"
+                :class="timerUp ? 'active' : 'unactive'"
+                @click="timerUp = !timerUp"
+            >
+                {{ timerUp ? '监听中' : '未监听' }}
+            </div>
         </div>
     </div>
 </template>
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
+import SetInterval from 'set-interval'
 import { Mutation, State, namespace, Action, Getter } from 'vuex-class'
 
 import {
@@ -78,46 +86,99 @@ export default class TaskRateCard extends Vue {
     }
     @Watch('getTyphoonId')
     onTyphoonId(tyId: number): void {
-        getTaskRateByTy(tyId)
-            .then(
-                (res: {
-                    status: number
-                    data: {
-                        celery_id: string
-                        case_state: number
-                        case_rate: number
-                        gmt_created: Date
-                    }
-                }) => {
-                    if (res.status === 200) {
-                        this.taskRate = {
-                            celeryId: res.data.celery_id,
-                            caseState: res.data.case_state,
-                            caseRate: res.data.case_rate,
-                            gmtCreated: res.data.gmt_created
-                        }
-                    }
-                }
-            )
-            .catch((res) => {
-                this.taskRate = {
-                    celeryId: DEFAULT_CELERY_ID,
-                    caseState: TaskStateEnum.UNLESS_INIT,
-                    caseRate: 0,
-                    gmtCreated: DEFAULT_DATE
-                }
-                this.$message({
-                    showClose: true,
-                    message: `获取当前台风编号:${this.tyCode}作业状态失败!`,
-                    type: 'warning'
-                    // duration: 0
-                })
-            })
+        // getTaskRateByTy(tyId)
+        //     .then(
+        //         (res: {
+        //             status: number
+        //             data: {
+        //                 celery_id: string
+        //                 case_state: number
+        //                 case_rate: number
+        //                 gmt_created: Date
+        //             }
+        //         }) => {
+        //             if (res.status === 200) {
+        //                 this.taskRate = {
+        //                     celeryId: res.data.celery_id,
+        //                     caseState: res.data.case_state,
+        //                     caseRate: res.data.case_rate,
+        //                     gmtCreated: res.data.gmt_created
+        //                 }
+        //             }
+        //         }
+        //     )
+        //     .catch((res) => {
+        //         this.taskRate = {
+        //             celeryId: DEFAULT_CELERY_ID,
+        //             caseState: TaskStateEnum.UNLESS_INIT,
+        //             caseRate: 0,
+        //             gmtCreated: DEFAULT_DATE
+        //         }
+        //         this.$message({
+        //             showClose: true,
+        //             message: `获取当前台风编号:${this.tyCode}作业状态失败!`,
+        //             type: 'warning'
+        //             // duration: 0
+        //         })
+        //     })
+        this.tyId = tyId
     }
     @Getter(GET_TYPHOON_ID, { namespace: 'typhoon' })
     getTyphoonId
     @Getter(GET_TYPHOON_CODE, { namespace: 'typhoon' })
     getTyphoonCode
+
+    // + 21-11-29 加入的计时器
+    timerUp = false
+    clockUnit = 10 * 1000
+    TIMERKEY = 'TYPHOON_TASK_KEY'
+
+    @Watch('timerUp')
+    onTimerUp(val: boolean): void {
+        const that = this
+        if (val) {
+            SetInterval.start(
+                (_) =>
+                    getTaskRateByTy(that.tyId)
+                        .then(
+                            (res: {
+                                status: number
+                                data: {
+                                    celery_id: string
+                                    case_state: number
+                                    case_rate: number
+                                    gmt_created: Date
+                                }
+                            }) => {
+                                if (res.status === 200) {
+                                    this.taskRate = {
+                                        celeryId: res.data.celery_id,
+                                        caseState: res.data.case_state,
+                                        caseRate: res.data.case_rate,
+                                        gmtCreated: res.data.gmt_created
+                                    }
+                                }
+                            }
+                        )
+                        .catch((res) => {
+                            this.taskRate = {
+                                celeryId: DEFAULT_CELERY_ID,
+                                caseState: TaskStateEnum.UNLESS_INIT,
+                                caseRate: 0,
+                                gmtCreated: DEFAULT_DATE
+                            }
+                            this.$message({
+                                showClose: true,
+                                message: `获取当前台风编号:${this.tyCode}作业状态失败!`,
+                                type: 'warning'
+                                // duration: 0
+                            })
+                        }),
+                that.clockUnit,
+                that.TIMERKEY
+            )
+        } else SetInterval.clear(that.TIMERKEY)
+    }
 
     get tyCode(): string {
         return this.getTyphoonCode
@@ -192,6 +253,7 @@ export default class TaskRateCard extends Vue {
     display: flex;
     // background: #34495e;
     width: 300px;
+    box-shadow: 3px 6px 10px 0px black; // + 21-11-29 加入了阴影
     .my-card-circle {
         width: 40%;
         // height: 100%;
@@ -226,5 +288,21 @@ export default class TaskRateCard extends Vue {
             }
         }
     }
+}
+.my-card-subtitle {
+    width: 200px;
+
+    border-radius: 10px;
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    box-shadow: 3px 6px 10px 0px black;
+    color: white;
+    font-size: 15px;
+}
+.my-card-subtitle.active {
+    background: #f39c12;
+}
+.my-card-subtitle.unactive {
+    background: #59a78f;
 }
 </style>
