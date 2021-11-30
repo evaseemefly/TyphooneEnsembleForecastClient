@@ -86,6 +86,7 @@ export default class TaskRateCard extends Vue {
     }
     @Watch('getTyphoonId')
     onTyphoonId(tyId: number): void {
+        const that = this
         // getTaskRateByTy(tyId)
         //     .then(
         //         (res: {
@@ -121,6 +122,13 @@ export default class TaskRateCard extends Vue {
         //             // duration: 0
         //         })
         //     })
+        this.updateTaskRate(tyId).then((res) => {
+            if (res.data && res.data.case_rate >= 100) {
+                that.timerUp = false
+            } else if (res.data && res.data.case_rate < 100) {
+                that.timerUp = true
+            }
+        })
         this.tyId = tyId
     }
     @Getter(GET_TYPHOON_ID, { namespace: 'typhoon' })
@@ -139,45 +147,101 @@ export default class TaskRateCard extends Vue {
         if (val) {
             SetInterval.start(
                 (_) =>
-                    getTaskRateByTy(that.tyId)
-                        .then(
-                            (res: {
-                                status: number
-                                data: {
-                                    celery_id: string
-                                    case_state: number
-                                    case_rate: number
-                                    gmt_created: Date
-                                }
-                            }) => {
-                                if (res.status === 200) {
-                                    this.taskRate = {
-                                        celeryId: res.data.celery_id,
-                                        caseState: res.data.case_state,
-                                        caseRate: res.data.case_rate,
-                                        gmtCreated: res.data.gmt_created
-                                    }
-                                }
-                            }
-                        )
-                        .catch((res) => {
-                            this.taskRate = {
-                                celeryId: DEFAULT_CELERY_ID,
-                                caseState: TaskStateEnum.UNLESS_INIT,
-                                caseRate: 0,
-                                gmtCreated: DEFAULT_DATE
-                            }
-                            this.$message({
-                                showClose: true,
-                                message: `获取当前台风编号:${this.tyCode}作业状态失败!`,
-                                type: 'warning'
-                                // duration: 0
-                            })
-                        }),
+                    // getTaskRateByTy(that.tyId)
+                    //     .then(
+                    //         (res: {
+                    //             status: number
+                    //             data: {
+                    //                 celery_id: string
+                    //                 case_state: number
+                    //                 case_rate: number
+                    //                 gmt_created: Date
+                    //             }
+                    //         }) => {
+                    //             if (res.status === 200) {
+                    //                 this.taskRate = {
+                    //                     celeryId: res.data.celery_id,
+                    //                     caseState: res.data.case_state,
+                    //                     caseRate: res.data.case_rate,
+                    //                     gmtCreated: res.data.gmt_created
+                    //                 }
+                    //             }
+                    //         }
+                    //     )
+                    //     .catch((res) => {
+                    //         this.taskRate = {
+                    //             celeryId: DEFAULT_CELERY_ID,
+                    //             caseState: TaskStateEnum.UNLESS_INIT,
+                    //             caseRate: 0,
+                    //             gmtCreated: DEFAULT_DATE
+                    //         }
+                    //         this.$message({
+                    //             showClose: true,
+                    //             message: `获取当前台风编号:${this.tyCode}作业状态失败!`,
+                    //             type: 'warning'
+                    //             // duration: 0
+                    //         })
+                    //     }),
+                    that.updateTaskRate(that.tyId).then((res) => {
+                        if (res.data && res.data.case_rate >= 100) {
+                            that.timerUp = false
+                        }
+                    }),
                 that.clockUnit,
                 that.TIMERKEY
             )
         } else SetInterval.clear(that.TIMERKEY)
+    }
+
+    updateTaskRate(
+        tyId: number
+    ): Promise<{
+        status: number
+        data: {
+            celery_id: string
+            case_state: number
+            case_rate: number
+            gmt_created: Date
+        }
+    }> {
+        return getTaskRateByTy(tyId)
+            .then(
+                (res: {
+                    status: number
+                    data: {
+                        celery_id: string
+                        case_state: number
+                        case_rate: number
+                        gmt_created: Date
+                    }
+                }) => {
+                    if (res.status === 200) {
+                        this.taskRate = {
+                            celeryId: res.data.celery_id,
+                            caseState: res.data.case_state,
+                            caseRate: res.data.case_rate,
+                            gmtCreated: res.data.gmt_created
+                        }
+                    }
+                    return res
+                    // callback(res)
+                }
+            )
+            .catch((res) => {
+                this.taskRate = {
+                    celeryId: DEFAULT_CELERY_ID,
+                    caseState: TaskStateEnum.UNLESS_INIT,
+                    caseRate: 0,
+                    gmtCreated: DEFAULT_DATE
+                }
+                this.$message({
+                    showClose: true,
+                    message: `获取当前台风编号:${this.tyCode}作业状态失败!`,
+                    type: 'warning'
+                    // duration: 0
+                })
+                return res
+            })
     }
 
     get tyCode(): string {

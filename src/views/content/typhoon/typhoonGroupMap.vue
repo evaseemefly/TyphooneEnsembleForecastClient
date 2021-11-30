@@ -582,6 +582,7 @@ export default class TyGroupMap extends mixins(
     // 台风大风半径的范围
     // 当前显示的 台风realdata div icon
     tyRealDataDivIcon: L.Marker = null
+    isShowTyRealDataDivIcon = true
 
     // TODO:[-] 21-10-08 当前的台风集合折线
     currentGroupPathPolyLine: L.Polyline = null
@@ -1540,6 +1541,15 @@ export default class TyGroupMap extends mixins(
             const tyPulsingMarker = L.marker([customData.lat, customData.lon], {
                 icon: tyDivIcon
             })
+            tyPulsingMarker.on('click', (e) => {
+                if (that.tyRealDataDivIcon && that.isShowTyRealDataDivIcon) {
+                    mymap.removeLayer(that.tyRealDataDivIcon)
+                    that.isShowTyRealDataDivIcon = false
+                } else if (that.tyRealDataDivIcon) {
+                    that.addTyphoonRealDataDiv2Map(typhoonStatus)
+                    that.isShowTyRealDataDivIcon = true
+                }
+            })
             this.currentTyPulsingMarker = tyPulsingMarker.addTo(mymap)
             // ---
             this.currentGaleRadius = L.circle(coords, {
@@ -1550,7 +1560,7 @@ export default class TyGroupMap extends mixins(
                 fillOpacity: 0.5
             }).addTo(mymap)
             // + 21-04-22 鼠标移入当前 circle 显示该 divIcon
-            that.addTyphoonRealDataDiv2Map(typhoonStatus)
+            this.addTyphoonRealDataDiv2Map(typhoonStatus)
         }
     }
 
