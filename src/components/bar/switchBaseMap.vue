@@ -10,7 +10,7 @@
             inactive-text="简略底图"
         >
         </el-switch> -->
-        <div class="card-list-bar">
+        <!-- <div class="card-list-bar">
             <div
                 class="card-info "
                 :class="[layer.isActive ? 'my-sub' : '', getBaseMapType(layer)]"
@@ -19,6 +19,17 @@
                 v-for="layer in showLayers"
             >
                 {{ layer.desc }}
+            </div>
+        </div> -->
+        <div class="card-list-bar">
+            <div
+                class="card-info "
+                :key="layer.code"
+                :class="[layer.isActive ? 'my-sub' : '', getBaseMapType(layer)]"
+                @click="setBaseMapType(layer)"
+                v-for="layer in showLayers"
+            >
+                <i :class="layer.iconCls"></i>
             </div>
         </div>
     </div>
@@ -33,20 +44,29 @@ import { SET_BASE_MAP_KEY } from '@/store/types'
 export default class SwitchBaseMap extends Vue {
     mydata: any = null
     isLocalMap = false
-    showLayers: { code: number; name: string; val: string; desc: string; isActive: boolean }[] = [
+    showLayers: {
+        code: number
+        name: string
+        val: string
+        desc: string
+        isActive: boolean
+        iconCls: string
+    }[] = [
         {
             code: MapLayerEnum.SATELITE_MAP,
             name: '卫星底图',
             val: '卫星底图',
             desc: '卫星底图',
-            isActive: false
+            isActive: false,
+            iconCls: 'fas fa-globe-asia'
         },
         {
             code: MapLayerEnum.SIMPLE_MAP,
             name: '简略底图',
             val: '简略底图',
             desc: '简略底图',
-            isActive: false
+            isActive: true,
+            iconCls: 'fas fa-globe'
         }
     ]
     baseMapType: MapLayerEnum = MapLayerEnum.SIMPLE_MAP

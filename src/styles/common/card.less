@@ -1,6 +1,5 @@
 // 主要与 card 样式相关的样式放在此处
 
-
 .card-list-bar {
     width: 300px;
     border-radius: 0.4em;
@@ -30,7 +29,7 @@
 
 .card-list-bar > .card-info {
     width: 70px;
-    height: 40px;
+    height: 34px;
     background: #16a085;
     /* border: 2px black dashed; */
     margin-left: 4px;
@@ -46,6 +45,10 @@
     transition: 1s;
     /* transition: 1s width; */
     padding: 2px;
+    // + 21-12-01 修改为flex的布局方式
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .card-list-bar > .card-info.active {

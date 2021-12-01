@@ -2,11 +2,11 @@
     <div id="bottom-right-main-bar">
         <ColorBar></ColorBar>
         <SwitchBaseMap></SwitchBaseMap>
-        <ForecastAreaBar
+        <!-- <ForecastAreaBar
             :tyCode="tyCode"
             :timeStampStr="timeStampStr"
             :forecastDt="forecastDt"
-        ></ForecastAreaBar>
+        ></ForecastAreaBar> -->
     </div>
 </template>
 <script lang="ts">
