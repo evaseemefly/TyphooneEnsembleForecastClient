@@ -50,7 +50,13 @@
             <div class="logo"><img src="../../../assets/nmefclog.png" /></div>
             <div class="title">
                 <h2>台风风暴潮集合预报系统</h2>
-                <h4>国家海洋环境预报中心</h4>
+                <!-- <h4>power by <img src="/static/icons/oceanflow.svg" /></h4> -->
+                <h4>
+                    power by
+                    <h3>Ocean Flow</h3>
+                </h4>
+
+                <!-- <h4>国家海洋环境预报中心</h4> -->
             </div>
         </div>
         <!-- <div class="line"></div> -->
@@ -128,15 +134,35 @@ export default class TopNavbar extends Vue {
                 line-height: 1.1;
                 margin-bottom: 5px;
             }
+            img {
+                height: 20px;
+            }
             h4 {
+                font-size: medium;
                 font-family: Arial, Helvetica, sans-serif;
                 text-shadow: 2px 2px 10px #000;
-                font-size: 1.3rem;
+                // font-size: 1.3rem;
                 margin: 0px;
                 line-height: 1.5;
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
+            }
+            h3 {
+                background: linear-gradient(
+                    to right,
+                    rgb(255, 255, 217),
+                    rgb(237, 248, 177),
+                    rgb(199, 233, 180),
+                    rgb(127, 205, 187),
+                    rgb(65, 182, 196),
+                    rgb(29, 145, 192),
+                    rgb(34, 94, 168)
+                );
+                -webkit-text-fill-color: transparent;
+                -webkit-background-clip: text;
+                font-weight: 600;
+                text-shadow: 4px 3px 19px #7c7c73;
             }
         }
     }
