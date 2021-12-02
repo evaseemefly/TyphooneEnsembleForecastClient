@@ -170,8 +170,11 @@ import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 import { Getter, Mutation, State, namespace } from 'vuex-class'
 import { Draggable } from '@/directives/drag'
 import { createTyCase } from '@/api/task'
+import { getTargetTyCase } from '@/api/tyhoon'
 // STORE 常量
 import { GET_CREATE_FORM } from '@/store/types'
+// vuex -> types
+import { SET_GEO_COVERAGEID } from '@/store/types'
 @Component({
     directives: {
         drag: Draggable
@@ -294,6 +297,7 @@ export default class CreateCaseForm extends Vue {
 
     // + 21-09-15 提交当前页面中的信息
     commit(): void {
+        const that = this
         const postData = {
             ty_code: this.tyCode,
             is_customer_ty: this.isCustomerTy,
@@ -302,16 +306,27 @@ export default class CreateCaseForm extends Vue {
             members_num: this.membersNum,
             deviation_radius_list: this.deviationRadiusNumberList
         }
-        createTyCase(postData).then((res) => {
-            if (res.status === 200) {
-                // TODO:[-] 21-12-01 注意此处修改了后台逻辑，会返回 task_id
-                this.$message('提交成功')
-                // console.log(res.data)
-            } else {
-                this.$message.error('创建作业错误！')
+        createTyCase(postData).then(
+            (res: { data: { ty_code: string; timestamp: string }; status: number }) => {
+                if (res.status === 200) {
+                    // TODO:[-] 21-12-01 注意此处修改了后台逻辑，会返回 task_id
+                    this.$message('提交成功')
+
+                    const tyCode = res.data.ty_code
+                    const timestamp = res.data.timestamp
+                    getTargetTyCase(tyCode, timestamp).then((res: { data: { id: number } }) => {
+                        const tyId = res.data.id
+                        that.selectCoverageId = tyId
+                    })
+                    // console.log(res.data)
+                } else {
+                    this.$message.error('创建作业错误！')
+                }
             }
-        })
+        )
     }
+
+    @Mutation(SET_GEO_COVERAGEID, { namespace: 'geo' }) selectCoverageId
 
     // 在 customerTyCMAList 后面追加数组中的最后一个对象
     addCustomerTyCMA(): void {

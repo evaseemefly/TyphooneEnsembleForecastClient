@@ -89,10 +89,21 @@ const getTargetTyGroupDistDate = (tyCode?: string, timeStamp?: string) => {
     })
 }
 
+const getTargetTyCase = (tyCode: string, timeStamp: string) => {
+    const url = `${host}${area}/ty/case/target`
+    return axios.get(url, {
+        headers: authHeader(),
+        params: {
+            ty_code: tyCode,
+            timestamp: timeStamp
+        }
+    })
+}
 export {
     getTargetTyGroupComplexModel,
     getTargetTyGroupDateRange,
     getTargetTyGroupDistDate,
     getTyListByYear,
-    getTyCaseListByTyCode
+    getTyCaseListByTyCode,
+    getTargetTyCase
 }
