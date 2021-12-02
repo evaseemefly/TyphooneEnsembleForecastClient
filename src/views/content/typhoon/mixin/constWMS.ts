@@ -10,8 +10,8 @@ import { WMSOptionsMidModel, WMSMidModel } from '@/middle_model/geo'
  */
 @Component
 class WMSMixin extends Vue {
-    baseHost = 'http://128.5.10.21'
-    // baseHost = 'http://localhost'
+    // baseHost = 'http://128.5.10.21'
+    baseHost = 'http://localhost'
     basePort = '8084'
     baseUrl = `${this.baseHost}:${this.basePort}`
     // mixin definition here
