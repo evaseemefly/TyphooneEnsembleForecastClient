@@ -304,6 +304,7 @@ export default class CreateCaseForm extends Vue {
         }
         createTyCase(postData).then((res) => {
             if (res.status === 200) {
+                // TODO:[-] 21-12-01 注意此处修改了后台逻辑，会返回 task_id
                 this.$message('提交成功')
                 // console.log(res.data)
             } else {
