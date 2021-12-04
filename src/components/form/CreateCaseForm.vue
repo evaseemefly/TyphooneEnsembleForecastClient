@@ -314,10 +314,11 @@ export default class CreateCaseForm extends Vue {
 
                     const tyCode = res.data.ty_code
                     const timestamp = res.data.timestamp
-                    getTargetTyCase(tyCode, timestamp).then((res: { data: { id: number } }) => {
-                        const tyId = res.data.id
-                        that.selectCoverageId = tyId
-                    })
+                    // TODO:[*] 21-12-02 由于提交作业后作业可能会等待或运行一段时间
+                    // getTargetTyCase(tyCode, timestamp).then((res: { data: { id: number } }) => {
+                    //     const tyId = res.data.id
+                    //     that.selectCoverageId(tyId)
+                    // })
                     // console.log(res.data)
                 } else {
                     this.$message.error('创建作业错误！')
