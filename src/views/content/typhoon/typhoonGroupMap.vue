@@ -881,7 +881,7 @@ export default class TyGroupMap extends mixins(
     }
 
     // TODO:[-] 21-10-08 清除当前台风折线群组 layer
-    clearGroupLayer(tempPolyLine: L.LayerGroup | null): void {
+    clearGroupLayer(tempPolyLine: L.LayerGroup | L.Marker | null): void {
         const mymap: L.Map = this.$refs.basemap['mapObject']
         if (tempPolyLine) {
             // mymap.remove(tempPolyLine)
@@ -1125,12 +1125,15 @@ export default class TyGroupMap extends mixins(
     clearGroupPathAllLayer(): void {
         if (
             this.currentGroupPathPolyLineLayerGroup &&
-            this.currentGroupPathProPathCirclesGroup &&
-            this.currentGroupPathPulsingLayerGroup
+            this.currentGroupPathPulsingLayerGroup &&
+            this.currentCenterGroupPathPolyLineLayerGroup
         ) {
             this.clearGroupLayer(this.currentGroupPathPolyLineLayerGroup)
-            this.clearGroupLayer(this.currentGroupPathProPathCirclesGroup)
+            this.clearGroupLayer(this.currentCenterGroupPathPolyLineLayerGroup)
             this.clearGroupLayer(this.currentGroupPathPulsingLayerGroup)
+        }
+        if (this.tyRealDataDivIcon) {
+            this.clearTyRealDataLayer()
         }
     }
 
@@ -1564,7 +1567,7 @@ export default class TyGroupMap extends mixins(
         }
     }
 
-    // TODO:[-] + 21-05-31 去掉
+    // TODO:[-] + 21-05-31 去掉当前时刻对应的台风 原点 + 脉冲圆点 + 半径示意
     clearTyRealDataLayer(): void {
         const mymap: any = this.$refs.basemap['mapObject']
         if (this.tyRealDataDivIcon) {
@@ -1825,10 +1828,12 @@ export default class TyGroupMap extends mixins(
                 center: true,
                 type: 'success'
             })
+            this.clearGroupPathAllLayer()
 
             this.testGetAddTyGroupPath2Map(testTyphoonId)
 
             // TODO:[*] 21-04-28 暂时加入的加载 海洋站位置的 测试
+            this.clearSurgeAllGroupLayers()
             this.loadStationList(this.zoom)
 
             // + 21-05-18 在页面加载后首先加载当前的 start_dt 与 end_dt
