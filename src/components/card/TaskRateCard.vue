@@ -250,6 +250,7 @@ export default class TaskRateCard extends Vue {
 }
 </script>
 <style lang="less">
+@import '../../styles/my-elementui/common';
 // .el-progress--circle {
 //     .el-progress-circle {
 //         height: 100px;
@@ -257,22 +258,22 @@ export default class TaskRateCard extends Vue {
 //     }
 // }
 // TODO:[-] 21-11-26 加入对于消息提示框的样式重写
-.el-message.el-message--warning.is-closable {
-    // background: linear-gradient(
-    //     to right,
-    //     #34495e 40%,
-    //     rgba(74, 145, 148, 0.726),
-    //     rgba(77, 142, 124, 0.739)
-    // );
-    background: rgba(216, 183, 37, 0.739);
-    border-radius: 10px;
-    -webkit-backdrop-filter: blur(4px);
-    backdrop-filter: blur(4px);
-    border-width: 0px;
-    .el-message__content {
-        color: white;
-    }
-}
+// .el-message.el-message--warning.is-closable {
+//     // background: linear-gradient(
+//     //     to right,
+//     //     #34495e 40%,
+//     //     rgba(74, 145, 148, 0.726),
+//     //     rgba(77, 142, 124, 0.739)
+//     // );
+//     background: rgba(216, 183, 37, 0.739);
+//     border-radius: 10px;
+//     -webkit-backdrop-filter: blur(4px);
+//     backdrop-filter: blur(4px);
+//     border-width: 0px;
+//     .el-message__content {
+//         color: white;
+//     }
+// }
 
 .el-progress--circle {
     margin: 15px;

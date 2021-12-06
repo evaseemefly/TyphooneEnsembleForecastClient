@@ -1,0 +1,39 @@
+// TODO:[-] 21-11-26 加入对于消息提示框的样式重写
+.el-message.el-message--warning.is-closable {
+    // background: linear-gradient(
+    //     to right,
+    //     #34495e 40%,
+    //     rgba(74, 145, 148, 0.726),
+    //     rgba(77, 142, 124, 0.739)
+    // );
+    background: rgba(216, 183, 37, 0.739);
+    border-radius: 10px;
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    border-width: 0px;
+    .el-message__content {
+        color: white;
+    }
+}
+
+.el-message.el-message--success.is-closable {
+    background: rgb(50, 157, 150);
+    border-radius: 10px;
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    border-width: 0px;
+    .el-message__content {
+        color: white;
+    }
+}
+
+.el-message.el-message--error.is-closable {
+    background: rgba(141, 37, 30, 0.788);
+    border-radius: 10px;
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    border-width: 0px;
+    .el-message__content {
+        color: white;
+    }
+}

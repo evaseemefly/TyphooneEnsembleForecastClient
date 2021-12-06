@@ -2145,6 +2145,8 @@ export default class TyGroupMap extends mixins(
 
 // + 21-04-28 引入 针对 station surge div Icon 的样式
 @import '../../../styles/station/icon';
+// + 21-12-06 加入重写的 emelemtnui 样式
+@import '../../../styles//my-elementui/common';
 
 // TODO:[-] 21-06-10 TEST 加入了关于 mybasemap 的测试样式
 // #mybasemap {
