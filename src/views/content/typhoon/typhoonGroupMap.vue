@@ -268,6 +268,7 @@ import { getDaysNum } from '@/common/date'
 
 // 各类工具类
 import { clearRasterFromMap } from '@/util/map'
+import { formatDate } from '@/common/date'
 import { TyGroupPathLine, TyGroupCenterPathLine } from './typhoonGroup'
 // 各类 DTO
 import { CustomerMarker, CustomerGisFormMarker } from './marker'
@@ -922,6 +923,11 @@ export default class TyGroupMap extends mixins(
         const surgePulsingMarkersList: L.Marker[] = []
         const surgeDataFormMarkersList: L.Marker[] = []
         this.clearSurgeAllGroupLayers()
+        this.$message(
+            `加载台风:${that.stationSurgeIconOptions.tyCode},预报时间:${formatDate(
+                that.stationSurgeIconOptions.forecastDt
+            )}对应的海洋站`
+        )
         getStationSurgeRangeListByGroupPath(
             this.stationSurgeIconOptions.gpId,
             this.stationSurgeIconOptions.tyCode,
@@ -2133,6 +2139,16 @@ export default class TyGroupMap extends mixins(
         this.zoom = valNew
         // console.log(`new:${valNew}|old:${valOld}`)
     }
+
+    get getStationOptions(): { stationCode: string; stationName: string } {
+        const { stationCode, stationName } = this
+        return { stationCode, stationName }
+    }
+
+    @Watch('getStationOptions')
+    onStationOptions(val: { stationCode: string; stationName: string }): void {
+        this.$message(`加载台站:${val.stationName}`)
+    }
 }
 </script>
 <style lang="less">
@@ -2146,7 +2162,7 @@ export default class TyGroupMap extends mixins(
 // + 21-04-28 引入 针对 station surge div Icon 的样式
 @import '../../../styles/station/icon';
 // + 21-12-06 加入重写的 emelemtnui 样式
-@import '../../../styles//my-elementui/common';
+@import '../../../styles/my-elementui/common';
 
 // TODO:[-] 21-06-10 TEST 加入了关于 mybasemap 的测试样式
 // #mybasemap {

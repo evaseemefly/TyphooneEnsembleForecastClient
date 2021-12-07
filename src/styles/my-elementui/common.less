@@ -6,7 +6,7 @@
     //     rgba(74, 145, 148, 0.726),
     //     rgba(77, 142, 124, 0.739)
     // );
-    background: rgba(216, 183, 37, 0.739);
+    background: rgba(158, 147, 99, 0.739);
     border-radius: 10px;
     -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);
@@ -16,8 +16,19 @@
     }
 }
 
-.el-message.el-message--success.is-closable {
-    background: rgb(50, 157, 150);
+.el-message.el-message--success {
+    background: #1abc9cbe;
+    border-radius: 10px;
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    border-width: 0px;
+    .el-message__content {
+        color: white;
+    }
+}
+
+.el-message.el-message--info {
+    background: #3498dba9;
     border-radius: 10px;
     -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);

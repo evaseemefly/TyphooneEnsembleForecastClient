@@ -102,7 +102,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
             isChildren: false,
             toolType: ToolTypeEnum.OPTION,
             val: '',
-            checked: false,
+            checked: true,
             // isFather: true,
             children: [
                 // + 21-03-26 海浪等值线按钮
@@ -278,8 +278,8 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
             this.converToolsBar.push({
                 ...father,
                 isChildren: false,
-                id: index,
-                checked: false
+                id: index
+                // checked: false
             })
             if (father.hasChildren) {
                 father.children.map((child) => {
