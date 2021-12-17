@@ -52,7 +52,7 @@
                 <h2>台风风暴潮集合预报系统</h2>
                 <!-- <h4>power by <img src="/static/icons/oceanflow.svg" /></h4> -->
                 <h4>
-                    power by
+                    powered by
                     <h3>Ocean Flow</h3>
                 </h4>
 

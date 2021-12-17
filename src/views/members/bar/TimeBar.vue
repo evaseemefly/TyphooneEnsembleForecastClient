@@ -7,7 +7,7 @@
         </div>
         <div id="playpause" @click="timerRecovery" class="play-pause iconfont clickable off"></div>
         <div id="calendar">
-            <div class="calendar_interval">
+            <div class="calendar_interval" :class="disabled ? 'masked' : ''">
                 <div
                     v-for="item in allDateList"
                     :key="item.id"
@@ -25,7 +25,7 @@
                     {{ cuttingLinesIndex[index] }}小时
                 </div>
             </div> -->
-            <div class="calendar_cutting_line">
+            <div class="calendar_cutting_line" :class="disabled ? 'masked' : ''">
                 <div
                     v-for="(item, index) in datelist"
                     :key="item.id"
@@ -101,6 +101,9 @@ export default class TimeBar extends Vue {
     // days: number;
     // TODO:[-] 21-01-14 计时器开关，true -> 打开,false -> 关闭
     timerLock = false
+
+    // TODO:[-] 21-12-17 加入遮罩开关
+    disabled = true // true 不可用 ,false 关闭遮罩
 
     timer = 0
     // + 21-01-27 播放 dt 的时间间隔
@@ -261,6 +264,10 @@ export default class TimeBar extends Vue {
         // console.log(this);
         // console.log(event);
         const myself = this
+        // + 21-12-17 若不显示则直接跳出
+        if (this.disabled) {
+            return
+        }
         const mainDom = document.getElementsByClassName('progress-line')
         // 1 计算整个进度条的长度
         const lenTotal = event.currentTarget.clientWidth
@@ -325,7 +332,10 @@ export default class TimeBar extends Vue {
         //     console.log('debounce')
         // }, 2000)
         // lodash.throttle((event: any) => {}, 1.5 * 1000)
-
+        // + 21-12-17 若不显示则直接跳出
+        if (this.disabled) {
+            return
+        }
         // TODO:[-] 21-01-20 在外侧获取 event.currentTarget.clientWidth
         // -> div.progress-line 的宽度
         // ERROR:此处传递给 delayMoveProgressLine 方法的 event 缺失了部分的信息？
@@ -450,6 +460,10 @@ export default class TimeBar extends Vue {
     setTimeBar(event: any): void {
         // console.log('点击事件')
         // 点击之后更新这个选中的时间
+        // + 21-12-17 若不显示则直接跳出
+        if (this.disabled) {
+            return
+        }
         this.selectedCurrentDt = this.hoverCurrentDt
     }
     // 初始化当前 date list
@@ -597,7 +611,7 @@ export default class TimeBar extends Vue {
                 const lastIndex = tempArr.length - 1
                 tempArr = tempArr.slice(1, lastIndex)
                 tempArr.forEach((temp: ChildNode) => {
-                    ;(temp as HTMLElement).style.width = this.lenUnit * this.interval + 'px'
+                    (temp as HTMLElement).style.width = this.lenUnit * this.interval + 'px'
                     // temp.style.width = this.lenUnit * this.interval + "px";
                 })
             }
@@ -797,7 +811,7 @@ export default class TimeBar extends Vue {
     top: -20px;
     position: absolute;
 }
-// TODO:[-] 21-01-18 新加入的 遮罩 mask_layer
+// - 21-01-18 新加入的 遮罩 mask_layer
 #mask_layer {
     top: -20px;
     position: absolute;
@@ -810,6 +824,19 @@ export default class TimeBar extends Vue {
             height: 30px;
         }
     }
+}
+
+// - 21-12-17 新加入的 遮罩
+.masked {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0px;
+    top: 0px;
+    background: #eeeeee;
+    opacity: 0.5;
+    filter: alpha(opacity=40);
+    z-index: 5;
 }
 
 .calendar_cutting_line {
