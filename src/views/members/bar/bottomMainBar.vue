@@ -5,6 +5,7 @@
             :endDateTime="endDate"
             :interval="interval"
             :days="days"
+            :isShowTimeBar="isShowTimeBar"
         ></TimeBar>
         <!-- TODO:[-] 20-08-09 注意右下角的先改为 bottomright-main-bar,colorbar是其子组件 -->
         <!-- <div class="color-bar"><ColorBar></ColorBar></div> -->
@@ -51,6 +52,8 @@ export default class BottomMainBar extends Vue {
     timeStampStr
     @Prop(Date)
     forecastDt
+    @Prop(Boolean)
+    isShowTimeBar
 }
 </script>
 

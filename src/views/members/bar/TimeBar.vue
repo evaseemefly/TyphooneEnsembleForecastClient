@@ -7,7 +7,7 @@
         </div>
         <div id="playpause" @click="timerRecovery" class="play-pause iconfont clickable off"></div>
         <div id="calendar">
-            <div class="calendar_interval" :class="disabled ? 'masked' : ''">
+            <div class="calendar_interval" :class="!isShowTimeBar ? 'masked' : ''">
                 <div
                     v-for="item in allDateList"
                     :key="item.id"
@@ -25,7 +25,7 @@
                     {{ cuttingLinesIndex[index] }}小时
                 </div>
             </div> -->
-            <div class="calendar_cutting_line" :class="disabled ? 'masked' : ''">
+            <div class="calendar_cutting_line" :class="!isShowTimeBar ? 'masked' : ''">
                 <div
                     v-for="(item, index) in datelist"
                     :key="item.id"
@@ -94,6 +94,7 @@ export default class TimeBar extends Vue {
 
     // TODO:[-] 21-01-18 与case date 相关的 mid model
     caseDateInfo: CaseDateInfo = null
+
     // 每日共划分的间隔
     // intervalOfDay: number;
 
@@ -130,6 +131,8 @@ export default class TimeBar extends Vue {
     //每日共划分的间隔
     @Prop(Number)
     interval!: number
+    @Prop(Boolean)
+    isShowTimeBar: boolean
     // 总共划分的天数
     days = 3
 
@@ -265,7 +268,7 @@ export default class TimeBar extends Vue {
         // console.log(event);
         const myself = this
         // + 21-12-17 若不显示则直接跳出
-        if (this.disabled) {
+        if (!this.isShowTimeBar) {
             return
         }
         const mainDom = document.getElementsByClassName('progress-line')
@@ -333,7 +336,7 @@ export default class TimeBar extends Vue {
         // }, 2000)
         // lodash.throttle((event: any) => {}, 1.5 * 1000)
         // + 21-12-17 若不显示则直接跳出
-        if (this.disabled) {
+        if (!this.isShowTimeBar) {
             return
         }
         // TODO:[-] 21-01-20 在外侧获取 event.currentTarget.clientWidth
@@ -461,7 +464,7 @@ export default class TimeBar extends Vue {
         // console.log('点击事件')
         // 点击之后更新这个选中的时间
         // + 21-12-17 若不显示则直接跳出
-        if (this.disabled) {
+        if (!this.isShowTimeBar) {
             return
         }
         this.selectedCurrentDt = this.hoverCurrentDt
@@ -611,7 +614,7 @@ export default class TimeBar extends Vue {
                 const lastIndex = tempArr.length - 1
                 tempArr = tempArr.slice(1, lastIndex)
                 tempArr.forEach((temp: ChildNode) => {
-                    (temp as HTMLElement).style.width = this.lenUnit * this.interval + 'px'
+                    ;(temp as HTMLElement).style.width = this.lenUnit * this.interval + 'px'
                     // temp.style.width = this.lenUnit * this.interval + "px";
                 })
             }

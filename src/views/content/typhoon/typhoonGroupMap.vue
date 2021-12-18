@@ -77,6 +77,7 @@
                 :tyCode="tyCode"
                 :timeStampStr="timestampStr"
                 :forecastDt="targetDate"
+                :isShowTimeBar="isShowTimeBar"
             ></BottomMainBar>
             <!-- - 21-11-16 去掉了底部的进度条 -->
             <!-- 使用bootstrap-vue的组件 -->
@@ -455,6 +456,7 @@ export default class TyGroupMap extends mixins(
         render: L.canvas()
     }
     isZoomLock = false
+    isShowTimeBar = false // TODO:[-] 21-12-18 是否显示时间轴（加载）
     coverageUrl = ''
     makerLatlng = [0, 0]
     // TODO:[-] 21-01-06 初始位置，加载 case 后将case的初始位置赋值于此
@@ -1828,6 +1830,7 @@ export default class TyGroupMap extends mixins(
     onSelectedTyId(val: number): void {
         if (val != DEFAULT_TYPHOON_ID) {
             const testTyphoonId = val
+            this.isShowTimeBar = true
             const showMsg = '已加载对应台风信息'
             this.$message({
                 message: showMsg,
@@ -1853,6 +1856,7 @@ export default class TyGroupMap extends mixins(
             // 对于未选中的 ty 的情况 ，清除 typhoonlie
             this.clearGroupPathAllLayer()
             this.clearCenterGroupAllLayer()
+            this.isShowTimeBar = false
         }
     }
 
