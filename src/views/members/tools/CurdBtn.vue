@@ -81,7 +81,7 @@ export default class CurdBtn extends Vue {
     isCaseDialogVisible = false
     isShowCreateForm = false // + 21-07-11 创建case form (风暴潮)
     // 已经展开
-    isExpanded = false
+    isExpanded = true
     @Prop()
     caseList: CaseMinInfo[]
 

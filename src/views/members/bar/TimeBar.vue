@@ -7,7 +7,7 @@
         </div>
         <div id="playpause" @click="timerRecovery" class="play-pause iconfont clickable off"></div>
         <div id="calendar">
-            <div class="calendar_interval" :class="!isShowTimeBar ? 'masked' : ''">
+            <div class="calendar_interval" :class="!isShowTimeBar ? 'disabled' : ''">
                 <div
                     v-for="item in allDateList"
                     :key="item.id"
@@ -25,7 +25,7 @@
                     {{ cuttingLinesIndex[index] }}小时
                 </div>
             </div> -->
-            <div class="calendar_cutting_line" :class="!isShowTimeBar ? 'masked' : ''">
+            <div class="calendar_cutting_line" :class="!isShowTimeBar ? 'disabled' : ''">
                 <div
                     v-for="(item, index) in datelist"
                     :key="item.id"
@@ -614,7 +614,7 @@ export default class TimeBar extends Vue {
                 const lastIndex = tempArr.length - 1
                 tempArr = tempArr.slice(1, lastIndex)
                 tempArr.forEach((temp: ChildNode) => {
-                    ;(temp as HTMLElement).style.width = this.lenUnit * this.interval + 'px'
+                    (temp as HTMLElement).style.width = this.lenUnit * this.interval + 'px'
                     // temp.style.width = this.lenUnit * this.interval + "px";
                 })
             }
@@ -830,7 +830,7 @@ export default class TimeBar extends Vue {
 }
 
 // - 21-12-17 新加入的 遮罩
-.masked {
+.disabled {
     position: absolute;
     width: 100%;
     height: 100%;

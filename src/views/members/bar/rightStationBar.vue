@@ -47,7 +47,8 @@ import * as elementResizeDetectorMaker from 'element-resize-detector'
 import moment from 'moment'
 import { getStationSurgeRealDataQuarterList } from '@/api/station'
 import { Draggable, mouseDrag } from '@/directives/drag'
-import { DEFAULT_TIMESTAMP, DEFAULT_TYPHOON_CODE, DEFAULT_STATION_CODE } from '@/const/common'
+import { DEFAULT_TIMESTAMP, DEFAULT_TYPHOON_CODE } from '@/const/common'
+import { DEFAULT_STATION_CODE } from '@/const/station'
 import QuarterView from '@/components/charts/QuarterChartView.vue'
 import StationCharts from '@/views/members/charts/StationCharts.vue'
 @Component({
@@ -149,6 +150,8 @@ export default class TabContent extends Vue {
             val.stationCode !== DEFAULT_STATION_CODE &&
             val.timestampStr !== DEFAULT_TIMESTAMP
         ) {
+            // 若监听到 options 发生变化，则展开 form
+            this.isExpanded = true
             this.loadQuarterCharts(val.tyCode, val.stationCode, val.timestampStr)
         }
     }

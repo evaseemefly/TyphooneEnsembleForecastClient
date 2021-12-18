@@ -1033,7 +1033,7 @@ export default class TyGroupMap extends mixins(
                                         stationCode: res.data[index].station_code,
                                         lat: res.data[index].lat,
                                         lon: res.data[index].lon,
-                                        name: res.data[index].name
+                                        stationName: res.data[index].name
                                     }
                                 }
                             )
@@ -1086,6 +1086,11 @@ export default class TyGroupMap extends mixins(
                                         mymap.removeLayer(that.stationMinMarker)
                                         that.stationMinMarker = undefined
                                     }
+                                })
+                                .on('click', (e) => {
+                                    // 通过 -> e -> target -> options -> customData -> stationCode
+                                    that.stationCode = e.target.options.customData.stationCode
+                                    that.stationName = e.target.options.customData.stationName
                                 })
                             surgePulsingMarkersList.push(surgePulsingMarker)
                             const stationSurgeIconMarker = L.marker(
