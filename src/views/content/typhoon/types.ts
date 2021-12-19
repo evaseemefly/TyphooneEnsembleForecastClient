@@ -1,6 +1,8 @@
 import { ProductEnum } from '@/enum/dict'
 import { LayerTypeEnum } from '@/enum/map'
 import { AreaEnum } from '@/enum/area'
+import { DEFAULT_TYPHOON_GROUP_PATH_ID, DEFAULT_DATE } from '@/const/common'
+import { DEFAULTTYCODE, DEFAULTTIMESTAMP } from '@/const/typhoon'
 import { Layer } from 'leaflet'
 
 export interface IVelocityOptions {
@@ -102,9 +104,10 @@ export interface ITyGroupPathOptions extends ILayerDisplayOptions {
  *
  * */
 const DefaultTyGroupPathOptions: ITyGroupPathOptions = {
-    tyCode: '',
-    forecastDt: new Date(1970, 1, 1),
-    timeStamp: '',
+    gpId: DEFAULT_TYPHOON_GROUP_PATH_ID,
+    tyCode: DEFAULTTYCODE,
+    forecastDt: DEFAULT_DATE,
+    timeStamp: DEFAULTTIMESTAMP,
     isShow: false,
     layerType: LayerTypeEnum.GROUP_PATH_LAYER
 }

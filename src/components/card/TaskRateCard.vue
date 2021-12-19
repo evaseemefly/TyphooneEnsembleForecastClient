@@ -52,7 +52,6 @@ import {
     DEFAULT_SELECT_KEY,
     DEFAULT_SELECT_VAL,
     DEFAULT_TYPHOON_ID,
-    DEFAULT_TYPHOON_CODE,
     DEFAULT_CELERY_ID,
     DEFAULT_DATE
 } from '@/const/common'

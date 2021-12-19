@@ -6,8 +6,8 @@ import {
     SET_TYPHOON_TIMESTAMP,
     GET_TYPHOON_TIMESTAMP
 } from './../types'
-import { DEFAULT_TYPHOON_ID, DEFAULT_TYPHOON_CODE } from '@/const/common'
-import { DEFAULTTIMESTAMP } from '@/const/typhoon'
+import { DEFAULT_TYPHOON_ID } from '@/const/common'
+import { DEFAULTTIMESTAMP, DEFAULTTYCODE } from '@/const/typhoon'
 export interface ITyphoon {
     tyCode?: string
     tyId: number
@@ -15,7 +15,7 @@ export interface ITyphoon {
 }
 
 const state: ITyphoon = {
-    tyCode: DEFAULT_TYPHOON_CODE,
+    tyCode: DEFAULTTYCODE,
     tyId: DEFAULT_TYPHOON_ID,
     tyTimeStamp: DEFAULTTIMESTAMP
 }

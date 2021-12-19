@@ -372,12 +372,7 @@ import {
     SET_SCALE_RANGE,
     GET_BASE_MAP_KEY // + 21-08-23 监听切换地图的 baseMapKey
 } from '@/store/types'
-import {
-    DEFAULT_LAYER_ID,
-    DEFAULT_TYPHOON_CODE,
-    DEFAULT_TYPHOON_ID,
-    DEFAULT_TYPHOON_GROUP_PATH_ID
-} from '@/const/common'
+import { DEFAULT_LAYER_ID, DEFAULT_TYPHOON_ID, DEFAULT_TYPHOON_GROUP_PATH_ID } from '@/const/common'
 import { RADIUSUNIT, DEFAULTTIMESTAMP, DEFAULTTYCODE } from '@/const/typhoon'
 import { ArrayPropsDefinition } from 'vue/types/options'
 import { SET_CURRENT_LATLNG } from '@/store/types'

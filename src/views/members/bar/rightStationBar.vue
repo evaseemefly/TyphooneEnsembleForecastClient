@@ -47,7 +47,8 @@ import * as elementResizeDetectorMaker from 'element-resize-detector'
 import moment from 'moment'
 import { getStationSurgeRealDataQuarterList } from '@/api/station'
 import { Draggable, mouseDrag } from '@/directives/drag'
-import { DEFAULT_TIMESTAMP, DEFAULT_TYPHOON_CODE } from '@/const/common'
+import { DEFAULT_TIMESTAMP } from '@/const/common'
+import { DEFAULTTYCODE } from '@/const/typhoon'
 import { DEFAULT_STATION_CODE } from '@/const/station'
 import QuarterView from '@/components/charts/QuarterChartView.vue'
 import StationCharts from '@/views/members/charts/StationCharts.vue'
@@ -146,7 +147,7 @@ export default class TabContent extends Vue {
             `监听到options发生变化:tyCode:${val.tyCode},stationCode:${val.stationCode},timestampStr:${val.timestampStr}`
         )
         if (
-            val.tyCode !== DEFAULT_TYPHOON_CODE &&
+            val.tyCode !== DEFAULTTYCODE &&
             val.stationCode !== DEFAULT_STATION_CODE &&
             val.timestampStr !== DEFAULT_TIMESTAMP
         ) {

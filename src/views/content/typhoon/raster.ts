@@ -37,10 +37,10 @@ import { DictEnum, ProductEnum } from '@/enum/dict'
 import {
     USELESS_COVERAGE_ID,
     DEFAULT_TYPHOON_ID,
-    DEFAULT_TYPHOON_CODE,
     DEFAULT_DATE,
     DEFAULT_TIMESTAMP
 } from '@/const/common'
+import { DEFAULTTYCODE } from '@/const/typhoon'
 import { LayerTypeEnum } from '@/enum/map'
 import { BIconChevronCompactUp } from 'bootstrap-vue'
 // COMMON
@@ -325,7 +325,7 @@ class SurgeRasterGeoLayer {
     } = {
         rasterLayer: new L.Layer(),
 
-        tyCode: DEFAULT_TYPHOON_CODE,
+        tyCode: DEFAULTTYCODE,
 
         tyTimestamp: DEFAULT_TIMESTAMP,
         /**

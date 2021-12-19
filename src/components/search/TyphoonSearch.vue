@@ -74,10 +74,10 @@ import {
     DEFAULT_NUMBER,
     DEFAULT_SELECT_KEY,
     DEFAULT_SELECT_VAL,
-    DEFAULT_TYPHOON_ID, // 默认未赋值时的台风id
-    DEFAULT_TYPHOON_CODE // 默认未赋值时的台风code
+    DEFAULT_TYPHOON_ID // 默认未赋值时的台风id
+    // DEFAULT_TYPHOON_CODE // 默认未赋值时的台风code
 } from '@/const/common'
-import { DEFAULTTIMESTAMP } from '@/const/typhoon'
+import { DEFAULTTIMESTAMP, DEFAULTTYCODE } from '@/const/typhoon'
 import { SET_TYPHOON_CODE, SET_TYPHOON_ID, SET_TYPHOON_TIMESTAMP } from '@/store/types'
 import { fortmatData2YMDH, fortmatData2YMDHM } from '@/common/filter'
 @Component({
@@ -103,7 +103,7 @@ export default class TyphoonSearch extends Vue {
         tyCode: string
         tyId: number
     } = { gmtCreated: new Date(), timestamp: '', tyCode: '', tyId: -1 }
-    selectedTyCode: string = DEFAULT_TYPHOON_CODE
+    selectedTyCode: string = DEFAULTTYCODE
     selectedTyId: number = DEFAULT_TYPHOON_ID
     selectedTyTimeStampStr: string = DEFAULTTIMESTAMP
     mounted() {
@@ -202,7 +202,7 @@ export default class TyphoonSearch extends Vue {
             this.selectedTyTimeStampStr = val.timestamp
         } else {
             this.selectedTyId = DEFAULT_TYPHOON_ID
-            this.selectedTyCode = DEFAULT_TYPHOON_CODE
+            this.selectedTyCode = DEFAULTTYCODE
             this.selectedTyTimeStampStr = DEFAULTTIMESTAMP
         }
     }

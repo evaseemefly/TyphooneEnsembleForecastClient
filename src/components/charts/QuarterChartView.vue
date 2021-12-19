@@ -8,7 +8,8 @@ import * as elementResizeDetectorMaker from 'element-resize-detector'
 import moment from 'moment'
 import { getStationSurgeRealDataQuarterList } from '@/api/station'
 import { Draggable } from '@/directives/drag'
-import { DEFAULT_TIMESTAMP, DEFAULT_TYPHOON_CODE, DEFAULT_STATION_CODE } from '@/const/common'
+import { DEFAULT_TIMESTAMP, DEFAULT_STATION_CODE } from '@/const/common'
+import { DEFAULTTYCODE } from '@/const/typhoon'
 @Component({
     directives: {
         drag: Draggable
@@ -72,7 +73,7 @@ export default class QuarterView extends Vue {
             // });
         })
         if (
-            this.tyCode !== DEFAULT_TYPHOON_CODE &&
+            this.tyCode !== DEFAULTTYCODE &&
             this.stationCode !== DEFAULT_STATION_CODE &&
             this.timestampStr !== DEFAULT_TIMESTAMP
         ) {
@@ -93,7 +94,7 @@ export default class QuarterView extends Vue {
             `QuarterChartView 监听到options发生变化:tyCode:${val.tyCode},stationCode:${val.stationCode},timestampStr:${val.timestampStr}`
         )
         if (
-            val.tyCode !== DEFAULT_TYPHOON_CODE &&
+            val.tyCode !== DEFAULTTYCODE &&
             val.stationCode !== DEFAULT_STATION_CODE &&
             val.timestampStr !== DEFAULT_TIMESTAMP
         ) {
