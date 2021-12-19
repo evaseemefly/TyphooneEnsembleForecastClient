@@ -1707,6 +1707,7 @@ export default class TyGroupMap extends mixins(
             //     message: `'这是一条成功的提示消息'`,
             //     type: 'success'
             // })
+            // this.$message({message:'加载'})
             this.loadStationList(this.zoom)
         } else {
             this.clearSurgeAllGroupLayers()
@@ -1918,17 +1919,21 @@ export default class TyGroupMap extends mixins(
     // + 21-08-16 新加入的检查 stationSurgeIconOptions
     checkStationSurgeOptions(val: ITyStationLayerOptions): boolean {
         let isOk = false
-        if (
-            val.tyCode === DefaultTyGroupPathOptions.tyCode ||
-            val.forecastDt === DefaultTyGroupPathOptions.forecastDt ||
-            val.tyTimeStamp === DefaultTyGroupPathOptions.timeStamp ||
-            val.gpId === DEFAULT_TYPHOON_GROUP_PATH_ID
-        ) {
-            isOk = false
+        if (val.isShow) {
+            if (val.tyCode === DefaultTyGroupPathOptions.tyCode) {
+                this.$message({ message: '请先选择台风!', type: 'warning' })
+            } else if (
+                val.forecastDt === DefaultTyGroupPathOptions.forecastDt ||
+                val.tyTimeStamp === DefaultTyGroupPathOptions.timeStamp ||
+                val.gpId === DEFAULT_TYPHOON_GROUP_PATH_ID
+            ) {
+                this.$message({ message: '需要选择其他参数才可加载', type: 'warning' })
+                isOk = false
+            } else {
+                isOk = true
+            }
         } else if (val.isShow === false) {
             isOk = false
-        } else {
-            isOk = true
         }
         return isOk
     }
@@ -1936,16 +1941,19 @@ export default class TyGroupMap extends mixins(
     checkSurgeOptions(val: ITySurgeLayerOptions): boolean {
         let isOk = false
         // TODO:[*] !! 21-07-28 注意可以将 group path 默认id 统一放在 DefaultTyGroupPathOptions 中
-        if (
-            val.tyCode === DefaultTyGroupPathOptions.tyCode ||
-            val.forecastDt === DefaultTyGroupPathOptions.forecastDt ||
-            val.tyTimeStamp === DefaultTyGroupPathOptions.timeStamp
-        ) {
-            isOk = false
+        if (val.isShow) {
+            if (
+                val.tyCode === DefaultTyGroupPathOptions.tyCode ||
+                val.forecastDt === DefaultTyGroupPathOptions.forecastDt ||
+                val.tyTimeStamp === DefaultTyGroupPathOptions.timeStamp
+            ) {
+                this.$message({ message: '需要选择其他参数才可加载图层', type: 'warning' })
+                isOk = false
+            } else {
+                isOk = true
+            }
         } else if (val.isShow === false) {
             isOk = false
-        } else {
-            isOk = true
         }
         return isOk
     }
