@@ -79,8 +79,8 @@ export default class TabContent extends Vue {
         divHeight: 0
     }
     sizeDefault: { divWidth: number; divHeight: number } = {
-        divWidth: 500,
-        divHeight: 400
+        divWidth: 660,
+        divHeight: 445
     }
     subTitles: Array<{ title: string; index: number; componetName: string }> = [
         { title: '潮位分析数据', index: 0, componetName: 'quarter-view' },
@@ -409,8 +409,8 @@ export default class TabContent extends Vue {
 #station_quarter_charts {
     // height: 100%;
     // width: 100%;
-    min-width: 400px;
-    min-height: 400px;
+    min-width: 660px;
+    min-height: 445px;
     height: 100%;
 }
 </style>

@@ -74,8 +74,8 @@ export default class StationCharts extends Vue {
         divHeight: 0
     }
     sizeDefault: { divWidth: number; divHeight: number } = {
-        divWidth: 400,
-        divHeight: 400
+        divWidth: 660,
+        divHeight: 445
     }
     myChart: echarts.ECharts = null
 
@@ -585,8 +585,8 @@ export default class StationCharts extends Vue {
     width: 100%;
 }
 #station_charts {
-    min-width: 400px;
-    min-height: 400px;
+    min-width: 660px;
+    min-height: 445px;
     height: 100%;
     width: 100%;
 }
