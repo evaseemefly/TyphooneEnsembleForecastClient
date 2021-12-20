@@ -127,6 +127,10 @@ export default class ColorBar extends Vue {
         // backgroundImage: 'linear-gradient(to right, red , yellow);' // 无效
         // background: this.createBackgroundString()
     }
+
+    mounted(): void {
+        this.setSelectedScale(0)
+    }
     createBackgroundString() {
         const that = this
         console.log(that)

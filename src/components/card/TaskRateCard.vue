@@ -1,45 +1,50 @@
 <template>
     <div>
-        <div class="my-card-root">
-            <div class="my-card-bg"></div>
-            <div class="my-card-real">
-                <!-- 左侧的圆环进度 -->
-                <div class="my-card-circle">
-                    <el-progress
-                        type="circle"
-                        :stroke-width="12"
-                        :percentage="taskRate.caseRate"
-                        :width="85"
-                    ></el-progress>
-                </div>
-                <div class="my-card-show">
-                    <div class="my-card-info">
-                        <div class="my-card-primary-title">当前任务</div>
-                        <div class="my-card-content">
-                            <div class="my-card-primary-content">{{ tyCode | fortmatTyCode }}</div>
-                            <div class="my-card-sub-content">
-                                {{ taskRate.gmtCreated | fortmatDate('MM/DD HH:mm') }}
+        <transition name="fade">
+            <div class="my-card-root" v-show="isShow">
+                <div class="my-card-minimize">缩小</div>
+                <div class="my-card-bg"></div>
+                <div class="my-card-real">
+                    <!-- 左侧的圆环进度 -->
+                    <div class="my-card-circle">
+                        <el-progress
+                            type="circle"
+                            :stroke-width="12"
+                            :percentage="taskRate.caseRate"
+                            :width="85"
+                        ></el-progress>
+                    </div>
+                    <div class="my-card-show">
+                        <div class="my-card-info">
+                            <div class="my-card-primary-title">当前任务</div>
+                            <div class="my-card-content">
+                                <div class="my-card-primary-content">
+                                    {{ tyCode | fortmatTyCode }}
+                                </div>
+                                <div class="my-card-sub-content">
+                                    {{ taskRate.gmtCreated | fortmatDate('MM/DD HH:mm') }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="my-card-info">
+                            <div class="my-card-primary-title">当前进度</div>
+                            <div class="my-card-content">
+                                <div class="my-card-primary-content">
+                                    {{ taskRate.caseState | getTaskStateVal }}
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="my-card-info">
-                        <div class="my-card-primary-title">当前进度</div>
-                        <div class="my-card-content">
-                            <div class="my-card-primary-content">
-                                {{ taskRate.caseState | getTaskStateVal }}
-                            </div>
-                        </div>
-                    </div>
+                </div>
+                <div
+                    class="my-card-subtitle"
+                    :class="timerUp ? 'active' : 'unactive'"
+                    @click="timerUp = !timerUp"
+                >
+                    {{ timerUp ? '监听中' : '未监听' }}
                 </div>
             </div>
-            <div
-                class="my-card-subtitle"
-                :class="timerUp ? 'active' : 'unactive'"
-                @click="timerUp = !timerUp"
-            >
-                {{ timerUp ? '监听中' : '未监听' }}
-            </div>
-        </div>
+        </transition>
     </div>
 </template>
 <script lang="ts">
@@ -71,6 +76,7 @@ import { fortmatData2YMDH, fortmatData2YMDHM, fortmatDate, fortmatTyCode } from 
 })
 export default class TaskRateCard extends Vue {
     tyId: number = DEFAULT_TYPHOON_ID
+    isShow = true
     // tyCode: string = DEFAULT_TYPHOON_CODE
     taskRate: {
         celeryId: string
@@ -243,6 +249,18 @@ export default class TaskRateCard extends Vue {
             })
     }
 
+    @Watch('taskRate')
+    onTaskRate(val: {
+        celeryId: string
+        caseState: TaskStateEnum
+        caseRate: number
+        gmtCreated: Date
+    }): void {
+        if (val.caseRate >= 100) {
+            this.isShow = false
+        }
+    }
+
     get tyCode(): string {
         return this.getTyphoonCode
     }
@@ -250,6 +268,8 @@ export default class TaskRateCard extends Vue {
 </script>
 <style lang="less">
 @import '../../styles/my-elementui/common';
+@import '../../styles/base';
+@import '../../styles/transition/base';
 // .el-progress--circle {
 //     .el-progress-circle {
 //         height: 100px;
@@ -273,6 +293,11 @@ export default class TaskRateCard extends Vue {
 //         color: white;
 //     }
 // }
+//  TODO:[-] 21-12-20 距离顶部的 padding
+@minimize-height: 25px;
+@from2top: {
+    top: @minimize-height;
+};
 
 .el-progress--circle {
     margin: 15px;
@@ -307,7 +332,10 @@ export default class TaskRateCard extends Vue {
         rgba(74, 145, 148, 0.726),
         rgba(77, 142, 124, 0.739)
     );
-    border-radius: 10px;
+    // border-radius: 10px;
+    border-top-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
     backdrop-filter: blur(4px);
 }
 
@@ -318,6 +346,7 @@ export default class TaskRateCard extends Vue {
     // background: #34495e;
     width: 300px;
     box-shadow: 3px 6px 10px 0px black; // + 21-11-29 加入了阴影
+    @from2top(); // + 21-12-20 加入了距离顶部的距离=上面的最小化div的高度
     .my-card-circle {
         width: 40%;
         // height: 100%;
@@ -362,6 +391,20 @@ export default class TaskRateCard extends Vue {
     box-shadow: 3px 6px 10px 0px black;
     color: white;
     font-size: 15px;
+}
+.my-card-minimize {
+    width: 50px;
+    height: @minimize-height;
+    // border-radius: 10px;
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    box-shadow: 3px 6px 10px 0px black;
+    color: white;
+    font-size: 15px;
+    //---
+    @basebackground-dark();
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
 }
 .my-card-subtitle.active {
     background: #f39c12;
