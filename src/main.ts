@@ -55,6 +55,11 @@ import underscore from 'underscore'
 // TODO:[-] 21-06-10 加入了自定义的地图 mapbox
 // import MapBox from 'mapbox'
 
+// + 21-12-21 加入了loadash
+// https://yarnpkg.com/package/lodash
+// 参考文章:https://segmentfault.com/a/1190000020680211
+// import _ from 'lodash'
+
 Vue.config.productionTip = false
 Vue.use(ElementUI)
 Vue.use(BootstrapVue)

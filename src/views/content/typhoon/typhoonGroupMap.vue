@@ -152,10 +152,12 @@
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 import { Getter, Mutation, State, namespace } from 'vuex-class'
 import { mixins } from 'vue-class-component'
-import { Debounce } from 'vue-debounce-decorator'
+// import { Debounce } from 'vue-debounce-decorator'
 import * as L from 'leaflet'
 import 'leaflet-velocity'
-import _ from 'lodash'
+// import _ from 'lodash'
+// import { debounce } from 'lodash'
+import { Debounce } from 'lodash-decorators'
 // import '@ansur/leaflet-pulse-icon/dist/L.Icon.Pulse'
 // 手动引入 第三方的 icon 脉冲效果
 // import '@ansur/leaflet-pulse-icon/src/L.Icon.Pulse'
@@ -2090,6 +2092,7 @@ export default class TyGroupMap extends mixins(
     }
 
     // TODO:[-] 21-06-09
+    @Debounce(700)
     @Watch('zoom')
     OnZoom(valNew: number, valOld: number): void {
         // 使用此种方式实现对于平移触发 -> update:zoom 相同值的过滤
@@ -2102,6 +2105,22 @@ export default class TyGroupMap extends mixins(
         // if ((valNew > 9 && valOld <= 9) || (valNew <= 9 && valOld > 9)) {
         //     this.zoomLevel = 11
         // }
+        console.log(`限流防抖,zoom:${valNew}`)
+        // this.testdebounce(valNew)
+        // _.debounce(
+        //     function() {
+        //         console.log(`加入防抖${valNew}`)
+        //     },
+        //     500,
+        //     { trailing: true }
+        // )
+        // debounce(
+        //     function() {
+        //         console.log(`加入防抖${valNew}`)
+        //     },
+        //     500,
+        //     { trailing: true }
+        // )
         if (valNew < 8 && valOld === DEFAULT_ZOOM_LEVEL) {
             this.zoomLevel = 5
         } else if (valNew === 8) {
@@ -2116,6 +2135,23 @@ export default class TyGroupMap extends mixins(
             this.zoomLevel = 11
         }
     }
+
+    // testdebounce(val: number): void {
+    //     debounce(function() {
+    //         console.log(`限流防抖:${val}`)
+    //     }, 1000)
+    //     debounce(() => {
+    //         console.log(`限流防抖:${val}`)
+    //     }, 1000)
+    // }
+    @Debounce(700)
+    testdebounce(val: number) {
+        console.log(`限流防抖:${val}`)
+    }
+
+    // testdebounce(val: number)=_.debounce(()=>{return _.debounce(() => {
+    //         console.log(`限流防抖:${val}`)
+    //     }, 1000)})
 
     // + 21-08-23 监听底图key
     @Getter(GET_BASE_MAP_KEY, { namespace: 'map' }) getBaseMapKey
@@ -2141,9 +2177,10 @@ export default class TyGroupMap extends mixins(
 
     @Watch('zoomLevel')
     onZoomLevel(val: number): void {
+        const that = this
         // TODO:[-] 21-08-16 注意监听 zoom 只需要判断 stationSurgeOptions 即可
-        if (this.checkStationSurgeOptions(this.stationSurgeIconOptions)) {
-            this.loadStationList(val)
+        if (that.checkStationSurgeOptions(this.stationSurgeIconOptions)) {
+            that.loadStationList(val)
         }
     }
 
