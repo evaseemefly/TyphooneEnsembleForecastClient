@@ -614,7 +614,7 @@ export default class TimeBar extends Vue {
                 const lastIndex = tempArr.length - 1
                 tempArr = tempArr.slice(1, lastIndex)
                 tempArr.forEach((temp: ChildNode) => {
-                    (temp as HTMLElement).style.width = this.lenUnit * this.interval + 'px'
+                    ;(temp as HTMLElement).style.width = this.lenUnit * this.interval + 'px'
                     // temp.style.width = this.lenUnit * this.interval + "px";
                 })
             }
@@ -843,7 +843,8 @@ export default class TimeBar extends Vue {
 }
 
 .calendar_cutting_line {
-    // background-color: #5d585899;
+    background: #34495e2a;
+    backdrop-filter: blur(4px);
 }
 
 .calendar_cutting_line_test {

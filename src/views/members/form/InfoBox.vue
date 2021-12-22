@@ -82,7 +82,8 @@ export default class IconInfoBox extends Vue {
     opacity: 1;
     transition: opacity 1.5s;
     margin: 1em;
-    @formmoreshadow();
+    // @formmoreshadow();
+    @baseboxshadow();
     // 加入了圆角
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
@@ -142,6 +143,7 @@ export default class IconInfoBox extends Vue {
 }
 .info-box:hover {
     background-color: #f39d129c;
+    backdrop-filter: blur(4px);
     //   color: transparent;
     transition: all 0.5s;
     //   width: 100px;

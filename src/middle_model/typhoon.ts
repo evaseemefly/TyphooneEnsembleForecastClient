@@ -40,6 +40,35 @@ class TyphoonForecastRealDataMidModel {
 
     toHtml(): string {
         const that = this
+        //     const htmlStr = `
+        // <div class='typhoon_data_div mb-4 col-md-4 box-shadow'>
+        // 			<div class='card-header'>台风数据</div>
+        // 			<div class='card-body'>
+        // 				<div class='row'>
+        // 					<div class='col-md-4'>时间</div>
+        // 					<div class='col-md-8'>${fecha.format(new Date(that.forecastDt), 'YYYY-MM-DD HH:mm')}</div>
+        // 				</div>
+        // 				<div class='row'>
+        // 					<div class='col-md-4'>中心位置</div>
+        // 					<div class='col-md-8'>${that.lat}-${that.lon}</div>
+        // 				</div>
+
+        // 			</div>
+        // 			<div class='row row_footer'>
+        // 					<div class='typhoon_footer'>
+        // 						<div class='columnar'>
+        // 							<div class='subitem_top'>${that.realdataBp}</div>
+        // 							<div class='subitem_foot'>气压</div>
+        // 						</div>
+        // 						<div class='columnar'>
+        // 							<div class='subitem_top'>${that.galeRadius}</div>
+        // 							<div class='subitem_foot'>大风半径</div>
+        // 						</div>
+        // 					</div>
+        // 				</div>
+        // 		</div>
+        // `
+        // TPDP:[-] 21-12-22 留作备份
         const htmlStr = `
     <div class='typhoon_data_div mb-4 col-md-4 box-shadow'>
 				<div class='card-header'>台风数据</div>
@@ -55,17 +84,15 @@ class TyphoonForecastRealDataMidModel {
 					
 				</div>
 				<div class='row row_footer'>
-						<div class='typhoon_footer'>
-							<div class='columnar'>
-								<div class='subitem_top'>${that.realdataBp}</div>
-								<div class='subitem_foot'>气压</div>
-							</div>
-							<div class='columnar'>
-								<div class='subitem_top'>${that.galeRadius}</div>
-								<div class='subitem_foot'>大风半径</div>
-							</div>
-						</div>
-					</div>
+                    <div class='columnar'>
+                        <div class='subitem_top'>${that.realdataBp}</div>
+                        <div class='subitem_foot'>气压</div>
+                    </div>
+                    <div class='columnar'>
+                        <div class='subitem_top'>${that.galeRadius}</div>
+                        <div class='subitem_foot'>大风半径</div>
+                    </div>
+                </div>
 			</div>
     `
         return htmlStr
