@@ -565,6 +565,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
 </script>
 <style scoped lang="less">
 // @import '../../styles/base';
+@import '../../../../styles/base';
 // TODO:[-] 20-08-31 由于在加载风场的情况下会有些偏绿，所以操作框的背景颜色不适合此颜色，改为深蓝色
 // @background: #4c818aad;
 @background: #34495ed0;
@@ -586,6 +587,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
     transition-duration: 0.8s;
     transition-timing-function: ease;
     transition-delay: 0s;
+    @baseboxshadow();
 };
 .ocean-main-toolsbar {
     // TODO:[-] 20-08-31 注意此处的阴影效果与 curd btn 的阴影效果要相同
@@ -600,6 +602,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
     user-select: none;
     width: 40px;
     backdrop-filter: blur(4px);
+    @baseboxshadow();
     // 暂时未用
     .main-title {
         background: @main-title-color;
