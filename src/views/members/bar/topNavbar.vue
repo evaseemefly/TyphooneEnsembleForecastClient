@@ -52,7 +52,7 @@
                 <h2>台风风暴潮集合预报系统</h2>
                 <!-- <h4>power by <img src="/static/icons/oceanflow.svg" /></h4> -->
                 <h4>
-                    powered by
+                    <span>powered by</span>
                     <h3>Ocean Flow</h3>
                 </h4>
 
@@ -162,7 +162,10 @@ export default class TopNavbar extends Vue {
                 -webkit-text-fill-color: transparent;
                 -webkit-background-clip: text;
                 font-weight: 600;
-                text-shadow: 4px 3px 19px #7c7c73;
+                text-shadow: 4px 3px 19px #7c7c739e;
+            }
+            span {
+                font-size: 0.7rem;
             }
         }
     }

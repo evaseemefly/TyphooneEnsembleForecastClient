@@ -5,7 +5,8 @@
         @mousedown="drag($event, defaultFormId, 40, 45)"
         :class="isExpanded ? 'mybar-right-in' : 'mybar-right-out'"
     >
-        <div class="my-detail-title" @click="isExpanded = !isExpanded">
+        <!-- <div class="my-detail-title" @click="isExpanded = !isExpanded"> -->
+        <div class="my-detail-title" @click="setIsExpanded(isExpanded)">
             {{ isExpanded ? '收起' : '展开' }}
         </div>
         <div class="my-detail-form">
@@ -49,9 +50,10 @@ import { getStationSurgeRealDataQuarterList } from '@/api/station'
 import { Draggable, mouseDrag } from '@/directives/drag'
 import { DEFAULT_TIMESTAMP } from '@/const/common'
 import { DEFAULTTYCODE } from '@/const/typhoon'
-import { DEFAULT_STATION_CODE } from '@/const/station'
+import { DEFAULT_STATION_CODE, DEFAULT_STATION_NAME } from '@/const/station'
 import QuarterView from '@/components/charts/QuarterChartView.vue'
 import StationCharts from '@/views/members/charts/StationCharts.vue'
+import { DefaultStationOptions } from '@/views/content/station/types'
 @Component({
     directives: {
         drag: Draggable
@@ -71,6 +73,7 @@ export default class TabContent extends Vue {
     @Prop()
     stationName: string
     isExpanded = false
+    ableExpaned = false
     screenHeight = 0
     screenWidth = 0
     defaultFormId = 'station_surge'
@@ -393,10 +396,35 @@ export default class TabContent extends Vue {
     get getActiveCompName() {
         return this.subTitles[this.subTitleIndex].componetName
     }
+
+    setIsExpanded(val: boolean): void {
+        if (this.checkAbleExpaned()) {
+            this.isExpanded = !val
+            // return true
+        } else {
+            this.isExpanded = false
+            // return false
+        }
+    }
+    checkAbleExpaned(): boolean {
+        let isOk = false
+        if (
+            this.stationCode === DefaultStationOptions.stationCode ||
+            this.stationName === DefaultStationOptions.stationName
+        ) {
+            isOk = false
+            this.$message({ message: '未选定指定海洋站', type: 'warning' })
+        } else {
+            isOk = true
+        }
+        return isOk
+    }
 }
 </script>
-<style scoped lang="less">
+<style lang="less">
 @import '../../../styles/station/surge-chart2';
+// + 21-12-06 加入重写的 emelemtnui 样式
+@import '../../../styles/my-elementui/common';
 .test {
     background: rgb(252, 182, 31);
     color: rgb(235, 232, 70);
