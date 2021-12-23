@@ -168,7 +168,7 @@ export default class CoverageSearchForm extends Vue {
         typeId: number
         size: number
     }): void {
-        console.log(val)
+        // console.log(val)
         this.selectCoverageId(val.key)
         // this.$store
         //     .dispatch('geo/setCoverageID', val.key)

@@ -41,6 +41,9 @@ const mutations = {
     },
     [SET_TYPHOON_TIMESTAMP](state: ITyphoon, tyTS: string): void {
         state.tyTimeStamp = tyTS
+    },
+    [GET_TYPHOON_ID](state: ITyphoon): number | undefined {
+        return state.tyId
     }
 }
 

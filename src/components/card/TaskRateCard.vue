@@ -76,7 +76,7 @@ import { fortmatData2YMDH, fortmatData2YMDHM, fortmatDate, fortmatTyCode } from 
 })
 export default class TaskRateCard extends Vue {
     tyId: number = DEFAULT_TYPHOON_ID
-    isShow = true
+    isShow = false
     // tyCode: string = DEFAULT_TYPHOON_CODE
     taskRate: {
         celeryId: string

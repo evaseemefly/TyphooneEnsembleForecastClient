@@ -69,8 +69,9 @@ import JobList from '@/views/members/table/JobListMin.vue'
 import TyphoonSearch from '@/components/search/TyphoonSearch.vue'
 import CoverageSearchForm from '@/views/members/form/search_form/CoverageSearchForm.vue'
 import { ICaseMin, CaseMinInfo } from '@/middle_model/case'
-import { SET_CREATE_OIL_CASE_MODAL, SET_CREATE_FORM } from '@/store/types'
-import { Mutation } from 'vuex-class'
+import { SET_CREATE_OIL_CASE_MODAL, SET_CREATE_FORM, GET_TYPHOON_ID } from '@/store/types'
+import { DEFAULT_TYPHOON_ID } from '@/const/common'
+import { Mutation, Getter } from 'vuex-class'
 @Component({
     components: { InfoBox, JobListUser, JobList, CoverageSearchForm, TyphoonSearch }
 })
@@ -82,12 +83,38 @@ export default class CurdBtn extends Vue {
     isShowCreateForm = false // + 21-07-11 创建case form (风暴潮)
     // 已经展开
     isExpanded = true
+    typhoonId = DEFAULT_TYPHOON_ID
     @Prop()
     caseList: CaseMinInfo[]
 
     // @Mutation(SET_CREATE_OIL_CASE_MODAL, { namespace: 'map' }) setIsShow
 
     @Mutation(SET_CREATE_FORM, { namespace: 'map' }) setIsShow
+
+    @Getter(GET_TYPHOON_ID, { namespace: 'typhoon' })
+    getTyphoonId
+
+    @Watch('getTyphoonId')
+    onGetTyphoonId(val: number): void {
+        this.typhoonId = val
+    }
+
+    @Watch('typhoonId')
+    onTyphoonId(newVal: number, oldVal: number): void {
+        let isReset = false
+        // if (newVal === DEFAULT_COVERAGE_ID) {
+        //     isReset = true
+        // } else if (newVal != oldVal) {
+        //     isReset = true
+        // }
+        if (newVal != oldVal) {
+            isReset = true
+        }
+        if (isReset) {
+            this.isShowByList = false
+            this.isShowByCoverageSearch = false
+        }
+    }
 
     @Watch('isCaseDialogVisible')
     onIsShow(isShow: boolean): void {
