@@ -21,6 +21,7 @@ interface IOptions {
     hasOptions?: boolean // + 21-08-11 新加入的 是否有可展开的 options
     options?: IChildOptions[]
     showOptions?: boolean
+    group?: number
 }
 
 // 新加入了的 子级选项接口

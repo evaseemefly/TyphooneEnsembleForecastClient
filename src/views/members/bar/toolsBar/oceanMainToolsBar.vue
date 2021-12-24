@@ -128,7 +128,8 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     toolType: ToolTypeEnum.LAYER,
                     layerType: LayerTypeEnum.RASTER_MAX_SURGE_LAYER,
                     val: '',
-                    checked: false
+                    checked: false,
+                    group: 1
                 },
                 {
                     isExpanded: false,
@@ -141,7 +142,8 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     toolType: ToolTypeEnum.LAYER,
                     layerType: LayerTypeEnum.RASTER_HOURLY_SURGE_LAYER,
                     val: '',
-                    checked: false
+                    checked: false,
+                    group: 1
                 },
                 {
                     isExpanded: false,
@@ -156,6 +158,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     val: '',
                     checked: false,
                     showOptions: false,
+                    group: 1,
                     options: [
                         {
                             key: 0,
@@ -249,6 +252,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         val: string
         checked: boolean
         isRadio?: boolean
+        group?: number
         optionsType?: ToolBarOptionsEnum
         options?: { key: number; val: string }[]
         layerType: LayerTypeEnum
@@ -334,13 +338,16 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
             checked: boolean
             isRadio?: boolean
             optionsType?: ToolBarOptionsEnum
+            group?: number
         }[]
     ): void {
         // 找到显示模式相关的 children
         const childrenShowType = toolsBar.filter(
             (temp) => temp.toolType === ToolTypeEnum.SHOWTYPEOPTION
         )
+
         const onlyShowTypeObj = childrenShowType.find((temp) => temp.checked === true)
+
         if (onlyShowTypeObj !== undefined) {
             this.handleOption(onlyShowTypeObj.optionsType)
         }
@@ -399,6 +406,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         isRadio?: boolean
         showOptions?: boolean
     }): void {
+        const that = this
         // 1- 执行展开操作
         // s1- 注意此处有一个先导的判断，先判断是否为children，若为child则不用
         if (!item.isChildren) {
@@ -460,11 +468,16 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
             // })
 
             // 找到当前 pid 对应的全部 children 将其余 children.checked 设置为 false
+            const unCheckedList: number[] = []
             this.converToolsBar.map((temp) => {
                 if (temp.pid === item.pid && temp.isRadio === true && temp.id !== item.id) {
+                    unCheckedList.push(temp.id)
                     temp.checked = false
                 }
             })
+            // unCheckedList.forEach(tempIndex=>{
+            //     that.$set(that.converToolsBar,tempIndex,)
+            // })
         } else if (item.toolType === ToolTypeEnum.SELECTPOSITION) {
             // TODO:[*] 20-11-15 + 动态添加组件
             // 选取位置，方式1： 动态添加 组件
@@ -481,6 +494,47 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         // 2-3 TODO:[-] 21-08-11 若 存在 showOptions 属性，则对 showOptions 取反
         if (item['showOptions'] !== undefined) {
             item.showOptions = !item.showOptions
+        }
+        if (item['group']) {
+            console.log(`当前item为:${item}`)
+            // this.converToolsBar.map((temp) => {
+            //     if (temp['group'] && temp['group'] === item['group']) {
+            //         temp.checked = false
+            //         console.log(`与当前item同组的item为:${temp.title}`)
+            //     }
+            //     return temp
+            // })
+            // ----
+            // const tempToolsBar = [...this.converToolsBar]
+            // console.log(tempToolsBar)
+            // tempToolsBar.map((temp) => {
+            //     if (temp['group'] && temp['group'] === item['group'] && temp.id !== item.id) {
+            //         temp.checked = false
+            //         console.log(`与当前item同组的item为:${temp.title}:checked:${temp.checked}`)
+            //     }
+            // })
+            // 方式1: 目前无法更新至 converToolsBar
+            // const tempToolsBar = this.converToolsBar.map((temp) => {
+            //     if (temp['group'] && temp['group'] === item['group'] && temp.id !== item.id) {
+            //         temp.checked = false
+            //         // return (temp.checked = false)
+            //         console.log(`与当前item同组的item为:${temp.title}:checked:${temp.checked}`)
+            //     }
+            //     return temp
+            // })
+            // console.log(tempToolsBar)
+            // console.log('-----')
+            // this.converToolsBar = [...tempToolsBar]
+            // console.log(this.converToolsBar)
+            // 方式2:
+            this.converToolsBar.forEach((temp, index) => {
+                if (temp['group'] && temp['group'] === item['group'] && temp.id !== item.id) {
+                    temp.checked = false
+                    // return (temp.checked = false)
+                    console.log(`与当前item同组的item为:${temp.title}:checked:${temp.checked}`)
+                    that.$set(that.converToolsBar, index, temp)
+                }
+            })
         }
     }
 
