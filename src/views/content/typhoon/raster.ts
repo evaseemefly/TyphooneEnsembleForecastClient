@@ -478,8 +478,10 @@ class SurgeRasterGeoLayer {
                 return addedLayer
             }
         } catch (error) {
-            console.log(error)
-            errorCallBackFun
+            errorCallBackFun({
+                message: '无法读取台风最大增水场',
+                type: 'error'
+            })
         }
         return addedLayer
     }
@@ -607,8 +609,8 @@ class FieldSurgeGeoLayer extends SurgeRasterGeoLayer {
             that.rasterLayer = addedLayer
         } catch (error) {
             errorCallBackFun({
-                message: `不存在指定时间${forecastDtStr}台风逐时增水场(field_surge)的tif`,
-                type: 'warning'
+                message: `无法读取指定时间${forecastDtStr}台风逐时增水场`,
+                type: 'error'
             })
         }
 
@@ -711,7 +713,10 @@ class ProSurgeGeoLayer extends SurgeRasterGeoLayer {
             addedLayer = layer.addTo(map)
             that.rasterLayer = addedLayer
         } catch (error) {
-            console.warn(error.message)
+            errorCallBackFun({
+                message: '无法读取当前台风增水概率场',
+                type: 'error'
+            })
         }
 
         return addedLayer

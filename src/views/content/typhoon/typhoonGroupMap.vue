@@ -1734,20 +1734,18 @@ export default class TyGroupMap extends mixins(
             })
             this.clearSurgeHourlyRasterLayer()
             const showMsg = `加载台风code:${val.tyCode},预报时间:${moment(val.forecastDt).format(
-                'yyyy-mm-dd HH'
+                'yyyy-MM-DD HH'
             )}`
             this.$message({
                 message: showMsg,
                 center: true,
                 type: 'success'
             })
-            fieldSurgeGeoLayer
-                .add2map(mymap, () => {})
-                .then((res) => {
-                    // console.log(res)
-                    this.setScaleRange(fieldSurgeGeoLayer.scaleRange || [])
-                    that.uniqueRasterLayer = res
-                })
+            fieldSurgeGeoLayer.add2map(mymap, that.$message).then((res) => {
+                // console.log(res)
+                this.setScaleRange(fieldSurgeGeoLayer.scaleRange || [])
+                that.uniqueRasterLayer = res
+            })
         } else {
             // 若未通过则清除 tyGroup layer
             clearRasterFromMap(mymap, this.uniqueRasterLayer)
@@ -1787,13 +1785,11 @@ export default class TyGroupMap extends mixins(
                 forecastDt: this.forecastDt,
                 scaleList: scaleList
             })
-            surgeRasterLayer
-                .add2map(mymap, () => {})
-                .then((layer) => {
-                    // console.log(surgeRasterLayer)
-                    this.setScaleRange(surgeRasterLayer.scaleRange || [])
-                    this.uniqueRasterLayer = layer
-                })
+            surgeRasterLayer.add2map(mymap, that.$message).then((layer) => {
+                // console.log(surgeRasterLayer)
+                this.setScaleRange(surgeRasterLayer.scaleRange || [])
+                this.uniqueRasterLayer = layer
+            })
         } else {
             clearRasterFromMap(mymap, this.uniqueRasterLayer)
         }
@@ -1818,12 +1814,10 @@ export default class TyGroupMap extends mixins(
                 forecastDt: this.forecastDt,
                 scaleList: scaleList
             })
-            surgeRasterLayer
-                .add2map(mymap, () => {}, 0.5, val.layerType)
-                .then((layer) => {
-                    this.setScaleRange(surgeRasterLayer.scaleRange || [])
-                    this.uniqueRasterLayer = layer
-                })
+            surgeRasterLayer.add2map(mymap, that.$message, 0.5, val.layerType).then((layer) => {
+                this.setScaleRange(surgeRasterLayer.scaleRange || [])
+                this.uniqueRasterLayer = layer
+            })
         } else {
             clearRasterFromMap(mymap, this.uniqueRasterLayer)
         }
