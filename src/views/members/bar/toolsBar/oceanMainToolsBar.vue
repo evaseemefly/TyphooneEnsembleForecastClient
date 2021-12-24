@@ -383,6 +383,16 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
             }
         }
     }
+    // 从当前 layers 中删除指定layers
+    removeLayers(tempLayerType: LayerTypeEnum): void {
+        if (this.layers.indexOf(tempLayerType) > 0) {
+            // 若已经存在则删除
+            const index = this.layers.findIndex((temp) => temp === tempLayerType)
+            if (index != -1) {
+                this.layers.splice(index, 1)
+            }
+        }
+    }
 
     @Mutation(SET_MAP_LAYERS, { namespace: 'map' }) setLayers
 
@@ -533,6 +543,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     // return (temp.checked = false)
                     console.log(`与当前item同组的item为:${temp.title}:checked:${temp.checked}`)
                     that.$set(that.converToolsBar, index, temp)
+                    that.removeLayers(temp.layerType)
                 }
             })
         }

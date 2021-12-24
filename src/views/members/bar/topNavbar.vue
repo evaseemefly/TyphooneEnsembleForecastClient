@@ -163,6 +163,7 @@ export default class TopNavbar extends Vue {
                 -webkit-background-clip: text;
                 font-weight: 600;
                 text-shadow: 4px 3px 19px #7c7c739e;
+                font-size: 1.5rem;
             }
             span {
                 font-size: 0.7rem;
