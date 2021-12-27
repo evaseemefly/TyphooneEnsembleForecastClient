@@ -306,25 +306,44 @@ export default class CreateCaseForm extends Vue {
             members_num: this.membersNum,
             deviation_radius_list: this.deviationRadiusNumberList
         }
-        createTyCase(postData).then(
-            (res: { data: { ty_code: string; timestamp: string }; status: number }) => {
-                if (res.status === 200) {
-                    // TODO:[-] 21-12-01 注意此处修改了后台逻辑，会返回 task_id
-                    this.$message('提交成功')
+        this.$confirm('请确认是否要提交计算作业, 是否继续?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+        })
+            .then(() => {
+                createTyCase(postData).then(
+                    (res: { data: { ty_code: string; timestamp: string }; status: number }) => {
+                        if (res.status === 200) {
+                            // TODO:[-] 21-12-01 注意此处修改了后台逻辑，会返回 task_id
+                            this.$message('提交成功')
 
-                    const tyCode = res.data.ty_code
-                    const timestamp = res.data.timestamp
-                    // TODO:[*] 21-12-02 由于提交作业后作业可能会等待或运行一段时间
-                    // getTargetTyCase(tyCode, timestamp).then((res: { data: { id: number } }) => {
-                    //     const tyId = res.data.id
-                    //     that.selectCoverageId(tyId)
-                    // })
-                    // console.log(res.data)
-                } else {
-                    this.$message.error('创建作业错误！')
-                }
-            }
-        )
+                            const tyCode = res.data.ty_code
+                            const timestamp = res.data.timestamp
+                            // TODO:[*] 21-12-02 由于提交作业后作业可能会等待或运行一段时间
+                            // getTargetTyCase(tyCode, timestamp).then((res: { data: { id: number } }) => {
+                            //     const tyId = res.data.id
+                            //     that.selectCoverageId(tyId)
+                            // })
+                            // console.log(res.data)
+                        } else {
+                            this.$message.error('创建作业错误！')
+                        }
+                    }
+                )
+                this.$message({
+                    type: 'success',
+                    message: '作业提交成功!'
+                })
+                this.isShow = false
+            })
+            .catch(() => {
+                this.$message({
+                    type: 'info',
+                    message: '已取消提交!'
+                })
+                this.isShow = false
+            })
     }
 
     @Mutation(SET_GEO_COVERAGEID, { namespace: 'geo' }) selectCoverageId
@@ -344,6 +363,7 @@ export default class CreateCaseForm extends Vue {
 }
 </script>
 <style scoped lang="less">
+@import '../../styles/my-elementui/common';
 #base_form_createcase {
     // background: white;
     // padding: 15px;

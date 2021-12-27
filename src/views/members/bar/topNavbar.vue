@@ -97,7 +97,7 @@ export default class TopNavbar extends Vue {
             // background-color: '#283958' !important;
         }
         ul.el-menu-demo.el-menu--horizontal.el-menu {
-            width: 626px;
+            width: 360px;
         }
     }
     // 顶部的带logo的父级div
