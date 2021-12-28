@@ -52,7 +52,8 @@ import { DEFAULT_TIMESTAMP } from '@/const/common'
 import { DEFAULTTYCODE } from '@/const/typhoon'
 import { DEFAULT_STATION_CODE, DEFAULT_STATION_NAME } from '@/const/station'
 import QuarterView from '@/components/charts/QuarterChartView.vue'
-import StationCharts from '@/views/members/charts/StationCharts.vue'
+// import StationCharts from '@/views/members/charts/StationCharts.vue'
+import StationChartsView from '@/components/charts/StationChartsView.vue'
 import { DefaultStationOptions } from '@/views/content/station/types'
 @Component({
     directives: {
@@ -60,7 +61,7 @@ import { DefaultStationOptions } from '@/views/content/station/types'
     },
     components: {
         'quarter-view': QuarterView,
-        'station-chart': StationCharts
+        'station-chart': StationChartsView
     }
 })
 export default class TabContent extends Vue {
@@ -387,7 +388,7 @@ export default class TabContent extends Vue {
 
     @Watch('size', { immediate: true, deep: true })
     onSize(val: { divWidth: number; divHeight: number }) {
-        console.log(`监听到width:${val.divWidth},height:${val.divHeight}`)
+        console.log(`TabContent监听到width:${val.divWidth},height:${val.divHeight}`)
         if (this.myChart) {
             this.myChart.resize()
         }

@@ -1,6 +1,7 @@
 import { Component, Vue } from 'vue-property-decorator'
 // 20-08-11 wms 相关的中间 model
 import { WMSOptionsMidModel, WMSMidModel } from '@/middle_model/geo'
+import { baseUrl } from '@/api/common'
 
 /**
  * + 21-01-27 作为 mixin 的 wms常量
@@ -10,10 +11,11 @@ import { WMSOptionsMidModel, WMSMidModel } from '@/middle_model/geo'
  */
 @Component
 class WMSMixin extends Vue {
-    baseHost = 'http://128.5.10.21'
+    // baseHost = 'http://128.5.10.21'
     // baseHost = 'http://localhost'
-    basePort = '8084'
-    baseUrl = `${this.baseHost}:${this.basePort}`
+    // basePort = '8084'
+    // baseUrl = `${this.baseHost}:${this.basePort}`
+    baseUrl = baseUrl
     // mixin definition here
     landWMS: WMSMidModel = new WMSMidModel(
         `${this.baseUrl}/geoserver/nmefc_current/wms?`,

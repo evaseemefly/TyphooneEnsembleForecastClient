@@ -35,6 +35,7 @@ import oilData from '@/views/oil/oilRealDataForm.vue'
 import oilModelDetial from '@/views/oil/oilModelDetailForm2.vue'
 // TODO:[-] 21-05-25 加入的 历史潮位数据 charts
 import StationCharts from '@/views/members/charts/StationCharts.vue'
+import StationChartsView from '@/components/charts/StationChartsView.vue'
 import StationStatisticsCharts from '@/views/members/charts/StationStatisticsCharts.vue'
 import QuarterView from '@/components/charts/QuarterChartView.vue'
 // import timeBar from "@/views/timebar/DayCardV1/DayComp.vue";
@@ -52,7 +53,8 @@ import moment from 'moment'
         oilData,
         timeBar,
         RangePie,
-        StationCharts,
+        // StationCharts,
+        StationChartsView,
         StationStatisticsCharts,
         QuarterView
     }
