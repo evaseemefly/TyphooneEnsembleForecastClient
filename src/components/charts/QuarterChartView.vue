@@ -1,5 +1,8 @@
 <template>
-    <div id="station_quarter_charts" style=""></div>
+    <!-- <div id="station_quarter_charts" style=""></div> -->
+    <div id="station_quarter_form" style="">
+        <div id="station_quarter_charts"></div>
+    </div>
 </template>
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
@@ -332,11 +335,16 @@ export default class QuarterView extends Vue {
     z-index: 1999;
     top: 100px;
 }
+#station_quarter_form {
+    @base-station-form();
+    height: 100%;
+    width: 100%;
+}
 #station_quarter_charts {
     // height: 100%;
     // width: 100%;
-    min-width: 400px;
-    min-height: 400px;
+    // min-width: 400px;
+    // min-height: 400px;
     height: 100%;
     width: 100%;
 }

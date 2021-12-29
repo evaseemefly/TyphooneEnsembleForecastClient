@@ -580,13 +580,19 @@ export default class StationChartsView extends Vue {
 }
 </script>
 <style scoped lang="less">
+@import '../../styles/station/surge-chart';
 .my-detail-form {
     height: 100%;
     width: 100%;
 }
 #station_charts {
-    min-width: 660px;
-    min-height: 445px;
+    // min-width: 660px;
+    // min-height: 445px;
+    height: 100%;
+    width: 100%;
+}
+#station_chart_form {
+    @base-station-form();
     height: 100%;
     width: 100%;
 }
