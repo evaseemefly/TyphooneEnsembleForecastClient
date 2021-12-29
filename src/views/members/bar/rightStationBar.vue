@@ -453,11 +453,11 @@ export default class TabContent extends Vue {
 //   min-width: 400px;
 //   min-height: 400px;
 // }
-#station_quarter_charts {
+#station_surge {
     // height: 100%;
     // width: 100%;
-    min-width: 660px;
-    min-height: 445px;
+    min-height: 495px;
+    min-width: 556px;
     height: 100%;
 }
 </style>

@@ -294,8 +294,8 @@ class MouseDrag {
     public DIV_MIN_HEIGHT = 488
     public htmlElement: HTMLElement
     public options: {
-        ingoreLeftSpace: number
-        ignoreTopSpace: number
+        ingoreLeftSpace: number // 距离左侧的距离
+        ignoreTopSpace: number // 距离顶部的距离
         unitBorder: number
         divXOuterBorder: number
     } = {
@@ -308,7 +308,11 @@ class MouseDrag {
 
     public constructor(
         el: HTMLElement,
+        divMinWidth = 560,
+        divMinHeight = 488,
         options: {
+            // divMinWidth: number
+            // divMinHeight: number
             ingoreLeftSpace?: number
             ignoreTopSpace?: number
             unitBorder?: number
@@ -317,6 +321,8 @@ class MouseDrag {
         const htmlElement = el
         this.htmlElement = htmlElement
         this.options = { ...options }
+        this.DIV_MIN_HEIGHT = divMinHeight
+        this.DIV_MIN_WIDTH = divMinWidth
     }
 
     /**
@@ -464,8 +470,8 @@ class MouseDrag {
         const odiv = el //获取当前元素
         const screenX = window.innerWidth
         const screenY = window.innerHeight
-        const divXOuterBorder = 40
-        const divYOuterBorder = 45
+        let divXOuterBorder = -1
+        let divYOuterBorder = -1
         // const DIVMINWIDTH = 200;
         // const DIVMINHEIGHT = 150;
 
@@ -474,29 +480,29 @@ class MouseDrag {
         // console.log(el);
         // console.log(`屏幕宽度:${screenX},高度:${screenY}`);
         if (odiv) {
-            odiv.onmousedown = (e) => {
-                const boxWidth = odiv.offsetWidth
-                const boxHeight = odiv.offsetHeight
+            odiv.onmousedown = (tempMouseDown) => {
+                divXOuterBorder = tempMouseDown.clientX - odiv.offsetLeft
+                divYOuterBorder = tempMouseDown.clientY - odiv.offsetTop
                 //算出鼠标相对元素的位置
                 // e.clientX 当前鼠标距离screen 的 top 与 left 的距离
                 // odiv.offsetLeft 当前元素距离 screen 的距离
-                const tempMouseDown = e
-                console.log(e)
-                const disX = tempMouseDown.clientX - odiv.offsetLeft
+                // const tempMouseDown = e
+                console.log(tempMouseDown)
+                const disX = tempMouseDown.clientX - odiv.offsetLeft // 获取div左部的距离(可能当前element有一个外侧的div，但也在当前div中)
                 const disX4Right = odiv.scrollWidth - disX
-                const disY = tempMouseDown.clientY - odiv.offsetTop
-                const divDisLeft = e.offsetX
-                const divDisTop = e.offsetY
+                const disY = tempMouseDown.clientY - odiv.offsetTop // 获取div顶部的距离(可能当前element有一个外侧的div，但也在当前div中)
+                const divDisLeft = tempMouseDown.offsetX // 鼠标距离div左侧的距离
+                const divDisTop = tempMouseDown.offsetY // 鼠标距离div外侧的距离
                 const divDisBottom = odiv.offsetHeight - divDisTop
                 const divDisRight = odiv.offsetWidth - divDisLeft
-                const mouseStartClientX = e.clientX
-                const mouseStartClientY = e.clientY
+                const mouseStartClientX = tempMouseDown.clientX
+                const mouseStartClientY = tempMouseDown.clientY
                 // TODO:[-] 21-11-14 加入一个判断区域，由于左侧及顶部会有一些标签，需要将这些标签剔除
-                if (ignoreLeftSpace && disX < ignoreLeftSpace) {
+                if (ignoreLeftSpace && divXOuterBorder < ignoreLeftSpace) {
                     return
                     // if()
                 }
-                if (ignoreTopSpace && disY < ignoreTopSpace) {
+                if (ignoreTopSpace && divYOuterBorder < ignoreTopSpace) {
                     return
                 }
 
@@ -511,28 +517,28 @@ class MouseDrag {
                 }
                 // TODO:[-] 21-12-28 加入判断若当前 的 div的 width 与 heigh 均已小于 DIV_MIN_WIDTH 与 DIV_MIN_HEIGHT 则不再拖拽
                 // canStretch =false
+                // 注意此处的 odiv.offsetHeight 是包含了div里面向外翻折的div的高度(相当于是当前div——通常是父级div的总高度)
                 if (
                     odiv.offsetHeight < this.DIV_MIN_HEIGHT ||
                     odiv.offsetWidth < this.DIV_MIN_WIDTH
                 ) {
                     canStretch = false
+                    // TODO:[-] 21-12-29 加入 return
+                    return
                 }
-
-                const that = this
-
-                document.onmousemove = (e) => {
-                    const tempMouseMove = e
+                document.onmousemove = (tempMouseMove) => {
+                    // const tempMouseMove = e
                     // 是否为拉伸 form
                     if (canStretch) {
                         // + 21-11-06 新的实现
                         // div 的 宽 + 高
                         const divWidth = odiv.offsetWidth
+                        const divInnerWidth = divWidth - divXOuterBorder
                         const divHeight = odiv.offsetHeight
+                        const divInnerHeight = divHeight - divYOuterBorder
                         // div 距离四周的距离
                         const divOffsetClientX = odiv.offsetLeft
                         const divOffsetClientY = odiv.offsetTop
-                        const divOffsetBottom = odiv.offsetTop + divHeight
-                        const divOffsetRight = odiv.offsetLeft + divWidth
                         // 鼠标距离 左，上的距离
                         const mouseOffsetClientX = tempMouseMove.clientX
                         const mouseOffsetClientY = tempMouseMove.clientY
@@ -559,8 +565,8 @@ class MouseDrag {
                                 odiv.style.top = mouseOffsetClientY + 'px'
                                 break
                             case velDir === STRETCHDIRENUM.LEFT:
-                                if (divWidth - veldisX > this.DIV_MIN_WIDTH) {
-                                    console.log(`divWidth:${divWidth},veldisX:${veldisX}`)
+                                if (divInnerWidth - veldisX > this.DIV_MIN_WIDTH) {
+                                    // console.log(`divWidth:${divWidth},veldisX:${veldisX}`)
                                     odiv.style.width = divWidth - veldisX + 'px'
                                     odiv.style.height = divHeight + 'px'
                                     // [*] warning: 注意不需要手动的控制 div.style.left 因为会之后拖动时还会修改 div.style.right 与 top
@@ -573,13 +579,13 @@ class MouseDrag {
                     当前 div 的 bottom = mousemove.clientY - 当前的div的高度
                     当前 div 的 height = 当前div的高度 + 鼠标移动的距离 mousemove.movementY
                   */
-                                if (divHeight - veldisY > this.DIV_MIN_HEIGHT) {
+                                if (divInnerHeight - veldisY > this.DIV_MIN_HEIGHT) {
                                     odiv.style.height = divHeight - veldisY + 'px'
                                     odiv.style.width = divWidth + 'px'
                                     odiv.style.top = mouseOffsetClientY + 'px'
-                                    console.log(
-                                        `odiv.style.height:${odiv.style.height},odiv.style.width:${odiv.style.width},,odiv.style.top:${odiv.style.top}`
-                                    )
+                                    // console.log(
+                                    //     `odiv.style.height:${odiv.style.height},odiv.style.width:${odiv.style.width},,odiv.style.top:${odiv.style.top}`
+                                    // )
                                 }
                                 break
                         }
