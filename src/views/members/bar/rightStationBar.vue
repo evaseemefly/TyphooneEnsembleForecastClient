@@ -8,7 +8,7 @@
     <div
         id="station_surge"
         class="right-station-surge-form"
-        @mousedown="drag('station_surge', 40, 45)"
+        @mousedown="drag()"
         :class="isExpanded ? 'mybar-right-in' : 'mybar-right-out'"
     >
         <!-- <div class="my-detail-title" @click="isExpanded = !isExpanded"> -->
@@ -53,7 +53,7 @@ import * as echarts from 'echarts'
 import * as elementResizeDetectorMaker from 'element-resize-detector'
 import moment from 'moment'
 import { getStationSurgeRealDataQuarterList } from '@/api/station'
-import { Draggable, mouseDrag, MouseDrag } from '@/directives/drag'
+import { StationDrag } from '@/directives/drag'
 import { DEFAULT_TIMESTAMP } from '@/const/common'
 import { DEFAULTTYCODE } from '@/const/typhoon'
 import { DEFAULT_STATION_CODE, DEFAULT_STATION_NAME } from '@/const/station'
@@ -96,7 +96,7 @@ export default class TabContent extends Vue {
         { title: '潮位分析数据', index: 0, componetName: 'quarter-view' },
         { title: '潮位站预报', index: 1, componetName: 'station-chart' }
     ]
-    dragCls: MouseDrag
+    dragCls: StationDrag
     toResize = false
     subTitleIndex = 0
     //   quarterOptions: {
@@ -123,6 +123,7 @@ export default class TabContent extends Vue {
         const that = this
         this.screenHeight = window.innerHeight
         this.screenWidth = window.innerWidth
+        this.resetSize()
         window.onresize = () => {
             return () => {
                 that.screenHeight = window.innerHeight
@@ -136,10 +137,13 @@ export default class TabContent extends Vue {
         // };
         // var elementResizeDetectorMaker = require("element-resize-detector");
         // 加入 MouseDrag
-        const el = document.getElementById('station_surge')
-        if (el) {
-            this.dragCls = new MouseDrag(el, {})
-        }
+        // 加入 MouseDrag
+        this.dragCls = new StationDrag('station_surge', 560, 488, {
+            needStretch: true,
+            dragAreaWidth: 10,
+            ignoreLeftSpace: 40,
+            ignoreTopSpace: 45
+        })
 
         const erd = elementResizeDetectorMaker()
         erd.listenTo(document.getElementById('station_surge'), function(element: HTMLElement) {
@@ -377,9 +381,8 @@ export default class TabContent extends Vue {
     //     mouseDrag(event, elId, ignoreLeftSpace, ignoreTopSpace)
     // }
 
-    drag(elId: string, ignoreLeftSpace?: number, ignoreTopSpace?: number): void {
-        // mouseDrag(elId, ignoreLeftSpace, ignoreTopSpace);
-        this.dragCls.drag(elId, ignoreLeftSpace, ignoreTopSpace)
+    drag(): void {
+        this.dragCls.drag({ divId: 'station_surge' })
     }
 
     // 重置当前 form 的大小(使用修改style的 height 与 width)
