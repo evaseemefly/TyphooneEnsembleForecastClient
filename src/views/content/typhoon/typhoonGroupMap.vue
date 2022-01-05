@@ -266,7 +266,7 @@ import { ICaseMin, CaseMinInfo, CaseOilModel } from '@/middle_model/case'
 // 20-10-30 引入 CanvasLayerMidModel
 import { CanvasLayerMidModel } from '@/middle_model/geo'
 // + 21-06-8 加入 station 的 Mid model
-import { IconFormMinStationSurgeMidModel } from '@/middle_model/station'
+import { IconFormMinStationSurgeMidModel, StationSurgeMiModel } from '@/middle_model/station'
 import { getDaysNum } from '@/common/date'
 
 // 各类工具类
@@ -582,6 +582,7 @@ export default class TyGroupMap extends mixins(
     tyGroupCenterCirleLayers: L.Layer[] = []
     // + 21-05-12 台风集合预报路径的概率半径集合 24: 60, 48:100,72:120,96:150,120:180
     tyGroupProPathCircles: { lat: number; lon: number; radius: number }[] = []
+    currentStationSurgeList: StationSurgeMiModel[] = []
     // 当前的大风半径范围
     currentGaleRadius: L.Circle = null
     // group_ty_range
@@ -977,8 +978,20 @@ export default class TyGroupMap extends mixins(
                         const surgeArr: number[] = []
                         const iconArr: IconCirlePulsing[] = []
                         const iconSurgeMinArr: IToHtml[] = []
+                        that.currentStationSurgeList = []
                         res.data.forEach((element) => {
                             surgeArr.push(element.surge)
+
+                            that.currentStationSurgeList.push(
+                                new StationSurgeMiModel(
+                                    element.name,
+                                    element.station_code,
+                                    element.surge,
+                                    element.surge_max,
+                                    element.surge_min,
+                                    element.forecast_dt
+                                )
+                            )
                         })
                         // 获取极值
                         const surgeMax = Math.max(...surgeArr)
@@ -1839,8 +1852,6 @@ export default class TyGroupMap extends mixins(
         this.stationSurgeIconOptions.isShow = false
     }
 
-    resetStationChart(): void {}
-
     // TODO:[-] 22-01-05 重置当前的 ty 时间戳，重置为默认时间戳
     resetTimestamp(): void {
         this.tyTimeStamp = DEFAULT_TIMESTAMP
@@ -1852,7 +1863,7 @@ export default class TyGroupMap extends mixins(
     }
 
     /*
-        监听当前选中的 TyId 
+        监听当前选中的 TyId
             -1: 修改当前的layers
     */
     @Watch('selectedTyId')
@@ -2133,31 +2144,7 @@ export default class TyGroupMap extends mixins(
     @Watch('zoom')
     OnZoom(valNew: number, valOld: number): void {
         // 使用此种方式实现对于平移触发 -> update:zoom 相同值的过滤
-        // if (valNew > 9) {
-        //     this.zoomLevel = 10
-        // } else if (valNew <= 8) {
-        //     this.zoomLevel = 5
-        // }
-        // TODO:[-] 21-05-20 只有 level的变化超出之前的范围才会触发更新的操作
-        // if ((valNew > 9 && valOld <= 9) || (valNew <= 9 && valOld > 9)) {
-        //     this.zoomLevel = 11
-        // }
         console.log(`限流防抖,zoom:${valNew}`)
-        // this.testdebounce(valNew)
-        // _.debounce(
-        //     function() {
-        //         console.log(`加入防抖${valNew}`)
-        //     },
-        //     500,
-        //     { trailing: true }
-        // )
-        // debounce(
-        //     function() {
-        //         console.log(`加入防抖${valNew}`)
-        //     },
-        //     500,
-        //     { trailing: true }
-        // )
         if (valNew < 8 && valOld === DEFAULT_ZOOM_LEVEL) {
             this.zoomLevel = 5
         } else if (valNew === 8) {
@@ -2173,22 +2160,10 @@ export default class TyGroupMap extends mixins(
         }
     }
 
-    // testdebounce(val: number): void {
-    //     debounce(function() {
-    //         console.log(`限流防抖:${val}`)
-    //     }, 1000)
-    //     debounce(() => {
-    //         console.log(`限流防抖:${val}`)
-    //     }, 1000)
-    // }
     @Debounce(700)
     testdebounce(val: number) {
         console.log(`限流防抖:${val}`)
     }
-
-    // testdebounce(val: number)=_.debounce(()=>{return _.debounce(() => {
-    //         console.log(`限流防抖:${val}`)
-    //     }, 1000)})
 
     // + 21-08-23 监听底图key
     @Getter(GET_BASE_MAP_KEY, { namespace: 'map' }) getBaseMapKey

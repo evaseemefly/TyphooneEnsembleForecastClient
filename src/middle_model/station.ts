@@ -23,6 +23,73 @@ class IconFormDefaultMidModel implements IToHtml {
 }
 
 /**
+ * + 22-01-05 潮位站的 mid model
+ *
+ * @class StationSurgeMiModel
+ */
+class StationSurgeMiModel {
+    stationName: string
+    stationCode: string
+    /**
+     *最大值
+     *
+     * @type {number}
+     * @memberof StationSurgeMiModel
+     */
+    max: number
+
+    /**
+     *最小值
+     *
+     * @type {number}
+     * @memberof StationSurgeMiModel
+     */
+    min: number
+    /**
+     *当前潮位值
+     *
+     * @type {number}
+     * @memberof StationSurgeMiModel
+     */
+    surge: number
+
+    /**
+     *预报时间(utc)
+     *
+     * @type {Date}
+     * @memberof StationSurgeMiModel
+     */
+    forecastDt: Date
+
+    /**
+     * Creates an instance of StationSurgeMiModel.
+     * @param {string} stationName
+     * @param {string} stationCode
+     * @param {number} surge 当前潮位值
+     * @param {number} max 最大值
+     * @param {number} min 最小值
+     * @param {Date} forecastDt 预报时间(utc)
+     * @param {{}} [options]
+     * @memberof StationSurgeMiModel
+     */
+    constructor(
+        stationName: string,
+        stationCode: string,
+        surge: number,
+        max: number,
+        min: number,
+        forecastDt: Date,
+        options?: {}
+    ) {
+        this.stationName = stationName
+        this.stationCode = stationCode
+        this.max = max
+        this.min = min
+        this.surge = surge
+        this.forecastDt = forecastDt
+    }
+}
+/**
  * 潮位 详细 form icon
  * 继承自 IToHtml
  *
@@ -211,5 +278,6 @@ export {
     IconFormStationDetialedMidModel,
     IconFormDefaultMidModel,
     IconFormMinStationSurgeMidModel,
-    IconFormTitleStationSurgeMidModel
+    IconFormTitleStationSurgeMidModel,
+    StationSurgeMiModel
 }
