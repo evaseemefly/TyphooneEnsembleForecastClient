@@ -358,6 +358,7 @@ import {
     GET_CURRENT_LATLNG,
     GET_GEO_COVERAGETYPE,
     GET_MAP_LAYERS,
+    SET_IS_INIT_LAYERS,
     GET_CURRENT_LATLNG_LOCK,
     SET_INITIAL_LATLNG,
     GET_INITIAL_LATLNG,
@@ -374,7 +375,12 @@ import {
     SET_SCALE_RANGE,
     GET_BASE_MAP_KEY // + 21-08-23 监听切换地图的 baseMapKey
 } from '@/store/types'
-import { DEFAULT_LAYER_ID, DEFAULT_TYPHOON_ID, DEFAULT_TYPHOON_GROUP_PATH_ID } from '@/const/common'
+import {
+    DEFAULT_LAYER_ID,
+    DEFAULT_TYPHOON_ID,
+    DEFAULT_TYPHOON_GROUP_PATH_ID,
+    DEFAULT_TIMESTAMP
+} from '@/const/common'
 import { RADIUSUNIT, DEFAULTTIMESTAMP, DEFAULTTYCODE } from '@/const/typhoon'
 import { ArrayPropsDefinition } from 'vue/types/options'
 import { SET_CURRENT_LATLNG } from '@/store/types'
@@ -608,7 +614,7 @@ export default class TyGroupMap extends mixins(
     // TODO:[*] 21-07-28 将 gpId 放在 tyGroupOptions 中
     // gpId = DEFAULT_TYPHOON_GROUP_PATH_ID
     tyCode = DEFAULTTYCODE
-    tyTimeStamp = DEFAULTTIMESTAMP
+    tyTimeStamp = DEFAULT_TIMESTAMP
     stationCode = DEFAULT_STATION_CODE
     stationName = DEFAULT_STATION_NAME
     // + 21-05-15 脉冲 groupLayer
@@ -1331,7 +1337,7 @@ export default class TyGroupMap extends mixins(
 
     // + 21-04-22 将 台风实时圆 add to map
     addTyphoonRealDataDiv2Map(tyRealDataCircle: TyphoonCircleStatus): void {
-        const myself = this
+        const that = this
         const mymap: any = this.$refs.basemap['mapObject']
         const typhoonDivHtml: string = tyRealDataCircle.toDivIconHtml()
 
@@ -1346,7 +1352,8 @@ export default class TyGroupMap extends mixins(
         const typhoonDivIconTarget = L.marker([tyRealDataCircle.lat, tyRealDataCircle.lon], {
             icon: typhoonDivIcon
         }).addTo(mymap)
-        myself.tyRealDataDivIcon = typhoonDivIconTarget
+        that.tyRealDataDivIcon = typhoonDivIconTarget
+        that.isShowTyRealDataDivIcon = true
     }
 
     // 根据传入的 时间 index 返回当前 dateIndex 对应的 大风概率半径
@@ -1561,7 +1568,7 @@ export default class TyGroupMap extends mixins(
                     that.isShowTyRealDataDivIcon = false
                 } else if (that.tyRealDataDivIcon) {
                     that.addTyphoonRealDataDiv2Map(typhoonStatus)
-                    that.isShowTyRealDataDivIcon = true
+                    // that.isShowTyRealDataDivIcon = true
                 }
             })
             this.currentTyPulsingMarker = tyPulsingMarker.addTo(mymap)
@@ -1798,6 +1805,9 @@ export default class TyGroupMap extends mixins(
 
     @Mutation(SET_SCALE_RANGE, { namespace: 'common' }) setScaleRange
 
+    // + 22-01-05 重置 当前加载的图层
+    @Mutation(SET_IS_INIT_LAYERS, { namespace: 'map' }) setInitLayers
+
     @Watch('tyProSurgeOptions', { immediate: true, deep: true })
     onTyProSurgeOptions(val: ITySurgeLayerOptions): void {
         const that = this
@@ -1824,10 +1834,37 @@ export default class TyGroupMap extends mixins(
         }
     }
 
+    // + 22-01-05 隐藏station icon 图层
+    hideStationLayer(): void {
+        this.stationSurgeIconOptions.isShow = false
+    }
+
+    resetStationChart(): void {}
+
+    // TODO:[-] 22-01-05 重置当前的 ty 时间戳，重置为默认时间戳
+    resetTimestamp(): void {
+        this.tyTimeStamp = DEFAULT_TIMESTAMP
+    }
+
+    // TODO:[-] 22-01-05 重置当前的 station code ，重置为默认code
+    resetStationCode(): void {
+        this.stationCode = DEFAULT_STATION_CODE
+    }
+
+    /*
+        监听当前选中的 TyId 
+            -1: 修改当前的layers
+    */
     @Watch('selectedTyId')
     onSelectedTyId(val: number): void {
         if (val != DEFAULT_TYPHOON_ID) {
             const testTyphoonId = val
+            // TODO:[-] 22-01-05 加入的当监听到 tyId 发生变化后重置当前选定的 layers
+            this.setInitLayers(true)
+            // TODO:[-] 22-01-05 注意在切换 tyId 时，需要手动将 stationSurgeOptions.isShow=false !
+            this.hideStationLayer()
+            this.resetTimestamp()
+            this.resetStationCode()
             this.isShowTimeBar = true
             const showMsg = '已加载对应台风信息'
             this.$message({
@@ -1841,7 +1878,10 @@ export default class TyGroupMap extends mixins(
 
             // TODO:[*] 21-04-28 暂时加入的加载 海洋站位置的 测试
             this.clearSurgeAllGroupLayers()
-            this.loadStationList(this.zoom)
+            // TODO:[*] 22-01-05 将 加载海洋站的入口设置为 监听 stationSurgeIconOptions !
+            // if (this.stationSurgeIconOptions.isShow) {
+            //     this.loadStationList(this.zoom)
+            // }
 
             // + 21-05-18 在页面加载后首先加载当前的 start_dt 与 end_dt
             // const tyGroupPath = new TyGroupPath()
@@ -1856,6 +1896,7 @@ export default class TyGroupMap extends mixins(
             this.clearCenterGroupAllLayer()
             this.isShowTimeBar = false
         }
+        // this.setInitLayers(false)
     }
 
     get getTyOptions(): { tyCode: string; tyTimeStamp: string } {
@@ -1866,7 +1907,7 @@ export default class TyGroupMap extends mixins(
     @Watch('getTyOptions')
     onTyOptions(val: { tyCode: string; tyTimeStamp: string }) {
         console.log(`tyGroupPath组件监听到'tyCode'与'tyTimestamp'发生变化:${val}`)
-        if (val.tyCode !== DEFAULTTYCODE && val.tyTimeStamp !== DEFAULTTIMESTAMP) {
+        if (val.tyCode !== DEFAULTTYCODE && val.tyTimeStamp !== DEFAULT_TIMESTAMP) {
             // TODO:[*] 21-07-28 此处还需要修改 tyGroupOptions
             this.tyGroupOptions.tyCode = val.tyCode
             this.tyGroupOptions.timeStamp = val.tyTimeStamp
@@ -1976,6 +2017,7 @@ export default class TyGroupMap extends mixins(
 
     @Watch('getTyCode')
     onTyCode(val: string): void {
+        this.resetTimestamp()
         this.tyCode = val
     }
 

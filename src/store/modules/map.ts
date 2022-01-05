@@ -10,6 +10,9 @@ import {
     GET_CURRENT_LATLNG,
     SET_MAP_LAYERS,
     GET_MAP_LAYERS,
+    INIT_MAP_LAYERS,
+    GET_IS_INIT_LAYERS,
+    SET_IS_INIT_LAYERS,
     SET_CURRENT_LATLNG_LOCK,
     GET_CURRENT_LATLNG_LOCK,
     SET_INITIAL_LATLNG,
@@ -41,6 +44,8 @@ export interface State {
     autoPlay: boolean
     //
     baseMapKey: MapLayerEnum
+    // 是否需要重置 图层 layers
+    isInitLayers: boolean
 }
 
 // 用来存储应用状态的数据对象
@@ -62,7 +67,8 @@ const state: State = {
     // + 21-01-29 配合 map -> SET_TIMER_LOCK 使用的, lock = true 锁住,lock =false 打开
     autoPlay: false,
     // + 21-08-23 切换底图的key
-    baseMapKey: MapLayerEnum.SIMPLE_MAP
+    baseMapKey: MapLayerEnum.SIMPLE_MAP,
+    isInitLayers: false
 }
 
 // 用来改变应用状态的函数
@@ -127,6 +133,10 @@ const mutations = {
     [SET_MAP_LAYERS](state: State, layers: LayerTypeEnum[]): void {
         state.layers = layers
     },
+    // TODO:[-] 22-01-04 初始化 layers
+    [INIT_MAP_LAYERS](state: State): void {
+        state.layers = [LayerTypeEnum.GROUP_PATH_LAYER]
+    },
     // TODO:[-] 21-01-06 map - 选中的经纬度位置锁
     [SET_CURRENT_LATLNG_LOCK](state: State, lock: boolean): void {
         state.currentLatlngLock = lock
@@ -140,6 +150,9 @@ const mutations = {
     },
     [SET_BASE_MAP_KEY](state: State, mapKey: MapLayerEnum): void {
         state.baseMapKey = mapKey
+    },
+    [SET_IS_INIT_LAYERS](state: State, isInit: boolean): void {
+        state.isInitLayers = isInit
     }
 }
 
@@ -173,6 +186,9 @@ const getters = {
     },
     [GET_MAP_LAYERS](state: State): LayerTypeEnum[] {
         return state.layers
+    },
+    [GET_IS_INIT_LAYERS](state: State): boolean {
+        return state.isInitLayers
     },
     // TODO:[-] 21-01-06 map - 选中的经纬度位置锁
     [GET_CURRENT_LATLNG_LOCK]: (state: State): boolean => {

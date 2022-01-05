@@ -99,15 +99,6 @@ export default class TabContent extends Vue {
     dragCls: StationDrag
     toResize = false
     subTitleIndex = 0
-    //   quarterOptions: {
-    //     tyCode: string;
-    //     stationCode: string;
-    //     timestampStr: string;
-    //   } = {
-    //     tyCode: "DEFAULT",
-    //     stationCode: "DEFAULT",
-    //     timestampStr: "",
-    //   };
     quarterList: {
         stationCode: string
         max: number
@@ -130,14 +121,6 @@ export default class TabContent extends Vue {
                 that.screenWidth = window.innerWidth
             }
         }
-        // document.getElementById("station_surge").onresize = (e) => {
-        //   return () => {
-        //     that.size.divWidth = e.scrollWidth;
-        //   };
-        // };
-        // var elementResizeDetectorMaker = require("element-resize-detector");
-        // 加入 MouseDrag
-        // 加入 MouseDrag
         this.dragCls = new StationDrag('station_surge', 560, 488, {
             needStretch: true,
             dragAreaWidth: 10,
@@ -377,10 +360,6 @@ export default class TabContent extends Vue {
         }
     }
 
-    // drag(event: MouseEvent, elId: string, ignoreLeftSpace?: number, ignoreTopSpace?: number): void {
-    //     mouseDrag(event, elId, ignoreLeftSpace, ignoreTopSpace)
-    // }
-
     drag(): void {
         this.dragCls.drag({ divId: 'station_surge' })
     }
@@ -401,10 +380,6 @@ export default class TabContent extends Vue {
         if (this.toResize) {
             this.resetSize()
         }
-
-        // if (!val) {
-        //     this.toResize = true
-        // }
     }
 
     @Watch('size', { immediate: true, deep: true })

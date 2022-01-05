@@ -52,7 +52,7 @@
 </template>
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
-import { Mutation, namespace } from 'vuex-class'
+import { Mutation, namespace, Getter } from 'vuex-class'
 import { mapMutations } from 'vuex'
 import moment, { parseTwoDigitYear } from 'moment'
 // leaflet 相关
@@ -68,7 +68,12 @@ import { LayerTypeEnum } from '@/enum/map'
 import { ToolBarOptionsEnum } from '@/enum/options'
 
 // vuex 常量
-import { SET_MAP_LAYERS, SET_CURRENT_LATLNG_LOCK } from '@/store/types'
+import {
+    SET_MAP_LAYERS,
+    SET_CURRENT_LATLNG_LOCK,
+    GET_IS_INIT_LAYERS,
+    SET_IS_INIT_LAYERS
+} from '@/store/types'
 import { IExpandModel, ToolTypeEnum } from './types'
 
 // 引入其他的需要继承的组件
@@ -394,10 +399,20 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         }
     }
 
+    // 重置layers 数组
+    initLayers(): void {
+        this.layers = [LayerTypeEnum.GROUP_PATH_LAYER]
+    }
+
     @Mutation(SET_MAP_LAYERS, { namespace: 'map' }) setLayers
 
     // TODO:[-] 21-01-05
     @Mutation(SET_CURRENT_LATLNG_LOCK, { namespace: 'map' }) setCurrentLatlngLock
+
+    // TODO:[-] 22-01-05 加入的监听是否要重置当前 layers
+    @Getter(GET_IS_INIT_LAYERS, { namespace: 'map' }) getIsInitLayers
+
+    @Mutation(SET_IS_INIT_LAYERS, { namespace: 'map' }) setInitLayers
 
     // 点击展开节点或将节点设置为选中状态，并根据toolType判断是否为 ToolTypeEnum.LAYER ，若为 layer 则添加至 layers
     onClick(item: {
@@ -549,6 +564,13 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         }
     }
 
+    @Watch('getIsInitLayers')
+    onIsInitLayers(isInit: boolean): void {
+        if (isInit) {
+            this.layers = [LayerTypeEnum.GROUP_PATH_LAYER]
+            this.setInitLayers(false)
+        }
+    }
     @Watch('getLayers')
     onLayers(layers: LayerTypeEnum[], oldLayers: LayerTypeEnum[]): void {
         // console.log(layers)

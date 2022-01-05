@@ -47,6 +47,10 @@ export const GET_MAP_NOW = 'GET_MAP_NOW'
 // 设置当前 map 中的 显示的 layers
 export const SET_MAP_LAYERS = 'SET_MAY_LAYERS'
 export const GET_MAP_LAYERS = 'GET_MAP_LAYERS'
+export const INIT_MAP_LAYERS = 'INIT_MAP_LAYERS'
+// + 22-01-05 是否需要 重置 layers
+export const SET_IS_INIT_LAYERS = 'SET_IS_INIT_LAYERS'
+export const GET_IS_INIT_LAYERS = 'GET_IS_INIT_LAYERS'
 
 // + 21-08-23 切换地图底图
 export const SET_BASE_MAP_KEY = 'SET_BASE_MAP_KEY'
