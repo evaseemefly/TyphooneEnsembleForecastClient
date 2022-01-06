@@ -60,6 +60,8 @@ class StationSurgeMiModel {
      * @memberof StationSurgeMiModel
      */
     forecastDt: Date
+    lat: number
+    lon: number
 
     /**
      * Creates an instance of StationSurgeMiModel.
@@ -79,6 +81,8 @@ class StationSurgeMiModel {
         max: number,
         min: number,
         forecastDt: Date,
+        lat: number,
+        lon: number,
         options?: {}
     ) {
         this.stationName = stationName
@@ -87,6 +91,8 @@ class StationSurgeMiModel {
         this.min = min
         this.surge = surge
         this.forecastDt = forecastDt
+        this.lat = lat
+        this.lon = lon
     }
 }
 /**
