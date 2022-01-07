@@ -1960,7 +1960,9 @@ export default class TyGroupMap extends mixins(
             //     type: 'success'
             // })
             // this.$message({message:'加载'})
-            this.loadCurrentStationList()
+            this.loadCurrentStationList().then(() => {
+                that.loadStationIconsByZoom(that.zoomLevel, that.currentStationSurgeList)
+            })
         } else {
             this.clearSurgeAllGroupLayers()
         }
