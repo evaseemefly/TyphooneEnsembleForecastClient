@@ -19,6 +19,7 @@ enum BaseLayerTypeEnum {
 }
 
 export enum SurgeProLayerEnum {
+    UN_LAYER = -1,
     RASTER_PRO_SURGE_LAYER_GT05 = 1301, // 风暴增水概率
     RASTER_PRO_SURGE_LAYER_GT10 = 1302, //  增水大于0.5m的概率 nc
     RASTER_PRO_SURGE_LAYER_GT15 = 1303,

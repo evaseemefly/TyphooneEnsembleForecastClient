@@ -166,6 +166,11 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     group: 1,
                     options: [
                         {
+                            key: -1,
+                            val: '未选择',
+                            optionsType: LayerTypeEnum.UN_LAYER
+                        },
+                        {
                             key: 0,
                             val: '大于0.5m',
                             optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT05
