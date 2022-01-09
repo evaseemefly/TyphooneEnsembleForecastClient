@@ -22,12 +22,16 @@
             </div>
             <div class="child-options" v-show="item.showOptions">
                 <div class="child-options-title">概率</div>
-                <el-select v-model="proSurgeLayerVal" placeholder="请选择" @change="setOptions">
+                <el-select
+                    v-model="proSurgeLayerItem"
+                    placeholder="请选择"
+                    @change="setProSurgeOptions"
+                >
                     <el-option
                         v-for="tempOptions in item.options"
                         :key="tempOptions.key"
                         :label="tempOptions.val"
-                        :value="tempOptions.optionsType"
+                        :value="tempOptions"
                     ></el-option>
                 </el-select>
             </div>
@@ -121,7 +125,8 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     toolType: ToolTypeEnum.LAYER,
                     layerType: LayerTypeEnum.GROUP_PATH_LAYER,
                     val: '',
-                    checked: false
+                    checked: false,
+                    group: 2
                 },
                 {
                     isExpanded: false,
@@ -168,37 +173,44 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                         {
                             key: -1,
                             val: '未选择',
-                            optionsType: LayerTypeEnum.UN_LAYER
+                            optionsType: LayerTypeEnum.UN_LAYER,
+                            group: 1
                         },
                         {
                             key: 0,
                             val: '大于0.5m',
-                            optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT05
+                            optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT05,
+                            group: 1
                         },
                         {
                             key: 1,
                             val: '大于1.0m',
-                            optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT10
+                            optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT10,
+                            group: 1
                         },
                         {
                             key: 2,
                             val: '大于1.5m',
-                            optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT15
+                            optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT15,
+                            group: 1
                         },
                         {
                             key: 3,
                             val: '大于2.0m',
-                            optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT20
+                            optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT20,
+                            group: 1
                         },
                         {
                             key: 4,
                             val: '大于2.5m',
-                            optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT25
+                            optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT25,
+                            group: 1
                         },
                         {
                             key: 5,
                             val: '大于3.0m',
-                            optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT30
+                            optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT30,
+                            group: 1
                         }
                     ]
                 },
@@ -237,10 +249,27 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         }
     ]
 
+    // layers: LayerTypeEnum[] = [LayerTypeEnum.GROUP_PATH_LAYER]
     layers: LayerTypeEnum[] = [LayerTypeEnum.GROUP_PATH_LAYER]
+    layersItem: IExpandModel[] = [
+        {
+            isExpanded: false,
+            html: '',
+            iconClass: 'fas fa-route',
+            title: '集合路径',
+            hasChildren: false,
+            isChildren: true,
+            toolType: ToolTypeEnum.LAYER,
+            layerType: LayerTypeEnum.GROUP_PATH_LAYER,
+            val: '',
+            checked: false,
+            group: 2
+        }
+    ]
 
     proSurgeLayer: LayerTypeEnum = LayerTypeEnum.UN_LAYER
     proSurgeLayerVal: LayerTypeEnum = LayerTypeEnum.UN_LAYER
+    proSurgeLayerItem: IExpandModel = null
 
     // tempOptions?: { key: number; val: string }[] = [
     //     { key: 0, val: '测试1' },
@@ -363,45 +392,74 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         }
     }
 
-    setOptions(item: LayerTypeEnum, tempOptions: any): void {
+    setProSurgeOptions(item: IExpandModel, tempOptions: any): void {
         console.info(`监听到item发生变化:${item}`)
         // console.info(`监听到tempOptions发生变化:${tempOptions}`)
-        this.proSurgeLayer = item
+        if (item.layerType) {
+            this.proSurgeLayer = item.layerType
+        }
+
         // this.insertLayers(item)
     }
 
     @Watch('proSurgeLayer')
-    onProSurgeLayer(newLayer: LayerTypeEnum, oldLayer: LayerType): void {
+    onProSurgeLayer(newLayer: LayerTypeEnum, oldLayer: LayerTypeEnum): void {
         // step: 若 oldLayer 存在则从当前 layers 中找到并去掉，若不存在则不执行以上操作
-        if (oldLayer !== LayerTypeEnum.UN_LAYER) {
-            const index = this.layers.findIndex((item) => item === oldLayer)
-            if (index >= 0) {
-                this.layers.splice(index, 1)
-            }
+        if (newLayer !== LayerTypeEnum.UN_LAYER) {
+            // const index = this.layers.findIndex((item) => item === oldLayer)
+            // if (index >= 0) {
+            //     this.layers.splice(index, 1)
+            // } else {
+            //     this.layers.push(newLayer)
+            // }
+
+            this.insertLayers(newLayer)
         }
-        this.layers.push(newLayer)
     }
 
+    // 判断 layer 是否存在当前 layers 中
+    _getTargetLayerInLayersIndex(tempLayer: LayerTypeEnum): number {
+        let index = -1
+        index = this.layers.findIndex((temp) => {
+            return temp === tempLayer
+        })
+
+        return index
+    }
+
+    // 插入layers ，若已经存在则删除
     insertLayers(tempLayerType: LayerTypeEnum): void {
-        if (this.layers.indexOf(tempLayerType) === -1) {
-            this.layers.push(tempLayerType)
+        // if (this.layers.indexOf(tempLayerType) === -1) {
+        //     this.layers.push(tempLayerType)
+        // } else {
+        //     // 若已经存在则删除
+        //     const index = this.layers.findIndex((temp) => temp === tempLayerType)
+        //     if (index != -1) {
+        //         this.layers.splice(index, 1)
+        //     }
+        // }
+        const index = this._getTargetLayerInLayersIndex(tempLayerType)
+        // TODO:[-] 22-01-09 在插入时，需要
+        if (index >= 0) {
+            this.removeLayers(tempLayerType)
         } else {
-            // 若已经存在则删除
-            const index = this.layers.findIndex((temp) => temp === tempLayerType)
-            if (index != -1) {
-                this.layers.splice(index, 1)
-            }
+            this.layers.push(tempLayerType)
         }
     }
+
     // 从当前 layers 中删除指定layers
     removeLayers(tempLayerType: LayerTypeEnum): void {
-        if (this.layers.indexOf(tempLayerType) > 0) {
-            // 若已经存在则删除
-            const index = this.layers.findIndex((temp) => temp === tempLayerType)
-            if (index != -1) {
-                this.layers.splice(index, 1)
-            }
+        const index = this._getTargetLayerInLayersIndex(tempLayerType)
+        if (index >= 0) {
+            this.layers.splice(index, 1)
         }
+        // if (this.layers.indexOf(tempLayerType) > 0) {
+        //     // 若已经存在则删除
+        //     const index = this.layers.findIndex((temp) => temp === tempLayerType)
+        //     if (index != -1) {
+        //         this.layers.splice(index, 1)
+        //     }
+        // }
     }
 
     // 重置layers 数组

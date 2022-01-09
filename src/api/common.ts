@@ -5,8 +5,8 @@ export const host = 'http://127.0.0.1:8000'
 
 /** @type {*} 21-03-05 + 新添加的用来加载 geoserver的host */
 // export const hostGeo = 'http://128.5.10.21:8082/geoserver/'
-const baseHost = 'http://128.5.10.21'
-// const baseHost = 'http://localhost'
+// const baseHost = 'http://128.5.10.21'
+const baseHost = 'http://localhost'
 const basePort = '8084'
 // const basePort = '8082'
 export const baseUrl = `${baseHost}:${basePort}`

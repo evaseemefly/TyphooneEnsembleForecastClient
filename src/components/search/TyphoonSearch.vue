@@ -14,7 +14,7 @@
                 </div>
                 <div class="base-card-row vertical-center">
                     <span class="font-shadow-base font-white">台风编号</span>
-                    <el-select v-model="getTyCodeFormated" clearable placeholder="请选择">
+                    <el-select v-model="selectedTyCode" clearable placeholder="请选择">
                         <el-option
                             v-for="item in typhoonList"
                             :key="item.id"
@@ -103,7 +103,8 @@ export default class TyphoonSearch extends Vue {
         tyCode: string
         tyId: number
     } = { gmtCreated: new Date(), timestamp: '', tyCode: '', tyId: -1 }
-    selectedTyCode: string = DEFAULTTYCODE
+    // selectedTyCode: string = DEFAULTTYCODE
+    selectedTyCode = ''
     selectedTyId: number = DEFAULT_TYPHOON_ID
     selectedTyTimeStampStr: string = DEFAULTTIMESTAMP
     mounted() {
