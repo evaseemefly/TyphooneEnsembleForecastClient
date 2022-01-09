@@ -5,7 +5,8 @@
     "scripts": {
         "serve": "vue-cli-service serve",
         "build": "vue-cli-service build",
-        "lint": "vue-cli-service lint"
+        "lint": "vue-cli-service lint",
+        "vsz": "vsz-commit"
     },
     "dependencies": {
         "@ansur/leaflet-pulse-icon": "^0.1.1",
@@ -53,6 +54,7 @@
         "leaflet-velocity-ts": "^1.1.7",
         "leaflet.heat": "^0.2.0",
         "lodash": "^4.17.20",
+        "lodash-decorators": "^6.0.1",
         "lodash-es": "^4.17.20",
         "mapbox": "^1.0.0-beta10",
         "mapbox-gl": "^2.3.0",
@@ -78,7 +80,8 @@
         "vue-router": "^3.0.3",
         "vue2-leaflet": "^2.2.1",
         "vuex": "^3.0.1",
-        "vuex-class": "^0.3.2"
+        "vuex-class": "^0.3.2",
+        "yarn": "^1.22.17"
     },
     "devDependencies": {
         "@types/bootstrap": "^4.3.1",
