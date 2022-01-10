@@ -491,6 +491,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         // 是否为单选按钮
         isRadio?: boolean
         showOptions?: boolean
+        group?: number
     }): void {
         const that = this
         // 1- 执行展开操作
@@ -512,7 +513,9 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
             !item.showOptions
         ) {
             // TODO:[-] 21-08-11 此处将以上方法封装至 insertLayers 中
-            this.insertLayers(item.layerType)
+            // this.insertLayers(item.layerType)
+            // TODO:[-] 22-01-10 注意此处的 item 被修改为 { group: number; layerType: LayerTypeEnum; val: string }
+            this.insertLayers({ group: item.group, layerType: item.layerType, val: item.val })
         }
         // TODO:[-] 20-11-11
         // 2-2 若为 SHOWTYPEOPTION -> optionsType
@@ -619,7 +622,13 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     // return (temp.checked = false)
                     console.log(`与当前item同组的item为:${temp.title}:checked:${temp.checked}`)
                     that.$set(that.converToolsBar, index, temp)
-                    that.removeLayers(temp.layerType)
+                    // that.removeLayers(temp.layerType)
+                    // TODO:[-] 22-01-10
+                    // that.removeLayers({
+                    //     group: item.group,
+                    //     layerType: item.layerType,
+                    //     val: item.val
+                    // })
                 }
             })
         }
@@ -648,7 +657,10 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         oldLayers: { group: number; layerType: LayerTypeEnum; val: string }[]
     ): void {
         console.log(`new:${layers},old:${oldLayers}`)
-        this.setLayers(layers)
+        const layersTypeList = layers.map((temp) => {
+            return temp.layerType
+        })
+        this.setLayers(layersTypeList)
         this.checkLayerItemInToolsBar(layers, oldLayers)
     }
 
