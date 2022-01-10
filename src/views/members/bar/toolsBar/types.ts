@@ -29,6 +29,7 @@ interface IChildOptions {
     key: number
     val: string
     optionsType?: LayerTypeEnum
+    group?: number
 }
 interface IExpand {
     // 是否展开

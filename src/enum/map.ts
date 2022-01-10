@@ -1,5 +1,7 @@
+enum ConstLayerTypeEnum {
+    UN_LAYER = -1
+}
 enum BaseLayerTypeEnum {
-    UN_LAYER = -1,
     // 更新至 tb:dict_base -> pid=700
     // 台风-集合预报路径图层
     GROUP_PATH_LAYER = 701,
@@ -19,6 +21,7 @@ enum BaseLayerTypeEnum {
 }
 
 export enum SurgeProLayerEnum {
+    // UN_LAYER = -1,
     RASTER_PRO_SURGE_LAYER_GT05 = 1301, // 风暴增水概率
     RASTER_PRO_SURGE_LAYER_GT10 = 1302, //  增水大于0.5m的概率 nc
     RASTER_PRO_SURGE_LAYER_GT15 = 1303,
@@ -38,7 +41,7 @@ export enum MapLayerEnum {
     SIMPLE_MAP = 4002 // 简单底图
 }
 export const LayerTypeEnum = { ...SurgeProLayerEnum, ...BaseLayerTypeEnum }
-export type LayerTypeEnum = BaseLayerTypeEnum | SurgeProLayerEnum
+export type LayerTypeEnum = BaseLayerTypeEnum | SurgeProLayerEnum | ConstLayerTypeEnum
 // export { LayerTypeEnum&SurgeProLayerEnum }
 // export default { ...SurgeProLayerEnum, ...LayerTypeEnum }
 // export { LayerTypeEnum }

@@ -76,6 +76,14 @@ const formatDir = (val: { x: number; y: number }, keepNum = 2): string => {
     return dir.toFixed(keepNum)
 }
 
+const formatTyphoonCode = (val: string) => {
+    let tyCodeStr = '未选择台风'
+    if (val !== DEFAULTTYCODE) {
+        tyCodeStr = val
+    }
+    return tyCodeStr
+}
+
 export {
     fortmatData2YMDH,
     fortmatData2YMDHM,
@@ -84,5 +92,6 @@ export {
     formatFixed,
     formatDir,
     fortmatTyCode,
-    fortmatDate2YMD
+    fortmatDate2YMD,
+    formatTyphoonCode
 }

@@ -22,12 +22,12 @@
             </div>
             <div class="child-options" v-show="item.showOptions">
                 <div class="child-options-title">概率</div>
-                <el-select v-model="proSurgeLayerVal" placeholder="请选择" @change="setOptions">
+                <el-select v-model="proSurgeLayerItem" placeholder="请选择" value-key="key">
                     <el-option
                         v-for="tempOptions in item.options"
                         :key="tempOptions.key"
                         :label="tempOptions.val"
-                        :value="tempOptions.optionsType"
+                        :value="tempOptions"
                     ></el-option>
                 </el-select>
             </div>
@@ -79,6 +79,7 @@ import { IExpandModel, ToolTypeEnum } from './types'
 // 引入其他的需要继承的组件
 import OilShowTypeSelectBar from './showTypeSelectBaseBar.vue'
 import FactorSelectBaseBar from './factorSelectBaseBar.vue'
+import { DEFAULT_LAYER_ITEM } from './const'
 import { mixins } from 'vue-class-component'
 // ----
 // TODO:[-] 20-11-11 组件中的类型放在 ./types.ts 文件中
@@ -121,7 +122,8 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     toolType: ToolTypeEnum.LAYER,
                     layerType: LayerTypeEnum.GROUP_PATH_LAYER,
                     val: '',
-                    checked: false
+                    checked: false,
+                    group: 2
                 },
                 {
                     isExpanded: false,
@@ -166,34 +168,46 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     group: 1,
                     options: [
                         {
+                            key: -1,
+                            val: '未选择',
+                            optionsType: LayerTypeEnum.UN_LAYER,
+                            group: 1
+                        },
+                        {
                             key: 0,
                             val: '大于0.5m',
-                            optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT05
+                            optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT05,
+                            group: 1
                         },
                         {
                             key: 1,
                             val: '大于1.0m',
-                            optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT10
+                            optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT10,
+                            group: 1
                         },
                         {
                             key: 2,
                             val: '大于1.5m',
-                            optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT15
+                            optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT15,
+                            group: 1
                         },
                         {
                             key: 3,
                             val: '大于2.0m',
-                            optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT20
+                            optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT20,
+                            group: 1
                         },
                         {
                             key: 4,
                             val: '大于2.5m',
-                            optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT25
+                            optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT25,
+                            group: 1
                         },
                         {
                             key: 5,
                             val: '大于3.0m',
-                            optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT30
+                            optionsType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT30,
+                            group: 1
                         }
                     ]
                 },
@@ -232,10 +246,15 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         }
     ]
 
+    // layers: LayerTypeEnum[] = [LayerTypeEnum.GROUP_PATH_LAYER]
     layers: LayerTypeEnum[] = [LayerTypeEnum.GROUP_PATH_LAYER]
+    layersItem: { group: number; layerType: LayerTypeEnum; val: string }[] = [DEFAULT_LAYER_ITEM]
+
+    defaultGroup = 1
 
     proSurgeLayer: LayerTypeEnum = LayerTypeEnum.UN_LAYER
     proSurgeLayerVal: LayerTypeEnum = LayerTypeEnum.UN_LAYER
+    proSurgeLayerItem: { group: number; layerType: LayerTypeEnum; val: string } = null
 
     // tempOptions?: { key: number; val: string }[] = [
     //     { key: 0, val: '测试1' },
@@ -358,50 +377,130 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         }
     }
 
-    setOptions(item: LayerTypeEnum, tempOptions: any): void {
+    setProSurgeOptions(
+        item: { group: number; layerType: LayerTypeEnum; val: string },
+        tempOptions: any
+    ): void {
         console.info(`监听到item发生变化:${item}`)
         // console.info(`监听到tempOptions发生变化:${tempOptions}`)
-        this.proSurgeLayer = item
+        if (item.layerType) {
+            this.proSurgeLayerItem = item
+        }
+
         // this.insertLayers(item)
     }
 
-    @Watch('proSurgeLayer')
-    onProSurgeLayer(newLayer: LayerTypeEnum, oldLayer: LayerType): void {
+    @Watch('proSurgeLayerItem')
+    onProSurgeLayer(
+        newLayer: { group: number; optionsType: LayerTypeEnum; val: string },
+        oldLayer: { group: number; optionsType: LayerTypeEnum; val: string }
+    ): void {
         // step: 若 oldLayer 存在则从当前 layers 中找到并去掉，若不存在则不执行以上操作
-        if (oldLayer !== LayerTypeEnum.UN_LAYER) {
-            const index = this.layers.findIndex((item) => item === oldLayer)
-            if (index >= 0) {
-                this.layers.splice(index, 1)
-            }
+        if (newLayer.optionsType !== LayerTypeEnum.UN_LAYER) {
+            this.insertLayers({
+                group: newLayer.group,
+                layerType: newLayer.optionsType,
+                val: newLayer.val
+            })
+        } else if (newLayer.optionsType === LayerTypeEnum.UN_LAYER) {
+            // 若当前选择的是未选择 option ，则去掉所有的概率增水场图层
+            this._removeProSurgeLayers()
         }
-        this.layers.push(newLayer)
     }
 
-    insertLayers(tempLayerType: LayerTypeEnum): void {
-        if (this.layers.indexOf(tempLayerType) === -1) {
-            this.layers.push(tempLayerType)
+    // 判断 layer 是否存在当前 layers 中
+    _getTargetLayerInLayersIndex(tempLayer: {
+        group: number
+        layerType: LayerTypeEnum
+        val: string
+    }): number {
+        let index = -1
+        index = this.layersItem.findIndex((temp) => {
+            return temp.layerType === tempLayer.layerType
+        })
+
+        return index
+    }
+
+    // + 22-01-10 判断当前 layer 在 this.layersItem 中是否存在相同 group 的layer
+    // 若存在则返回 index
+    _getTargetLayerExistSameGroup(tempLayer: {
+        group: number
+        layerType: LayerTypeEnum
+        val: string
+    }): number {
+        let isExisted = false
+        const index = this.layersItem.findIndex((temp) => {
+            return temp.group === tempLayer.group
+        })
+        if (index >= 0) {
+            isExisted = true
+        }
+        return index
+    }
+
+    // 插入layers ，若已经存在则删除
+    insertLayers(tempLayerType: { group: number; layerType: LayerTypeEnum; val: string }): void {
+        // if (this.layers.indexOf(tempLayerType) === -1) {
+        //     this.layers.push(tempLayerType)
+        // } else {
+        //     // 若已经存在则删除
+        //     const index = this.layers.findIndex((temp) => temp === tempLayerType)
+        //     if (index != -1) {
+        //         this.layers.splice(index, 1)
+        //     }
+        // }
+        const index = this._getTargetLayerInLayersIndex(tempLayerType)
+        const indexSameGroup = this._getTargetLayerExistSameGroup(tempLayerType)
+        if (indexSameGroup >= 0) {
+            this._removeLayerByIndex(indexSameGroup)
+        }
+        // TODO:[-] 22-01-09 在插入时，需要
+        if (index >= 0) {
+            this.removeLayers(tempLayerType)
         } else {
-            // 若已经存在则删除
-            const index = this.layers.findIndex((temp) => temp === tempLayerType)
-            if (index != -1) {
-                this.layers.splice(index, 1)
-            }
+            this.layersItem.push(tempLayerType)
         }
     }
+
     // 从当前 layers 中删除指定layers
-    removeLayers(tempLayerType: LayerTypeEnum): void {
-        if (this.layers.indexOf(tempLayerType) > 0) {
-            // 若已经存在则删除
-            const index = this.layers.findIndex((temp) => temp === tempLayerType)
-            if (index != -1) {
-                this.layers.splice(index, 1)
-            }
+    removeLayers(tempLayerType: { group: number; layerType: LayerTypeEnum; val: string }): void {
+        const index = this._getTargetLayerInLayersIndex(tempLayerType)
+        // if (index >= 0) {
+        //     this.layersItem.splice(index, 1)
+        // }
+        this._removeLayerByIndex(index)
+        // if (this.layers.indexOf(tempLayerType) > 0) {
+        //     // 若已经存在则删除
+        //     const index = this.layers.findIndex((temp) => temp === tempLayerType)
+        //     if (index != -1) {
+        //         this.layers.splice(index, 1)
+        //     }
+        // }
+    }
+
+    // 从 this.layersItem 中删除 index 下标的 layers
+    _removeLayerByIndex(index: number): boolean {
+        let isOk = false
+        if (index >= 0) {
+            this.layersItem.splice(index, 1)
+            isOk = true
         }
+        return isOk
+    }
+
+    // 删除所有概率增水场图层
+    _removeProSurgeLayers(): void {
+        const removeIndex = this.layersItem.findIndex((temp) => {
+            return temp.group === 1
+        })
+        this._removeLayerByIndex(removeIndex)
     }
 
     // 重置layers 数组
     initLayers(): void {
-        this.layers = [LayerTypeEnum.GROUP_PATH_LAYER]
+        // this.layers = [LayerTypeEnum.GROUP_PATH_LAYER]
+        this.layersItem = [DEFAULT_LAYER_ITEM]
     }
 
     @Mutation(SET_MAP_LAYERS, { namespace: 'map' }) setLayers
@@ -430,6 +529,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         // 是否为单选按钮
         isRadio?: boolean
         showOptions?: boolean
+        group?: number
     }): void {
         const that = this
         // 1- 执行展开操作
@@ -451,7 +551,9 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
             !item.showOptions
         ) {
             // TODO:[-] 21-08-11 此处将以上方法封装至 insertLayers 中
-            this.insertLayers(item.layerType)
+            // this.insertLayers(item.layerType)
+            // TODO:[-] 22-01-10 注意此处的 item 被修改为 { group: number; layerType: LayerTypeEnum; val: string }
+            this.insertLayers({ group: item.group, layerType: item.layerType, val: item.val })
         }
         // TODO:[-] 20-11-11
         // 2-2 若为 SHOWTYPEOPTION -> optionsType
@@ -558,7 +660,13 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     // return (temp.checked = false)
                     console.log(`与当前item同组的item为:${temp.title}:checked:${temp.checked}`)
                     that.$set(that.converToolsBar, index, temp)
-                    that.removeLayers(temp.layerType)
+                    // that.removeLayers(temp.layerType)
+                    // TODO:[-] 22-01-10
+                    // that.removeLayers({
+                    //     group: item.group,
+                    //     layerType: item.layerType,
+                    //     val: item.val
+                    // })
                 }
             })
         }
@@ -567,16 +675,31 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
     @Watch('getIsInitLayers')
     onIsInitLayers(isInit: boolean): void {
         if (isInit) {
-            this.layers = [LayerTypeEnum.GROUP_PATH_LAYER]
+            // this.layers = [LayerTypeEnum.GROUP_PATH_LAYER]
+            this.layersItem = [DEFAULT_LAYER_ITEM]
             this.setInitLayers(false)
         }
     }
-    @Watch('getLayers')
-    onLayers(layers: LayerTypeEnum[], oldLayers: LayerTypeEnum[]): void {
-        // console.log(layers)
+
+    // @Watch('getLayers')
+    // onLayers(layers: LayerTypeEnum[], oldLayers: LayerTypeEnum[]): void {
+    //     // console.log(layers)
+    //     console.log(`new:${layers},old:${oldLayers}`)
+    //     this.setLayers(layers)
+    //     this.checkLayerInToolsBar(layers, oldLayers)
+    // }
+
+    @Watch('getLayersItem')
+    onLayersItem(
+        layers: { group: number; layerType: LayerTypeEnum; val: string }[],
+        oldLayers: { group: number; layerType: LayerTypeEnum; val: string }[]
+    ): void {
         console.log(`new:${layers},old:${oldLayers}`)
-        this.setLayers(layers)
-        this.checkLayerInToolsBar(layers, oldLayers)
+        const layersTypeList = layers.map((temp) => {
+            return temp.layerType
+        })
+        this.setLayers(layersTypeList)
+        this.checkLayerItemInToolsBar(layers, oldLayers)
     }
 
     checkLayerInToolsBar(newLayers: LayerTypeEnum[], oldLayers: LayerTypeEnum[]): void {
@@ -625,6 +748,56 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         }
     }
 
+    checkLayerItemInToolsBar(
+        newLayers: { group: number; layerType: LayerTypeEnum; val: string }[],
+        oldLayers: { group: number; layerType: LayerTypeEnum; val: string }[]
+    ): void {
+        const that = this
+        if (newLayers.length > 0) {
+            newLayers.forEach((tempLayer) => {
+                const convertedTool = that.converToolsBar.filter((tempTool) => {
+                    return (
+                        tempTool.toolType === ToolTypeEnum.LAYER &&
+                        tempTool.layerType &&
+                        tempTool.layerType === tempLayer.layerType
+                    )
+                })
+                const toolObj = that.converToolsBar.find((tempTool) => {
+                    return (
+                        tempTool.toolType === ToolTypeEnum.LAYER &&
+                        tempTool.layerType === tempLayer.layerType
+                    )
+                })
+                if (convertedTool.length === 1) {
+                    convertedTool[0].checked = true
+                }
+                if (toolObj) {
+                    toolObj.checked = true
+                }
+            })
+        }
+        // 若 OldLayer 存在
+        if (oldLayers.length > 0) {
+            // 从旧的数组中找到在新数组中不存在的值
+            const newLayersSet = new Set([...newLayers])
+            const oldLayersSet = new Set([...oldLayers])
+            const delOldLayersSet = new Set([...oldLayers].filter((x) => !newLayersSet.has(x)))
+            const delOldLayers = Array.from(delOldLayersSet)
+            console.log(`layers中剔除掉的:${delOldLayers}`)
+            delOldLayers.forEach((tempDelLayer) => {
+                const toolObj = that.converToolsBar.find((tempTool) => {
+                    return (
+                        tempTool.toolType === ToolTypeEnum.LAYER &&
+                        tempTool.layerType === tempDelLayer.layerType
+                    )
+                })
+                if (toolObj) {
+                    toolObj.checked = false
+                }
+            })
+        }
+    }
+
     checkexpandedStatue(item: {
         isExpanded: boolean
         html: string
@@ -647,6 +820,10 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
 
     get getLayers(): LayerTypeEnum[] {
         return [...this.layers]
+    }
+
+    get getLayersItem(): { group: number; layerType: LayerTypeEnum; val: string }[] {
+        return [...this.layersItem]
     }
 }
 </script>

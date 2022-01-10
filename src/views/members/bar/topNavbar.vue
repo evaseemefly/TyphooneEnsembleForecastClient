@@ -145,8 +145,12 @@ export default class TopNavbar extends Vue {
                 margin: 0px;
                 line-height: 1.5;
                 display: flex;
-                flex-direction: column;
+                // flex-direction: column;
                 justify-content: center;
+                // + 22-01-10 修改后改为 主标题与副标题均为横置
+                align-items: center;
+                height: 30px;
+                flex-direction: row;
             }
             h3 {
                 background: linear-gradient(

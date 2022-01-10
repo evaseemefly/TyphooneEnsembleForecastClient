@@ -79,7 +79,7 @@ import {
 } from '@/const/common'
 import { DEFAULTTIMESTAMP, DEFAULTTYCODE } from '@/const/typhoon'
 import { SET_TYPHOON_CODE, SET_TYPHOON_ID, SET_TYPHOON_TIMESTAMP } from '@/store/types'
-import { fortmatData2YMDH, fortmatData2YMDHM } from '@/common/filter'
+import { fortmatData2YMDH, fortmatData2YMDHM, formatTyphoonCode } from '@/common/filter'
 @Component({
     filters: { fortmatData2YMDH, fortmatData2YMDHM }
 })
@@ -103,7 +103,8 @@ export default class TyphoonSearch extends Vue {
         tyCode: string
         tyId: number
     } = { gmtCreated: new Date(), timestamp: '', tyCode: '', tyId: -1 }
-    selectedTyCode: string = DEFAULTTYCODE
+    // selectedTyCode: string = DEFAULTTYCODE
+    selectedTyCode = ''
     selectedTyId: number = DEFAULT_TYPHOON_ID
     selectedTyTimeStampStr: string = DEFAULTTIMESTAMP
     mounted() {
@@ -205,6 +206,11 @@ export default class TyphoonSearch extends Vue {
             this.selectedTyCode = DEFAULTTYCODE
             this.selectedTyTimeStampStr = DEFAULTTIMESTAMP
         }
+    }
+
+    // + 22-01-07 新加入的 compute 计算属性用来处理 v-mode 无法直接加入过滤器的问题
+    get getTyCodeFormated(): string {
+        return formatTyphoonCode(this.selectedTyCode)
     }
 
     @Watch('selectedTyId')
