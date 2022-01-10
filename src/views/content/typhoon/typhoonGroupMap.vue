@@ -2336,8 +2336,22 @@ export default class TyGroupMap extends mixins(
                     this.tyMaxSurgeOptions.isShow = false
                 } else if (lastLayer === LayerTypeEnum.RASTER_HOURLY_SURGE_LAYER) {
                     this.tyFieldOptions.isShow = false
-                } else if (lastLayer === LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT05) {
-                    this.tyFieldOptions.isShow = false
+                }
+                // TODO:[-] 22-01-10 注意此处判断的不仅仅是 GT05
+                // else if (lastLayer === LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT05) {
+                //     this.tyProSurgeOptions.isShow = false
+                // }
+                else if (
+                    [
+                        LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT05,
+                        LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT10,
+                        LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT15,
+                        LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT20,
+                        LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT25,
+                        LayerTypeEnum.RASTER_PRO_SURGE_LAYER_GT30
+                    ].includes(lastLayer)
+                ) {
+                    this.tyProSurgeOptions.isShow = false
                 }
             }
         })
