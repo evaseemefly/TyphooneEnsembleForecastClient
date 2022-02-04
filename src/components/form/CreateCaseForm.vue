@@ -1,5 +1,5 @@
 <template>
-    <div id="base_form_createcase" v-drag style="visibility: hidden;">
+    <div id="base_form_createcase" @mousedown="drag()" style="visibility: hidden;">
         <div class="base-card">
             <div class="base-card-title"><h4>台风信息</h4></div>
             <div class="base-card-content">
@@ -136,7 +136,19 @@
                         ></el-input-number>
                     </div>
                     <div class="base-card-row">
-                        误差半径成员
+                        模型计算区域
+                        <el-select v-model="selectForecastAreaVal" placeholder="请选择">
+                            <el-option
+                                v-for="item in forecastAreaList"
+                                :key="item.value"
+                                :label="item.label"
+                                :value="item.value"
+                            >
+                            </el-option>
+                        </el-select>
+                    </div>
+                    <div class="base-card-row">
+                        集合成员数量
                         <el-input-number
                             v-model="deviationRadiusNum"
                             :min="deviationRadiusLenMin"
@@ -168,16 +180,17 @@
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 import { Getter, Mutation, State, namespace } from 'vuex-class'
-import { Draggable } from '@/directives/drag'
+import { StationDrag } from '@/directives/drag'
 import { createTyCase } from '@/api/task'
 import { getTargetTyCase } from '@/api/tyhoon'
 // STORE 常量
 import { GET_CREATE_FORM } from '@/store/types'
 // vuex -> types
 import { SET_GEO_COVERAGEID } from '@/store/types'
+import { AreaEnum } from '@/enum/area'
 @Component({
     directives: {
-        drag: Draggable
+        // drag: Draggable
     }
 })
 export default class CreateCaseForm extends Vue {
@@ -207,6 +220,26 @@ export default class CreateCaseForm extends Vue {
         { forecastDt: new Date(2020, 8, 19, 5), lon: 112.3, lat: 22.8, bp: 992 },
         { forecastDt: new Date(2020, 8, 19, 11), lon: 111.2, lat: 23.7, bp: 998 }
     ]
+    forecastAreaList = [
+        {
+            value: AreaEnum.NULL,
+            label: '未选择'
+        },
+        {
+            value: AreaEnum.SOUTHCHINASEA,
+            label: '南海区'
+        },
+        {
+            value: AreaEnum.EASTCHINASEA,
+            label: '东海区'
+        },
+        {
+            value: AreaEnum.BOHAISEA,
+            label: '北海区'
+        }
+    ]
+    selectForecastAreaVal = AreaEnum.NULL
+    dragCls: StationDrag
     deviationRadiusLenMin = 0
     deviationRadiusLenMax = 100
     maxWindRadiusDiff = 0
@@ -233,6 +266,16 @@ export default class CreateCaseForm extends Vue {
 
     mounted() {
         // this.isClosed = !this.isShow
+        this.dragCls = new StationDrag('base_form_createcase', 600, 309.6, {
+            needStretch: false,
+            dragAreaWidth: 10,
+            ignoreLeftSpace: 0,
+            ignoreTopSpace: 0
+        })
+    }
+
+    drag(): void {
+        this.dragCls.drag({ divId: 'base_form_createcase' })
     }
 
     deviationChange(num: number, oldNum: number): void {
@@ -377,7 +420,7 @@ export default class CreateCaseForm extends Vue {
     // visibility: visible;
     position: absolute;
     top: 25%;
-    left: 30%;
+    right: 30%; // TODO:[-] 22-02-03 注意由于加入了拖拽操作，拖拽目前是修改 right的pixel，所以将默认的left->right
     z-index: 999;
     .base-card {
         // padding: 10px;

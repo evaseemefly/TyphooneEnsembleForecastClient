@@ -425,7 +425,13 @@ class StationDrag extends AbsBaseMouseDrag {
         if (velDir !== STRETCHDIRENUM.UNABLE) {
             // 鼠标的矢量位移 左 - 右 + , 上 - ,下 +
             // TODO:[-] 21-11-12 注意此处需要加入一个外部的上下两个标签
-            if (this.options.ignoreLeftSpace && this.options.ignoreTopSpace && this.htmlElement) {
+            // TODO:[-] 22-02-03 加入了 needStretch 的判断
+            if (
+                this.options.needStretch &&
+                this.options.ignoreLeftSpace &&
+                this.options.ignoreTopSpace &&
+                this.htmlElement
+            ) {
                 // const tempOdivStyle = odiv.style;
                 switch (true) {
                     case velDir === STRETCHDIRENUM.LEFTTOP:

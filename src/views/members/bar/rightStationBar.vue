@@ -65,10 +65,7 @@ import { DefaultStationOptions } from '@/views/content/station/types'
     directives: {
         // drag: Draggable
     },
-    components: {
-        'quarter-view': QuarterView,
-        'station-chart': StationChartsView
-    }
+    components: { 'station-chart': StationChartsView, 'quarter-view': QuarterView }
 })
 export default class TabContent extends Vue {
     @Prop()
@@ -93,8 +90,8 @@ export default class TabContent extends Vue {
         divHeight: 445
     }
     subTitles: Array<{ title: string; index: number; componetName: string }> = [
-        { title: '潮位分析数据', index: 0, componetName: 'quarter-view' },
-        { title: '潮位站预报', index: 1, componetName: 'station-chart' }
+        { title: '潮位站预报', index: 0, componetName: 'station-chart' },
+        { title: '潮位分析数据', index: 1, componetName: 'quarter-view' }
     ]
     dragCls: StationDrag
     toResize = false
