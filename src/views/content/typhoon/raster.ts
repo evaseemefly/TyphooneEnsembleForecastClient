@@ -451,7 +451,9 @@ class SurgeRasterGeoLayer {
                 const pixelValue = pixelValues[0] // there's just one band in this raster
 
                 // if there's zero wind, don't return a color
-                if (pixelValue === 0 || Number.isNaN(pixelValue)) return null
+                // TODO:[-] 22-01-20 由于最大增水场可能会出现 pixelValue 为 0 的情况，所以需要剔除掉===0的判断
+                // if (pixelValue === 0 || Number.isNaN(pixelValue)) return null
+                if (Number.isNaN(pixelValue)) return null
 
                 // scale to 0 - 1 used by chroma
                 const scaledPixelValue = (pixelValue - min) / range
