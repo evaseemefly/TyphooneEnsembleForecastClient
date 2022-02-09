@@ -477,6 +477,9 @@ export default class CreateCaseForm extends Vue {
         width: 16%;
         margin-right: 2px;
     }
+    .el-date-editor {
+        width: 190px;
+    }
 }
 .base-card-row.tiled {
     .el-input {
