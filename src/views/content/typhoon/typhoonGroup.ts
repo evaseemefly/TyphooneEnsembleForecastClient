@@ -128,6 +128,8 @@ class TyGroupPathLine {
             cirleScaleColor.setScale('Viridis')
             let indexDate = 0
             const cirleLayers: L.Layer[] = []
+            // TODO:[*] 22-02-09 尝试在每个节点加入 cirle
+            const cirlePointsLayers: L.Circle[] = []
             // TODO:[-] 21-08-26 新加入的台风所在位置 point
             const tyPointsLayers: L.Layer[] = []
 
@@ -147,6 +149,11 @@ class TyGroupPathLine {
                 fillOpacity: 0.2,
                 weight: 3
             })
+            // TODO:[*] 22-02-09 尝试在每个节点加入 cirle
+            // polygonPoint.map((temp) => {
+            //     const groupCirleLayers = L.circle(temp, { radius: 50 }).addTo(this.myMap)
+            // })
+
             // TODO:[-] 21-04-21 此处尝试将同一个 集合路径的 折线 + points 统一 add -> groupLayer
             // 目前看均无法设置 折线的 zindex
             let tempLayer = L.layerGroup([...cirleLayers])
