@@ -216,7 +216,7 @@ export default class CreateCaseForm extends Vue {
         { forecastDt: new Date(2020, 8, 18, 5), lon: 116, lat: 20.5, bp: 995 },
         { forecastDt: new Date(2020, 8, 18, 11), lon: 115.1, lat: 21.1, bp: 980 },
         { forecastDt: new Date(2020, 8, 18, 17), lon: 114, lat: 21.4, bp: 970 },
-        { forecastDt: new Date(2020, 8, 18, 12), lon: 113.2, lat: 22.1, bp: 970 },
+        { forecastDt: new Date(2020, 8, 18, 23), lon: 113.2, lat: 22.1, bp: 970 },
         { forecastDt: new Date(2020, 8, 19, 5), lon: 112.3, lat: 22.8, bp: 992 },
         { forecastDt: new Date(2020, 8, 19, 11), lon: 111.2, lat: 23.7, bp: 998 }
     ]
@@ -476,6 +476,9 @@ export default class CreateCaseForm extends Vue {
     .el-input {
         width: 16%;
         margin-right: 2px;
+    }
+    .el-date-editor {
+        width: 190px;
     }
 }
 .base-card-row.tiled {
