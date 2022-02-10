@@ -6,7 +6,9 @@ enum BaseLayerTypeEnum {
     // 台风-集合预报路径图层
     GROUP_PATH_LAYER = 701,
     // 潮位站-实时数据图层
-    STATION_ICON_LAYER = 702,
+    STATION_ICON_LAYER = 702, // 静态潮位站位置示意icon
+    STATION_ICON_FIELD_LAYER = 703, // 潮位站逐时示意icon
+    STATION_ICON_MAX_LAYER = 704, // 潮位站极值示意icon
     // 栅格-逐时增水图层
     RASTER_HOURLY_SURGE_LAYER = 1104,
     // + 21-08-01 最大增水图层

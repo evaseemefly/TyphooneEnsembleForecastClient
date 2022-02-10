@@ -211,18 +211,46 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                         }
                     ]
                 },
-                // 流场 的 masked 的 栅格
+                // 显示潮位站位置示意不显示对应的增水
                 {
                     isExpanded: false,
                     html: '',
                     iconClass: 'fas fa-home',
-                    title: '潮位站',
+                    title: '海洋站静态位置',
                     hasChildren: false,
                     isChildren: true,
                     toolType: ToolTypeEnum.LAYER,
                     layerType: LayerTypeEnum.STATION_ICON_LAYER,
                     val: '',
-                    checked: false
+                    checked: false,
+                    group: 2
+                },
+                // 显示潮位站位置示意不显示对应的增水
+                {
+                    isExpanded: false,
+                    html: '',
+                    iconClass: 'fas fa-home',
+                    title: '海洋站逐时',
+                    hasChildren: false,
+                    isChildren: true,
+                    toolType: ToolTypeEnum.LAYER,
+                    layerType: LayerTypeEnum.STATION_ICON_FIELD_LAYER,
+                    val: '',
+                    checked: false,
+                    group: 2
+                }, // 显示潮位站位置示意不显示对应的增水
+                {
+                    isExpanded: false,
+                    html: '',
+                    iconClass: 'fas fa-home',
+                    title: '海洋站极值',
+                    hasChildren: false,
+                    isChildren: true,
+                    toolType: ToolTypeEnum.LAYER,
+                    layerType: LayerTypeEnum.STATION_ICON_MAX_LAYER,
+                    val: '',
+                    checked: false,
+                    group: 2
                 }
             ]
         }
