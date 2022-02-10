@@ -343,13 +343,17 @@ import { StationSurge, IToHtml } from './station'
 import { TyGroupPath, getTyCenterGroupDiffLayer } from './typhoonGroup'
 // 引入枚举
 import { DictEnum } from '@/enum/dict'
-import { LayerTypeEnum, SurgeProLayerEnum, MapLayerEnum } from '@/enum/map'
+import { LayerTypeEnum, SurgeProLayerEnum, MapLayerEnum, StationIconLayerEnum } from '@/enum/map'
 
 // api
 // + 21 typhoon api
 import { getTargetTyGroupComplexModel } from '@/api/tyhoon'
 // 21-04-28 + station api
-import { getStationListByGroupPath, getStationSurgeRangeListByGroupPath } from '@/api/station'
+import {
+    getStationListByGroupPath,
+    getStationSurgeRangeListByGroupPath,
+    getStaticStationList
+} from '@/api/station'
 // STORE 常量
 import {
     GET_MAP_NOW,
@@ -401,6 +405,7 @@ import { ColorScales, getColorScale, DEFAULT_COLOR_SCALE } from '@/const/colorBa
 
 // TODO:[-] 21-08-23 保存个人token及key，不推送
 import { TDT_TOKEN_KEY, MAPTITLELAYER_TOKEN_KEY } from '@/privacy/key'
+import { AxiosResponse } from 'axios'
 
 const DEFAULT = 'DEFAULT'
 // 21-01-04 分页读取散点的页面散点数
@@ -1152,7 +1157,7 @@ export default class TyGroupMap extends mixins(
     }
 
     // 加载当前时刻的所有潮位站数据 并存储至 that.currentStationSurgeList
-    loadCurrentStationList(): Promise<void> {
+    loadCurrentStationList(stationType: LayerTypeEnum): Promise<void> {
         const that = this
         this.clearSurgeAllGroupLayers()
         this.$message(
@@ -1161,7 +1166,24 @@ export default class TyGroupMap extends mixins(
             )}对应的海洋站`
         )
         // TODO:[-] 21-12-27 此处需要判断一下，减少向后台查询的请求次数，若 stationSurgeIconOptions 无变化不需要再次请求
-        return getStationSurgeRangeListByGroupPath(
+        let getStationFunc: (
+            gpId: number,
+            tyCode: string,
+            forecastDt: Date,
+            timestampStr: string
+        ) => Promise<AxiosResponse<any>> = null
+        switch (stationType) {
+            // 静态潮位站
+            case LayerTypeEnum.STATION_ICON_LAYER:
+                getStationFunc = getStaticStationList
+                break
+            // 逐时潮位站
+            case LayerTypeEnum.STATION_ICON_FIELD_LAYER:
+                getStationFunc = getStationSurgeRangeListByGroupPath
+                break
+        }
+
+        return getStationFunc(
             this.stationSurgeIconOptions.gpId,
             this.stationSurgeIconOptions.tyCode,
             this.stationSurgeIconOptions.forecastDt,
@@ -1960,8 +1982,10 @@ export default class TyGroupMap extends mixins(
             //     type: 'success'
             // })
             // this.$message({message:'加载'})
-            this.loadCurrentStationList().then(() => {
-                that.loadStationIconsByZoom(that.zoomLevel, that.currentStationSurgeList)
+            this.loadCurrentStationList(val.layerType).then(() => {
+                if (val.layerType === LayerTypeEnum.STATION_ICON_FIELD_LAYER) {
+                    that.loadStationIconsByZoom(that.zoomLevel, that.currentStationSurgeList)
+                }
             })
         } else {
             this.clearSurgeAllGroupLayers()
@@ -2330,7 +2354,13 @@ export default class TyGroupMap extends mixins(
                     const tempTyGroupOptions = { ...this.tyGroupOptions }
                     tempTyGroupOptions.isShow = false
                     this.tyGroupOptions = tempTyGroupOptions
-                } else if (lastLayer === LayerTypeEnum.STATION_ICON_LAYER) {
+                } else if (
+                    [
+                        LayerTypeEnum.STATION_ICON_LAYER,
+                        LayerTypeEnum.STATION_ICON_FIELD_LAYER,
+                        LayerTypeEnum.STATION_ICON_MAX_LAYER
+                    ].includes(lastLayer)
+                ) {
                     this.stationSurgeIconOptions.isShow = false
                 } else if (lastLayer === LayerTypeEnum.RASTER_MAX_SURGE_LAYER) {
                     this.tyMaxSurgeOptions.isShow = false
@@ -2366,8 +2396,21 @@ export default class TyGroupMap extends mixins(
                     this.tyGroupOptions = tempTyGroupOptions
                     break
                 case LayerTypeEnum.STATION_ICON_LAYER:
+                    // LayerTypeEnum.STATION_ICON_FIELD_LAYER |
+                    // LayerTypeEnum.STATION_ICON_MAX_LAYER:
                     this.existLayers.push(tempLayerType)
                     this.stationSurgeIconOptions.isShow = true
+                    this.stationSurgeIconOptions.layerType = tempLayerType
+                    break
+                case LayerTypeEnum.STATION_ICON_FIELD_LAYER:
+                    this.existLayers.push(tempLayerType)
+                    this.stationSurgeIconOptions.isShow = true
+                    this.stationSurgeIconOptions.layerType = tempLayerType
+                    break
+                case LayerTypeEnum.STATION_ICON_MAX_LAYER:
+                    this.existLayers.push(tempLayerType)
+                    this.stationSurgeIconOptions.isShow = true
+                    this.stationSurgeIconOptions.layerType = tempLayerType
                     break
                 case LayerTypeEnum.RASTER_MAX_SURGE_LAYER:
                     this.existLayers.push(tempLayerType)

@@ -50,6 +50,31 @@ const getStationSurgeRangeListByGroupPath = (
 }
 
 /**
+ *
+ *
+ * @param {number} gpId
+ * @param {string} tyCode
+ * @param {Date} forecastDt
+ * @param {string} timestampStr
+ * @return {*}
+ */
+const getStaticStationList = (
+    gpId: number,
+    tyCode: string,
+    forecastDt: Date,
+    timestampStr: string
+) => {
+    const url = `${host}${area}/station/list/area`
+    return axios.get(url, {
+        headers: authHeader(),
+        params: {
+            ty_code: tyCode,
+            timestamp: timestampStr
+        }
+    })
+}
+
+/**
  * + 21-05-26
  * 根据 tyCode | timestamp | stationCode
  * 获取对应的 tb:station_forecast_realdata 的 data list 与 max,min list
@@ -147,5 +172,6 @@ export {
     getStationSurgeRealDataListAndRange,
     getAstronomictideTideRealDataList,
     getStationAlert,
-    getStationSurgeRealDataQuarterList
+    getStationSurgeRealDataQuarterList,
+    getStaticStationList
 }
