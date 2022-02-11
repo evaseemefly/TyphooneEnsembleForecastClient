@@ -1166,6 +1166,7 @@ export default class TyGroupMap extends mixins(
             )}对应的海洋站`
         )
         // TODO:[-] 21-12-27 此处需要判断一下，减少向后台查询的请求次数，若 stationSurgeIconOptions 无变化不需要再次请求
+        // TODO:[-] 22-02-11 此处修改为根据 stationType 获取对应的 axois 方法，静态站点与逐时站点的加载方法签名相同!
         let getStationFunc: (
             gpId: number,
             tyCode: string,
@@ -1985,6 +1986,8 @@ export default class TyGroupMap extends mixins(
             this.loadCurrentStationList(val.layerType).then(() => {
                 if (val.layerType === LayerTypeEnum.STATION_ICON_FIELD_LAYER) {
                     that.loadStationIconsByZoom(that.zoomLevel, that.currentStationSurgeList)
+                } else if (val.layerType === LayerTypeEnum.STATION_ICON_LAYER) {
+                    that.loadStationIconsByZoom(5, that.currentStationSurgeList)
                 }
             })
         } else {
@@ -2226,13 +2229,17 @@ export default class TyGroupMap extends mixins(
         if (val.isShow) {
             if (val.tyCode === DefaultTyGroupPathOptions.tyCode) {
                 this.$message({ message: '请先选择台风!', type: 'warning' })
-            } else if (
-                val.forecastDt === DefaultTyGroupPathOptions.forecastDt ||
-                val.tyTimeStamp === DefaultTyGroupPathOptions.timeStamp ||
-                val.gpId === DEFAULT_TYPHOON_GROUP_PATH_ID
-            ) {
-                this.$message({ message: '需要选择其他参数才可加载', type: 'warning' })
-                isOk = false
+            } else if (val.layerType !== LayerTypeEnum.STATION_ICON_LAYER) {
+                if (
+                    val.forecastDt === DefaultTyGroupPathOptions.forecastDt ||
+                    val.tyTimeStamp === DefaultTyGroupPathOptions.timeStamp ||
+                    val.gpId === DEFAULT_TYPHOON_GROUP_PATH_ID
+                ) {
+                    this.$message({ message: '需要选择其他参数才可加载', type: 'warning' })
+                    isOk = false
+                } else {
+                    isOk = true
+                }
             } else {
                 isOk = true
             }
@@ -2484,7 +2491,11 @@ export default class TyGroupMap extends mixins(
     onZoomLevel(val: number): void {
         const that = this
         // TODO:[-] 21-08-16 注意监听 zoom 只需要判断 stationSurgeOptions 即可
-        if (that.checkStationSurgeOptions(this.stationSurgeIconOptions)) {
+        // + 22-02-11 加入了非 静态station icon 的判断，对于静态station icon 不需要根据zoom进行更新
+        if (
+            that.checkStationSurgeOptions(this.stationSurgeIconOptions) &&
+            this.stationSurgeIconOptions.layerType !== LayerTypeEnum.STATION_ICON_LAYER
+        ) {
             that.loadStationIconsByZoom(val, that.currentStationSurgeList)
         }
     }

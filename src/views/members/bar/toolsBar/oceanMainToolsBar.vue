@@ -223,7 +223,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     layerType: LayerTypeEnum.STATION_ICON_LAYER,
                     val: '',
                     checked: false,
-                    group: 2
+                    group: 3
                 },
                 // 显示潮位站位置示意不显示对应的增水
                 {
@@ -237,7 +237,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     layerType: LayerTypeEnum.STATION_ICON_FIELD_LAYER,
                     val: '',
                     checked: false,
-                    group: 2
+                    group: 3
                 }, // 显示潮位站位置示意不显示对应的增水
                 {
                     isExpanded: false,
@@ -250,7 +250,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     layerType: LayerTypeEnum.STATION_ICON_MAX_LAYER,
                     val: '',
                     checked: false,
-                    group: 2
+                    group: 3
                 }
             ]
         }
