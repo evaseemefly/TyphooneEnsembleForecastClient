@@ -74,6 +74,22 @@ const getStaticStationList = (
     })
 }
 
+const getCenterPathStationMaxSurgeList = (
+    gpId: number,
+    tyCode: string,
+    forecastDt: Date,
+    timestampStr: string
+) => {
+    const url = `${host}${area}/station/center/max/list`
+    return axios.get(url, {
+        headers: authHeader(),
+        params: {
+            ty_code: tyCode,
+            timestamp: timestampStr
+        }
+    })
+}
+
 /**
  * + 21-05-26
  * 根据 tyCode | timestamp | stationCode
@@ -173,5 +189,6 @@ export {
     getAstronomictideTideRealDataList,
     getStationAlert,
     getStationSurgeRealDataQuarterList,
-    getStaticStationList
+    getStaticStationList,
+    getCenterPathStationMaxSurgeList
 }

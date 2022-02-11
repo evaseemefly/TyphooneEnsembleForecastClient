@@ -76,6 +76,7 @@ class IconCirlePulsing {
      * @memberof IconCirlePulsing
      */
     getRadius(): number {
+        //
         const val =
             Math.abs(this.config.val - this.config.min) /
             Math.abs(this.config.max - this.config.min)

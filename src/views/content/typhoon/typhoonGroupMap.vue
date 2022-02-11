@@ -352,7 +352,8 @@ import { getTargetTyGroupComplexModel } from '@/api/tyhoon'
 import {
     getStationListByGroupPath,
     getStationSurgeRangeListByGroupPath,
-    getStaticStationList
+    getStaticStationList,
+    getCenterPathStationMaxSurgeList
 } from '@/api/station'
 // STORE 常量
 import {
@@ -1182,6 +1183,9 @@ export default class TyGroupMap extends mixins(
             case LayerTypeEnum.STATION_ICON_FIELD_LAYER:
                 getStationFunc = getStationSurgeRangeListByGroupPath
                 break
+            case LayerTypeEnum.STATION_ICON_MAX_LAYER:
+                getStationFunc = getCenterPathStationMaxSurgeList
+                break
         }
 
         return getStationFunc(
@@ -1988,6 +1992,8 @@ export default class TyGroupMap extends mixins(
                     that.loadStationIconsByZoom(that.zoomLevel, that.currentStationSurgeList)
                 } else if (val.layerType === LayerTypeEnum.STATION_ICON_LAYER) {
                     that.loadStationIconsByZoom(5, that.currentStationSurgeList)
+                } else if (val.layerType === LayerTypeEnum.STATION_ICON_MAX_LAYER) {
+                    that.loadStationIconsByZoom(that.zoomLevel, that.currentStationSurgeList)
                 }
             })
         } else {
