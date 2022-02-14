@@ -127,6 +127,7 @@ export default class TyphoonSearch extends Vue {
                     res.data.forEach((item) => {
                         that.typhoonList.push({ code: item.code })
                     })
+                    this.selectedTyCode = this.typhoonList[this.typhoonList.length - 1].code
                 }
             }
         })

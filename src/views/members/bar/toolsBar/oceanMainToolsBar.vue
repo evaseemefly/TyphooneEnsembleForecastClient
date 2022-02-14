@@ -215,7 +215,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                 {
                     isExpanded: false,
                     html: '',
-                    iconClass: 'fas fa-home',
+                    iconClass: 'fas fa-laptop-house',
                     title: '海洋站静态位置',
                     hasChildren: false,
                     isChildren: true,
@@ -242,7 +242,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                 {
                     isExpanded: false,
                     html: '',
-                    iconClass: 'fas fa-home',
+                    iconClass: 'fas fa-house-damage',
                     title: '海洋站极值',
                     hasChildren: false,
                     isChildren: true,
