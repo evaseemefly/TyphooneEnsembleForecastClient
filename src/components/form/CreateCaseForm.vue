@@ -35,6 +35,16 @@
                 </div>
                 <el-collapse-transition>
                     <div class="base-card-row" id="ty_form_create_info" v-show="isCustomerTy">
+                        <!-- TODO: [*]22-02-12 加入的表头  -->
+                        <div class="base-row-table">
+                            <div>操作</div>
+                            <div>时间</div>
+                            <div>经度</div>
+                            <div>纬度</div>
+                            <div>气压</div>
+                            <div>半径</div>
+                        </div>
+
                         <div
                             class="base-card-row tiled mini"
                             v-for="item in customerTyCMAList"
@@ -408,7 +418,7 @@ export default class CreateCaseForm extends Vue {
 <style scoped lang="less">
 @import '../../styles/my-elementui/common';
 #base_form_createcase {
-    // background: white;
+    // background: white;f
     // padding: 15px;
     // form 四个角圆角
     border-radius: 1.25rem;
@@ -467,6 +477,27 @@ export default class CreateCaseForm extends Vue {
     }
     .cell > p {
         margin-right: 8px;
+    }
+}
+// TODO:[*] 22-02-12 新加入的表头样式
+.base-card {
+    .base-row-table {
+        display: flex;
+        width: 100%;
+        div {
+            display: flex;
+            margin-right: 10px;
+            width: 85px;
+        }
+        div:nth-child(1) {
+            width: 50px;
+        }
+        div:nth-child(2) {
+            width: 190px;
+        }
+        // div:nth-child(2) {
+        //     width: 85px;
+        // }
     }
 }
 

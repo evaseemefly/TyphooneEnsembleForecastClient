@@ -56,7 +56,13 @@ import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 import { Mutation, State, namespace, Getter } from 'vuex-class'
 
 import { DateModel } from '@/model/bar/timebar'
-import { SET_MAP_NOW, GET_TIMER_LOCK, SET_AUTO_PLAY, GET_AUTO_PLAY } from '@/store/types'
+import {
+    SET_MAP_NOW,
+    GET_TIMER_LOCK,
+    SET_AUTO_PLAY,
+    GET_AUTO_PLAY,
+    GET_MAP_NOW
+} from '@/store/types'
 import moment from 'moment'
 import dateformat from 'dateformat'
 import { fortmatDate2YMD } from '@/common/filter'
@@ -86,6 +92,7 @@ export default class TimeBar extends Vue {
     // 点击后固定在点击处的日期label
     staticDateLabel = ''
     hoverCurrentDt: Date = new Date(1970, 1, 1)
+
     selectedCurrentDt: Date = new Date(1970, 1, 1)
     // TODO:[*] 19-09-12 新加入的复用子组件的需要用到的一些变量
     lenTimeBar = 600
@@ -702,6 +709,16 @@ export default class TimeBar extends Vue {
     // autoPlay = true : on  -> 继续播放
     //          = false: off -> 停止播放
     @Mutation(SET_AUTO_PLAY, { namespace: 'map' }) setAutoPlay
+
+    @Getter(GET_MAP_NOW, { namespace: 'map' }) getMapNow
+
+    // TODO:[-] 22-02-11 注意此处加入一个监听 store 中的 GET_MAP_NOW 的监听
+    @Watch('getMapNow')
+    onMapNow(dt: Date): void {
+        if (dt !== this.selectedCurrentDt) {
+            this.selectedCurrentDt = dt
+        }
+    }
 
     @Watch('selectedCurrentDt')
     onSelectedCurrentDt(dt: Date): void {

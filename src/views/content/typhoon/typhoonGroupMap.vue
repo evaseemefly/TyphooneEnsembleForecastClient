@@ -378,7 +378,8 @@ import {
     GET_SCALE_KEY,
     SET_SCALE_KEY,
     SET_SCALE_RANGE,
-    GET_BASE_MAP_KEY // + 21-08-23 监听切换地图的 baseMapKey
+    GET_BASE_MAP_KEY, // + 21-08-23 监听切换地图的 baseMapKey
+    SET_MAP_NOW
 } from '@/store/types'
 import {
     DEFAULT_LAYER_ID,
@@ -1161,11 +1162,7 @@ export default class TyGroupMap extends mixins(
     loadCurrentStationList(stationType: LayerTypeEnum): Promise<void> {
         const that = this
         this.clearSurgeAllGroupLayers()
-        this.$message(
-            `加载台风:${that.stationSurgeIconOptions.tyCode},预报时间:${formatDate(
-                that.stationSurgeIconOptions.forecastDt
-            )}对应的海洋站`
-        )
+
         // TODO:[-] 21-12-27 此处需要判断一下，减少向后台查询的请求次数，若 stationSurgeIconOptions 无变化不需要再次请求
         // TODO:[-] 22-02-11 此处修改为根据 stationType 获取对应的 axois 方法，静态站点与逐时站点的加载方法签名相同!
         let getStationFunc: (
@@ -1177,13 +1174,20 @@ export default class TyGroupMap extends mixins(
         switch (stationType) {
             // 静态潮位站
             case LayerTypeEnum.STATION_ICON_LAYER:
+                this.$message(`加载台风:${that.stationSurgeIconOptions.tyCode}的海洋站静态位置`)
                 getStationFunc = getStaticStationList
                 break
             // 逐时潮位站
             case LayerTypeEnum.STATION_ICON_FIELD_LAYER:
+                this.$message(
+                    `加载台风:${that.stationSurgeIconOptions.tyCode},预报时间:${formatDate(
+                        that.stationSurgeIconOptions.forecastDt
+                    )}对应的海洋站`
+                )
                 getStationFunc = getStationSurgeRangeListByGroupPath
                 break
             case LayerTypeEnum.STATION_ICON_MAX_LAYER:
+                this.$message(`加载台风:${that.stationSurgeIconOptions.tyCode}全过程海洋站极值`)
                 getStationFunc = getCenterPathStationMaxSurgeList
                 break
         }
@@ -1266,19 +1270,22 @@ export default class TyGroupMap extends mixins(
         const surgePulsingMarkersList: L.Marker[] = []
         const surgeDataFormMarkersList: L.Marker[] = []
         this.clearSurgeAllGroupLayers()
-        this.$message(
-            `加载台风:${that.stationSurgeIconOptions.tyCode},预报时间:${formatDate(
-                that.stationSurgeIconOptions.forecastDt
-            )}对应的海洋站`
-        )
+        // this.$message(
+        //     `加载台风:${that.stationSurgeIconOptions.tyCode},预报时间:${formatDate(
+        //         that.stationSurgeIconOptions.forecastDt
+        //     )}对应的海洋站`
+        // )
         // 获取极值
+        stationSurgeList.forEach((temp) => {
+            surgeArr.push(temp.surge)
+        })
         const surgeMax = Math.max(...surgeArr)
         const surgeMin = Math.min(...surgeArr)
         stationSurgeList.forEach((temp) => {
             const icon = new IconCirlePulsing({
                 val: temp.surge,
-                max: temp.max,
-                min: temp.min
+                max: surgeMax,
+                min: surgeMin
             })
             const iconSurgeMin = new StationSurge(
                 temp.stationName,
@@ -2090,6 +2097,8 @@ export default class TyGroupMap extends mixins(
     // + 22-01-05 重置 当前加载的图层
     @Mutation(SET_IS_INIT_LAYERS, { namespace: 'map' }) setInitLayers
 
+    @Mutation(SET_MAP_NOW, { namespace: 'map' }) setMapNow
+
     @Watch('tyProSurgeOptions', { immediate: true, deep: true })
     onTyProSurgeOptions(val: ITySurgeLayerOptions): void {
         const that = this
@@ -2207,6 +2216,7 @@ export default class TyGroupMap extends mixins(
             tyGroupPath.getTargetTyGroupDateRange(this.tyCode, this.tyTimeStamp).then((res) => {
                 this.finishDate = new Date(Math.max(...res))
                 this.startDate = new Date(Math.min(...res))
+                this.setMapNow(this.startDate)
             })
         }
     }

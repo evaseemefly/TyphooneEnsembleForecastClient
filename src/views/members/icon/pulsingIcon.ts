@@ -33,8 +33,9 @@ const iconPlusingDefaultOptions = {
 class IconCirlePulsing {
     // radiusUnit:number=
     // x 与 y 的偏移量
-    shiftX = 4
-    shiftY = 4
+    shiftX = 0
+    shiftY = 0
+    iconBorder = 3
     /**
      * 当前 cirle 对应的 surge val
      *
@@ -52,19 +53,18 @@ class IconCirlePulsing {
     }
     toHtml(): string {
         const that = this
-        //     const divHtml = `<div class="my-leaflet-pulsing-marker" >
-        //     <div class="my-leaflet-icon-border" style="width: ${that.getPlusingIconRectangle[0]}.px;height:${that.getPlusingIconRectangle[1]}.px;left:${that.shiftX}.px;top:${that.shiftY}.px"></div>
-        //     <div class="my-leaflet-pulsing-icon" style="width: ${that.getPlusingIconBorderRectangle[0]}.px;height:${that.getPlusingIconBorderRectangle[1]}.px;"></div>
-        //   </div>`
-        const iconBorderWidth = that.getPlusingIconRectangle()[0]
-        const iconBorderHeight = that.getPlusingIconRectangle()[1]
-        const iconPulsingWidth = that.getPlusingIconBorderRectangle()[0]
-        const iconPulsingHeight = that.getPlusingIconBorderRectangle()[1]
+        // 海洋站icon的宽高
+        const iconPulsingWidth = that.getPlusingIconRectangle()[0]
+        const iconPulsingHeight = that.getPlusingIconRectangle()[1]
+        // icon 的外侧脉冲的宽高
+        const iconBorderWidth = that.getPlusingIconBorderRectangle()[0]
+        const iconBorderHeight = that.getPlusingIconBorderRectangle()[1]
+        // 第一个div是外侧脉冲,第二个div是内部的icon
         const divHtml = `<div class="my-leaflet-pulsing-marker" >
-        <div class="my-leaflet-icon-border ${this.getAlarmColor()}" style="width: ${iconBorderWidth}px;height:${iconBorderHeight}px;left:${
-            that.shiftX
-        }px;top:${that.shiftY}px"></div>
-        <div class="my-leaflet-pulsing-icon ${this.getAlarmColor()}" style="width: ${iconPulsingWidth}px;height:${iconPulsingHeight}px;"></div>
+        <div class="my-leaflet-icon-border ${this.getAlarmColor()}" style="width: ${iconBorderWidth}px;height:${iconBorderHeight}px;left:${-iconBorderWidth /
+            2}px;top:${-iconBorderHeight / 2}px"></div>
+        <div class="my-leaflet-pulsing-icon ${this.getAlarmColor()}" style="width: ${iconPulsingWidth}px;height:${iconPulsingHeight}px;left:${-iconPulsingWidth /
+            2}px;top:${-iconPulsingHeight / 2}px"></div>
       </div>`
         return divHtml
     }
