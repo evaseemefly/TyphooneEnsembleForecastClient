@@ -51,7 +51,7 @@ const getStationSurgeRangeListByGroupPath = (
 
 /**
  *
- *
+ * + 22-02-12 加载静态站位信息列表
  * @param {number} gpId
  * @param {string} tyCode
  * @param {Date} forecastDt
@@ -65,6 +65,32 @@ const getStaticStationList = (
     timestampStr: string
 ) => {
     const url = `${host}${area}/station/list/area`
+    return axios.get(url, {
+        headers: authHeader(),
+        params: {
+            ty_code: tyCode,
+            timestamp: timestampStr
+        }
+    })
+}
+
+/**
+ * + 22-02-16
+ * 获取全部路径的海洋站的 max surge 与 中间路径的 max surge
+ *
+ * @param {number} gpId
+ * @param {string} tyCode
+ * @param {Date} forecastDt
+ * @param {string} timestampStr
+ * @return {*}
+ */
+const getAllPathStationMaxSurgeList = (
+    gpId: number,
+    tyCode: string,
+    forecastDt: Date,
+    timestampStr: string
+) => {
+    const url = `${host}${area}/station/allpath/max/list`
     return axios.get(url, {
         headers: authHeader(),
         params: {
@@ -190,5 +216,6 @@ export {
     getStationAlert,
     getStationSurgeRealDataQuarterList,
     getStaticStationList,
-    getCenterPathStationMaxSurgeList
+    getCenterPathStationMaxSurgeList,
+    getAllPathStationMaxSurgeList
 }
