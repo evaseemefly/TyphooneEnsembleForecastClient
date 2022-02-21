@@ -115,12 +115,15 @@ class IconFormStationDetialedMidModel implements IToHtml {
         this.min = min
         this.surge = surge
     }
+    get getSurgeMinStr(): string {
+        return this.min !== undefined ? this.min.toString() : '-'
+    }
     toHtml(): string {
         const divHtml = `<div id="my_station_surge_div">
         <div class="station-min-div-title">${this.stationName}</div>
         <div class="station-min-div-content">
           <div class="station-min-div-content-horizontal">
-            <div class="station-min-div-content-field liner-cell-default">潮位</div>
+            <div class="station-min-div-content-field liner-cell-default">增水</div>
             <div class="station-min-div-content-val ${this.getAlarmColor(this.surge)}">${
             this.surge
         }</div>
@@ -130,7 +133,7 @@ class IconFormStationDetialedMidModel implements IToHtml {
             this.max
         }</div>
             <div class="station-min-div-content-val ${this.getAlarmColor(this.min)}">${
-            this.min
+            this.getSurgeMinStr
         }</div>
           </div>
         </div>
@@ -146,7 +149,7 @@ class IconFormStationDetialedMidModel implements IToHtml {
 
     private getAlarmColor(val: number): string {
         const surge = val
-        let colorStr = 'green'
+        let colorStr = ''
         switch (true) {
             case surge <= 100:
                 colorStr = 'green'
@@ -162,6 +165,8 @@ class IconFormStationDetialedMidModel implements IToHtml {
                 break
             case surge > 250:
                 colorStr = 'red'
+                break
+            default:
                 break
         }
         return colorStr

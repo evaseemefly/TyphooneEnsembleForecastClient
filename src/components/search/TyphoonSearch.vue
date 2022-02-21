@@ -185,6 +185,15 @@ export default class TyphoonSearch extends Vue {
                 }
             )
             .then(() => {
+                // TODO:[-] 22-02-17 加入了排序
+                tyCaseList.sort((a, b) => {
+                    if (a.gmtCreated > b.gmtCreated) {
+                        // 返回正数，b排在a的前面
+                        return -1
+                    } else {
+                        return 1
+                    }
+                })
                 that.tyGroupCaseList = tyCaseList
             })
     }

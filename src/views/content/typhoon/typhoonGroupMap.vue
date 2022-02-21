@@ -353,7 +353,8 @@ import {
     getStationListByGroupPath,
     getStationSurgeRangeListByGroupPath,
     getStaticStationList,
-    getCenterPathStationMaxSurgeList
+    getCenterPathStationMaxSurgeList,
+    getAllPathStationMaxSurgeList
 } from '@/api/station'
 // STORE 常量
 import {
@@ -1186,9 +1187,10 @@ export default class TyGroupMap extends mixins(
                 )
                 getStationFunc = getStationSurgeRangeListByGroupPath
                 break
+            // 极值潮位站
             case LayerTypeEnum.STATION_ICON_MAX_LAYER:
                 this.$message(`加载台风:${that.stationSurgeIconOptions.tyCode}全过程海洋站极值`)
-                getStationFunc = getCenterPathStationMaxSurgeList
+                getStationFunc = getAllPathStationMaxSurgeList
                 break
         }
 
