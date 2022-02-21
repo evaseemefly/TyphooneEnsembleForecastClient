@@ -93,7 +93,7 @@ class IconCirlePulsing {
         // 半径的最大 px
         const radiusMaxVal = 10
         // 半径的最小 px
-        const radiusMinVal = 6
+        const radiusMinVal = 3
         // 半径最大与最小的差值 px
         const radiusDiffVal = radiusMaxVal - radiusMinVal
         // 半径差值的绝对值

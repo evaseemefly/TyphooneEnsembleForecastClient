@@ -61,6 +61,7 @@ export default class StationChartsView extends Vue {
     forecastSurgeMaxList: number[] = []
     forecastSurgeMinList: number[] = []
     forecastAstronomicTideList: number[] = []
+    // 22-02-21 注意四色警戒潮位是对应的总潮位值
     alertBlue: number = DEFAULT_ALERT_TIDE
     alertYellow: number = DEFAULT_ALERT_TIDE
     alertOrange: number = DEFAULT_ALERT_TIDE
@@ -116,6 +117,7 @@ export default class StationChartsView extends Vue {
     ) {
         const that = this
         that.isLoading = true
+        this.resetAlertLevels()
         await getStationSurgeRealDataListAndRange(tyCode, timestampStr, stationCode).then((res) => {
             if (res.status == 200) {
                 // eg:
@@ -151,6 +153,14 @@ export default class StationChartsView extends Vue {
         await this.loadAlertTideList(stationCode)
         that.initChart()
         this.isLoading = false
+    }
+
+    // + 22-02-21 新加入的对四色警戒潮位进行重置
+    resetAlertLevels(): void {
+        this.alertBlue = DEFAULT_ALERT_TIDE
+        this.alertYellow = DEFAULT_ALERT_TIDE
+        this.alertOrange = DEFAULT_ALERT_TIDE
+        this.alertRed = DEFAULT_ALERT_TIDE
     }
 
     async loadAstronomicTideList(tyCode: string, timestampStr: string, stationCode: string) {
@@ -452,7 +462,7 @@ export default class StationChartsView extends Vue {
                             data: [
                                 {
                                     name: '蓝色警戒潮位',
-                                    yAxis: this.alertBlue
+                                    yAxis: this.isAdditionTide ? this.alertBlue : DEFAULT_ALERT_TIDE
                                 }
                             ]
                         }
@@ -468,7 +478,9 @@ export default class StationChartsView extends Vue {
                             data: [
                                 {
                                     name: '黄色警戒潮位',
-                                    yAxis: this.alertYellow
+                                    yAxis: this.isAdditionTide
+                                        ? this.alertYellow
+                                        : DEFAULT_ALERT_TIDE
                                 }
                             ]
                         }
@@ -484,7 +496,9 @@ export default class StationChartsView extends Vue {
                             data: [
                                 {
                                     name: '橙色警戒潮位',
-                                    yAxis: this.alertOrange
+                                    yAxis: this.isAdditionTide
+                                        ? this.alertOrange
+                                        : DEFAULT_ALERT_TIDE
                                 }
                             ]
                         }
@@ -504,7 +518,7 @@ export default class StationChartsView extends Vue {
                             data: [
                                 {
                                     name: '红色警戒潮位',
-                                    yAxis: this.alertRed
+                                    yAxis: this.isAdditionTide ? this.alertRed : DEFAULT_ALERT_TIDE
                                 }
                             ]
                         }
@@ -542,6 +556,8 @@ export default class StationChartsView extends Vue {
         if (isAdd) {
             this.add2AstornomicTid()
         } else {
+            // 若不是叠加后的潮位，不需要叠加四色警戒潮位，四色警戒潮位只对应总潮位
+            // this.resetAlertLevels()
             this.wipe2AstornomicTide()
         }
         this.initChart()
