@@ -524,6 +524,24 @@ export default class StationChartsView extends Vue {
                         }
                     }
                 ]
+                // visualMap: {
+                //     type: 'piecewise',
+                //     show: false,
+                //     dimension: 0,
+                //     seriesIndex: 0,
+                //     pieces: [
+                //         {
+                //             gt: this.alertOrange,
+                //             // lt: 3,
+                //             color: 'rgba(0, 0, 180, 0.4)'
+                //         },
+                //         {
+                //             gt: this.alertOrange,
+                //             // lt: 7,
+                //             color: 'rgba(0, 0, 180, 0.4)'
+                //         }
+                //     ]
+                // }
             }
             myChart.setOption(option)
             if (!this.myChart) {

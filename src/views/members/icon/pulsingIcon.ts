@@ -59,12 +59,20 @@ class IconCirlePulsing {
         // icon 的外侧脉冲的宽高
         const iconBorderWidth = that.getPlusingIconBorderRectangle()[0]
         const iconBorderHeight = that.getPlusingIconBorderRectangle()[1]
+        // TODO:[-] 22-02-22 之前的设计会造成内外侧两个div都出现偏移的问题，现修改为只对外侧进行位移
+        // 位移向量为((r2-r1)/2,(r2-r1)/2)
         // 第一个div是外侧脉冲,第二个div是内部的icon
+        //     const divHtml = `<div class="my-leaflet-pulsing-marker" >
+        //     <div class="my-leaflet-icon-border ${this.getAlarmColor()}" style="width: ${iconBorderWidth}px;height:${iconBorderHeight}px;left:${-iconBorderWidth /
+        //         2}px;top:${-iconBorderHeight / 2}px"></div>
+        //     <div class="my-leaflet-pulsing-icon ${this.getAlarmColor()}" style="width: ${iconPulsingWidth}px;height:${iconPulsingHeight}px;left:${-iconPulsingWidth /
+        //         2}px;top:${-iconPulsingHeight / 2}px"></div>
+        //   </div>`
+        const x = (iconBorderWidth - iconPulsingHeight) / 2
+        const y = (iconBorderHeight - iconPulsingHeight) / 2
         const divHtml = `<div class="my-leaflet-pulsing-marker" >
-        <div class="my-leaflet-icon-border ${this.getAlarmColor()}" style="width: ${iconBorderWidth}px;height:${iconBorderHeight}px;left:${-iconBorderWidth /
-            2}px;top:${-iconBorderHeight / 2}px"></div>
-        <div class="my-leaflet-pulsing-icon ${this.getAlarmColor()}" style="width: ${iconPulsingWidth}px;height:${iconPulsingHeight}px;left:${-iconPulsingWidth /
-            2}px;top:${-iconPulsingHeight / 2}px"></div>
+        <div class="my-leaflet-icon-border ${this.getAlarmColor()}" style="width: ${iconBorderWidth}px;height:${iconBorderHeight}px;"></div>
+        <div class="my-leaflet-pulsing-icon ${this.getAlarmColor()}" style="width: ${iconPulsingWidth}px;height:${iconPulsingHeight}px;"></div>
       </div>`
         return divHtml
     }

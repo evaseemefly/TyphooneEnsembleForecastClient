@@ -42,7 +42,7 @@
                             <div>经度</div>
                             <div>纬度</div>
                             <div>气压</div>
-                            <div>半径</div>
+                            <!-- <div>半径</div> -->
                         </div>
 
                         <div
@@ -158,7 +158,7 @@
                         </el-select>
                     </div>
                     <div class="base-card-row">
-                        集合成员数量
+                        误差半径
                         <el-input-number
                             v-model="deviationRadiusNum"
                             :min="deviationRadiusLenMin"
@@ -214,7 +214,8 @@ export default class CreateCaseForm extends Vue {
         { hours: 24, radius: 60 },
         { hours: 48, radius: 100 },
         { hours: 72, radius: 120 },
-        { hours: 96, radius: 150 }
+        { hours: 96, radius: 150 },
+        { hours: 120, radius: 180 }
     ]
     customerTyCMAList: {
         forecastDt: Date
