@@ -46,16 +46,16 @@ export default class IconInfoBox extends Vue {
 <style scoped lang="less">
 @import '../../../styles/base';
 .my-primary {
-    background-color: #16a085 !important;
+    background-color: #16a08498 !important;
     // background-color: #16a085 !important;
 }
 .my-default {
     // background-color: #e91e63 !important;
     // background-color: #1abc9c !important;
-    background: rgb(15, 185, 177);
+    background: rgba(15, 185, 176, 0.63);
 }
 .my-info {
-    background-color: #00bcd4 !important;
+    background-color: #00bbd494 !important;
 }
 .my-succes {
     // background-color: #8bc34a !important;
@@ -71,7 +71,7 @@ export default class IconInfoBox extends Vue {
     background: #16a0846e !important;
 }
 .my-opt-btn {
-    background: #009688;
+    background: #00968798;
 }
 .info-box {
     display: flex;
@@ -82,6 +82,7 @@ export default class IconInfoBox extends Vue {
     opacity: 1;
     transition: opacity 1.5s;
     margin: 1em;
+    backdrop-filter: blur(4px);
     // @formmoreshadow();
     @baseboxshadow();
     // 加入了圆角
@@ -117,7 +118,7 @@ export default class IconInfoBox extends Vue {
     margin: 1em;
 
     // TODO:[-] 20-01-28 主要修改了此处
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     .icon {
         background-color: rgba(0, 0, 0, 0.12);
         display: flex;

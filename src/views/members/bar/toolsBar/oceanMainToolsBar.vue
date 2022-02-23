@@ -164,7 +164,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     isChildren: true,
                     toolType: ToolTypeEnum.LAYER,
                     layerType: LayerTypeEnum.RASTER_MAX_SURGE_LAYER,
-                    val: '',
+                    val: '最大风暴增水',
                     checked: false,
                     group: 1,
                     isTitleShow: false
@@ -179,7 +179,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     hasOptions: true,
                     toolType: ToolTypeEnum.LAYER,
                     layerType: LayerTypeEnum.RASTER_HOURLY_SURGE_LAYER,
-                    val: '',
+                    val: '逐时风暴增水',
                     checked: false,
                     group: 1,
                     isTitleShow: false
@@ -194,7 +194,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     hasOptions: true,
                     toolType: ToolTypeEnum.LAYER,
                     layerType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER,
-                    val: '',
+                    val: '逐时风暴增水',
                     checked: false,
                     showOptions: false,
                     group: 1,
@@ -264,7 +264,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     isExpanded: false,
                     html: '',
                     iconClass: 'fas fa-home',
-                    title: '海洋站逐时',
+                    title: '海洋站',
                     hasChildren: false,
                     isChildren: true,
                     toolType: ToolTypeEnum.LAYER,
@@ -480,9 +480,19 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         val: string
     }): number {
         let index = -1
-        index = this.layersItem.findIndex((temp) => {
-            return temp.layerType === tempLayer.layerType
+        let indexStation = -1
+        indexStation = this.layersItem.findIndex((temp) => {
+            return (
+                temp.layerType === LayerTypeEnum.STATION_ICON_LAYER ||
+                temp.layerType === LayerTypeEnum.STATION_ICON_FIELD_LAYER ||
+                temp.layerType === LayerTypeEnum.STATION_ICON_MAX_LAYER
+            )
         })
+        if (indexStation >= 0) {
+            index = this.layersItem.findIndex((temp) => {
+                return temp.layerType === tempLayer.layerType
+            })
+        }
 
         return index
     }
@@ -523,9 +533,22 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         val: string
     }): number {
         let isExisted = false
-        const index = this.layersItem.findIndex((temp) => {
-            return temp.group === tempLayer.group
+        let index = -1
+        const indexStation = this.layersItem.findIndex((temp) => {
+            return (
+                temp.layerType === LayerTypeEnum.STATION_ICON_LAYER ||
+                temp.layerType === LayerTypeEnum.STATION_ICON_FIELD_LAYER ||
+                temp.layerType === LayerTypeEnum.STATION_ICON_MAX_LAYER
+            )
         })
+        if (indexStation > 0) {
+            index = indexStation
+        } else {
+            index = this.layersItem.findIndex((temp) => {
+                return temp.group === tempLayer.group
+            })
+        }
+
         if (index >= 0) {
             isExisted = true
         }
@@ -545,14 +568,27 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         // }
         const index = this._getTargetLayerInLayersIndex(tempLayerType)
         const indexSameGroup = this._getTargetLayerExistSameGroup(tempLayerType)
-        if (indexSameGroup >= 0) {
+        if (index >= 0) {
             this._removeLayerByIndex(indexSameGroup)
         }
         // TODO:[-] 22-01-09 在插入时，需要
-        if (index >= 0) {
-            this.removeLayers(tempLayerType)
+        if (indexSameGroup >= 0) {
+            // this.removeLayers(tempLayerType)
+            this._removeLayerByIndex(indexSameGroup)
         } else {
             this.layersItem.push(tempLayerType)
+            // TODO:[-] 22-02-23 此处需要加入 station -> layers 的判断
+            // 若当前点击的是 station layer 则需要判断是否已经选择了极值与逐时选项
+            // if (
+            //     tempLayerType.layerType === LayerTypeEnum.STATION_ICON_LAYER &&
+            //     this.layersItem.findIndex((temp) => {
+            //         return temp.layerType === LayerTypeEnum.RASTER_HOURLY_SURGE_LAYER
+            //     }) > 0
+            // ) {
+            //     this.layersItem.push(LayerTypeEnum.STATION_ICON_FIELD_LAYER)
+            // } else {
+
+            // }
         }
     }
 
@@ -788,9 +824,43 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         oldLayers: { group: number; layerType: LayerTypeEnum; val: string }[]
     ): void {
         console.log(`new:${layers},old:${oldLayers}`)
-        const layersTypeList = layers.map((temp) => {
+        // 加入 station 的layers的组合判断
+        let layersTypeList: LayerTypeEnum[] = []
+        // 若当前 layers 中存在 STATION_ICON_LAYER 说明选中了海洋站按钮
+        /*
+            需要判断: 若选中了逐时增水场 -> 删掉 STATION_ICON_LAYER 修改为 -> RASTER_HOURLY_SURGE_LAYER
+        */
+        const stationIndex = layers.findIndex((temp) => {
+            return (
+                temp.layerType === LayerTypeEnum.STATION_ICON_LAYER ||
+                temp.layerType === LayerTypeEnum.STATION_ICON_FIELD_LAYER ||
+                temp.layerType === LayerTypeEnum.STATION_ICON_MAX_LAYER
+            )
+        })
+        if (stationIndex > 0) {
+            if (
+                layers.findIndex((temp) => {
+                    return temp.layerType === LayerTypeEnum.RASTER_HOURLY_SURGE_LAYER
+                }) > 0
+            ) {
+                // layers.map((temp) => {
+                //     temp.layerType = LayerTypeEnum.STATION_ICON_FIELD_LAYER
+                // })
+                layers[stationIndex].layerType = LayerTypeEnum.STATION_ICON_FIELD_LAYER
+            } else if (
+                layers.findIndex((temp) => {
+                    return temp.layerType === LayerTypeEnum.RASTER_MAX_SURGE_LAYER
+                }) > 0
+            ) {
+                layers[stationIndex].layerType = LayerTypeEnum.STATION_ICON_MAX_LAYER
+            } else {
+                layers[stationIndex].layerType = LayerTypeEnum.STATION_ICON_MAX_LAYER
+            }
+        }
+        layersTypeList = layers.map((temp) => {
             return temp.layerType
         })
+        this.layers = layersTypeList
         this.setLayers(layersTypeList)
         this.checkLayerItemInToolsBar(layers, oldLayers)
     }
@@ -911,9 +981,9 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         return isShow
     }
 
-    get getLayers(): LayerTypeEnum[] {
-        return [...this.layers]
-    }
+    // get getLayers(): LayerTypeEnum[] {
+    //     return [...this.layers]
+    // }
 
     get getLayersItem(): { group: number; layerType: LayerTypeEnum; val: string }[] {
         return [...this.layersItem]

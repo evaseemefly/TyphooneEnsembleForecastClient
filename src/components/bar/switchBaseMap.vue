@@ -105,7 +105,7 @@ export default class SwitchBaseMap extends Vue {
     flex-direction: column;
     align-items: flex-start;
     font {
-        font-size: 20px;
+        font-size: 16px;
         color: white;
         text-shadow: 0 0 4px black;
     }

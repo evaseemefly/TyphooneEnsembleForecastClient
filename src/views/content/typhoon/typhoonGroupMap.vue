@@ -2573,7 +2573,7 @@ export default class TyGroupMap extends mixins(
     // 左侧的切换按钮
     .left-top-select {
         position: absolute;
-        top: 70px;
+        top: 20px;
         left: 50px;
         z-index: 1500;
         display: flex;

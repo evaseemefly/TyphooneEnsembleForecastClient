@@ -1,7 +1,7 @@
 <template>
     <div id="top-menu">
         <div class="menu-bar">
-            <el-menu
+            <!-- <el-menu
                 :default-active="activeIndex"
                 class="el-menu-demo"
                 mode="horizontal"
@@ -10,31 +10,18 @@
                 text-color="#fff"
                 active-text-color="#ffd04b"
             >
-                <!-- 作业列表 -->
                 <el-submenu index="1">
                     <template slot="title">作业列表</template>
                     <el-menu-item index="2-1">
                         <router-link to="/content/caselist">历史案例</router-link>
                     </el-menu-item>
                 </el-submenu>
-                <!-- 风场及流场 -->
-                <!-- <el-submenu index="2">
-                    <template slot="title">风场及流场</template>
-                    <el-menu-item index="2-1">
-                        <router-link to="/content/caselist">风场</router-link>
-                    </el-menu-item>
-                    <el-menu-item index="2-2">
-                        <router-link to="/content/windmap">流场</router-link>
-                    </el-menu-item>
-                </el-submenu> -->
-                <!-- 搜救模型 -->
                 <el-submenu index="3">
                     <template slot="title">台风集合预报</template>
                     <el-menu-item index="2-1">
                         <router-link to="/content/TyphoonGroupMap">历史案例</router-link>
                     </el-menu-item>
                 </el-submenu>
-                <!-- 新添加的关于 -->
                 <el-submenu index="6">
                     <template slot="title">关于</template>
                     <el-menu-item index="5-1">
@@ -44,7 +31,7 @@
                         <router-link to="/content/rescuemap">知识产权保护</router-link>
                     </el-menu-item>
                 </el-submenu>
-            </el-menu>
+            </el-menu> -->
         </div>
         <div class="top-logo">
             <div class="logo"><img src="../../../assets/nmefclog.png" /></div>
