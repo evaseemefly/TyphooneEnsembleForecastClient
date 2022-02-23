@@ -14,10 +14,38 @@
             <!-- <a v-for="item in converToolsBar" :key="item.key" v-show="checkexpandedStatue(item)"> -->
             <!-- <input v-show="item.isChildren" type="checkbox" /> -->
             <div
-                class="tools-icon "
-                :class="[item.isChildren ? 'sub-title' : '', item.iconClass]"
-            ></div>
-            <div class="tools-font" :class="{ checked: item.checked }" @click="onClick(item)">
+                :class="[
+                    'tools-icon',
+                    item.isTitleShow || item.checked ? 'show-icon' : 'hidden-icon',
+                    item.checked ? 'icon-checked' : ''
+                ]"
+                @click="onClick(item)"
+                @mouseover="setItemShow(item, true)"
+                @mouseleave="setItemShow(item, false)"
+            >
+                <!-- 由于使用 font-icon 此处div会生成 svg，svg无法直接触发click事件，需要在外侧再套一层div -->
+                <div
+                    :class="[
+                        item.isChildren ? 'sub-title' : '',
+                        item.iconClass,
+                        item.isTitleShow ? 'show-icon' : 'hidden-icon'
+                    ]"
+                ></div>
+            </div>
+            <!-- 不再需要对 font 加入 checked 的 样式 -->
+            <!-- <div
+                class="tools-font"
+                :class="[
+                    item.checked ? 'checked' : '',
+                    item.isTitleShow ? 'show-font form-fade-in' : 'hidden-font form-fade-out'
+                ]"
+                @click="onClick(item)"
+            > -->
+            <div
+                class="tools-font"
+                :class="[item.isTitleShow ? 'show-font form-fade-in' : 'hidden-font form-fade-out']"
+                @click="onClick(item)"
+            >
                 {{ item.title }}
             </div>
             <div class="child-options" v-show="item.showOptions">
@@ -109,6 +137,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
             toolType: ToolTypeEnum.OPTION,
             val: '',
             checked: true,
+            isTitleShow: true,
             // isFather: true,
             children: [
                 // + 21-03-26 海浪等值线按钮
@@ -123,7 +152,8 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     layerType: LayerTypeEnum.GROUP_PATH_LAYER,
                     val: '',
                     checked: false,
-                    group: 2
+                    group: 2,
+                    isTitleShow: false
                 },
                 {
                     isExpanded: false,
@@ -136,7 +166,8 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     layerType: LayerTypeEnum.RASTER_MAX_SURGE_LAYER,
                     val: '',
                     checked: false,
-                    group: 1
+                    group: 1,
+                    isTitleShow: false
                 },
                 {
                     isExpanded: false,
@@ -150,7 +181,8 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     layerType: LayerTypeEnum.RASTER_HOURLY_SURGE_LAYER,
                     val: '',
                     checked: false,
-                    group: 1
+                    group: 1,
+                    isTitleShow: false
                 },
                 {
                     isExpanded: false,
@@ -166,6 +198,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     checked: false,
                     showOptions: false,
                     group: 1,
+                    isTitleShow: false,
                     options: [
                         {
                             key: -1,
@@ -212,19 +245,20 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     ]
                 },
                 // 显示潮位站位置示意不显示对应的增水
-                {
-                    isExpanded: false,
-                    html: '',
-                    iconClass: 'fas fa-laptop-house',
-                    title: '海洋站静态位置',
-                    hasChildren: false,
-                    isChildren: true,
-                    toolType: ToolTypeEnum.LAYER,
-                    layerType: LayerTypeEnum.STATION_ICON_LAYER,
-                    val: '',
-                    checked: false,
-                    group: 3
-                },
+                // {
+                //     isExpanded: false,
+                //     html: '',
+                //     iconClass: 'fas fa-laptop-house',
+                //     title: '海洋站静态位置',
+                //     hasChildren: false,
+                //     isChildren: true,
+                //     toolType: ToolTypeEnum.LAYER,
+                //     layerType: LayerTypeEnum.STATION_ICON_LAYER,
+                //     val: '',
+                //     checked: false,
+                //     group: 3,
+                //     isTitleShow: false
+                // },
                 // 显示潮位站位置示意不显示对应的增水
                 {
                     isExpanded: false,
@@ -237,21 +271,23 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     layerType: LayerTypeEnum.STATION_ICON_FIELD_LAYER,
                     val: '',
                     checked: false,
-                    group: 3
-                }, // 显示潮位站位置示意不显示对应的增水
-                {
-                    isExpanded: false,
-                    html: '',
-                    iconClass: 'fas fa-house-damage',
-                    title: '海洋站极值',
-                    hasChildren: false,
-                    isChildren: true,
-                    toolType: ToolTypeEnum.LAYER,
-                    layerType: LayerTypeEnum.STATION_ICON_MAX_LAYER,
-                    val: '',
-                    checked: false,
-                    group: 3
-                }
+                    group: 3,
+                    isTitleShow: false
+                } // 显示潮位站位置示意不显示对应的增水
+                // {
+                //     isExpanded: false,
+                //     html: '',
+                //     iconClass: 'fas fa-house-damage',
+                //     title: '海洋站极值',
+                //     hasChildren: false,
+                //     isChildren: true,
+                //     toolType: ToolTypeEnum.LAYER,
+                //     layerType: LayerTypeEnum.STATION_ICON_MAX_LAYER,
+                //     val: '',
+                //     checked: false,
+                //     group: 3,
+                //     isTitleShow: false
+                // }
             ]
         }
         // {
@@ -308,6 +344,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         optionsType?: ToolBarOptionsEnum
         options?: { key: number; val: string }[]
         layerType: LayerTypeEnum
+        isTitleShow: false
     }[] = []
 
     // 将 toolsbar 转换 -> convertToolsBar
@@ -448,6 +485,34 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         })
 
         return index
+    }
+
+    // 设置当前传入的 item 是否显示 (isTitleShow)
+    setItemShow(
+        item: {
+            id: number
+            // 只有 isChildren 才有 pid
+            pid?: number
+            // 是否展开
+            isExpanded: boolean
+            html: string
+            iconClass: string
+            title: string
+            // 是否有 子节点
+            isChildren: boolean
+            toolType: ToolTypeEnum
+            val: string
+            checked: boolean
+            isRadio?: boolean
+            group?: number
+            optionsType?: ToolBarOptionsEnum
+            options?: { key: number; val: string }[]
+            layerType: LayerTypeEnum
+            isTitleShow: boolean
+        },
+        isShow: boolean
+    ): void {
+        item.isTitleShow = isShow
     }
 
     // + 22-01-10 判断当前 layer 在 this.layersItem 中是否存在相同 group 的layer
@@ -933,6 +998,22 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         // 20-11-14 加入了右侧文字的 padding
         padding: @padding;
     }
+    .tools-icon.show-icon {
+        svg {
+            color: #f39c12;
+        }
+    }
+    .tools-icon.hidden-icon:not(.icon-checked) {
+        svg {
+            color: whitesmoke;
+        }
+    }
+    a > div.tools-font.hidden-font {
+        display: none;
+    }
+    a > div.tools-font.show-font {
+        display: flex;
+    }
     a > div.show-form {
         background-color: @background;
         border-radius: 0.8em;
@@ -949,7 +1030,6 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
     a > div.show-form:hover {
         color: #fff3e1;
     }
-
     // TODO:[-] 21-08-11 加入的对于下拉框组件的样式
     .child-options {
         /* position: relative; */
@@ -972,7 +1052,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
 
     // show 的 动画
     .form-fade-in {
-        animation: go_in 1s;
+        animation: go_in 0.5s;
         // transition: transform 2s;
     }
     @keyframes go_in {
@@ -986,7 +1066,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         }
     }
     .form-fade-out {
-        animation: go_out 1s;
+        animation: go_out 0.5s;
         // transition: transform 2s;
     }
     @keyframes go_out {

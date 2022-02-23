@@ -1,7 +1,7 @@
 // 枚举
 import { LayerTypeEnum } from '@/enum/map'
 import { ToolBarOptionsEnum } from '@/enum/options'
-export interface IExpandModel extends ICon, IOptions, IExpand, ILayer, ICheck {
+export interface IExpandModel extends ICon, IOptions, IExpand, ILayer, ICheck, IShow {
     // 子 template
     html: string
     // tool的种类
@@ -38,6 +38,9 @@ interface IExpand {
     hasChildren: boolean
     // 是否是子节点
     isChildren: boolean
+}
+interface IShow {
+    isTitleShow: boolean
 }
 interface ILayer {
     // 若为 layer 的种类枚举
