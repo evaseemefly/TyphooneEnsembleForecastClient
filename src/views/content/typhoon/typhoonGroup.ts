@@ -324,7 +324,52 @@ class TyGroupCenterPathLine extends TyGroupPathLine {
         tyCenterPointsLayersGroup.addTo(this.myMap)
         return tyCenterPointsLayersGroup
     }
+
+    /**
+     * + 22-02-24 中间路径 按照指定时间列表生成的 概率 半径圆的示意
+     *
+     * @memberof TyGroupCenterPathLine
+     */
+    addRadiusCirle2MapByCenter():void{
+        let indexTyGroup = 0
+        const tyPointsLayers: L.Layer[] = []
+        this.tyGroupPathLines.map((temp) => {
+            {
+                indexTyGroup++
+                temp.listRealdata.forEach((tempRealdata) => {
+                    // TODO:[-] 21-08-26 新加入的台风所在位置 point
+                    const tyMax = 10
+                    const tyMin = 1
+                    // TODO:[-] 21-08-13 对于当前台风位置的脉冲icon
+                    const tyCirleIcon = new IconTyphoonCirlePulsing({
+                        val: 10,
+                        max: tyMax,
+                        min: tyMin,
+                        iconType: IconTypeEnum.TY_PATH_ICON
+                    })
+                    const typhoonStatus = new TyphoonCircleStatus(
+                        tempRealdata.galeRadius,
+                        tempRealdata.realdataBp,
+                        tempRealdata.forecastDt,
+                        tempRealdata.lat,
+                        tempRealdata.lon
+                    )
+                    const tyDivIcon = L.divIcon({
+                        className: 'surge_pulsing_icon_default',
+                        html: tyCirleIcon.toHtml()
+                    })
+                    const tyPulsingMarker = L.marker([tempRealdata.lat, tempRealdata.lon], {
+                        icon: tyDivIcon,
+                        customData: typhoonStatus
+                    })
+                    tyPointsLayers.push(tyPulsingMarker)
+                })
+            }
+        })
+    }
 }
+
+class TyCenterCircle
 
 /**
  * 对 layers 差值获取 对应时刻的 台风 layer
