@@ -81,7 +81,7 @@ export default class IconInfoBox extends Vue {
     padding-right: 0;
     opacity: 1;
     transition: opacity 1.5s;
-    margin: 1em;
+    margin: 0.8em;
     backdrop-filter: blur(4px);
     // @formmoreshadow();
     @baseboxshadow();

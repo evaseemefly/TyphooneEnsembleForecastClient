@@ -100,12 +100,15 @@ export default class SwitchBaseMap extends Vue {
 <style scoped lang="less">
 @import '../../styles/common/card';
 #switch-base-map {
-    margin: 10px;
+    margin: 2px;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: flex-end;
+    .card-list-bar {
+        width: 200px;
+    }
     font {
-        font-size: 16px;
+        font-size: 14px;
         color: white;
         text-shadow: 0 0 4px black;
     }

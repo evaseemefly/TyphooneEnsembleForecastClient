@@ -50,12 +50,12 @@ export default class StationSurgeLevelLegeng extends Vue {
 @import '../../styles/common/card';
 @import '../../styles/base-color';
 #station-level-legend {
-    margin: 10px;
+    margin: 2px;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: flex-end;
     font {
-        font-size: 16px;
+        font-size: 14px;
         color: white;
         text-shadow: 0 0 4px black;
     }

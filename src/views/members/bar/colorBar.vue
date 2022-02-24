@@ -226,7 +226,7 @@ export default class ColorBar extends Vue {
 </script>
 <style lang="less" scoped>
 .color-bar-list {
-    margin-top: 10px;
+    margin-top: 2px;
 }
 .color-bar-list > .color-bar {
     margin-bottom: 5px;

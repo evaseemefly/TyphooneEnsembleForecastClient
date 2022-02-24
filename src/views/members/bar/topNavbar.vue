@@ -1,12 +1,18 @@
 <template>
     <div id="top-menu">
         <div class="menu-bar">
+            <!-- TODO:[-] 22-02-24 curd 栏新的样式1 -->
+            <!-- <div class="menu-item">
+                <div class="menu-icon fas fa-globe"></div>
+                <div class="menu-title">新建作业</div>
+            </div> -->
             <!-- <el-menu
                 :default-active="activeIndex"
                 class="el-menu-demo"
                 mode="horizontal"
                 @select="handleSelect"
                 background-color="#34495E"
+                
                 text-color="#fff"
                 active-text-color="#ffd04b"
             >
@@ -65,7 +71,19 @@ export default class TopNavbar extends Vue {
     display: flex;
     flex-direction: column;
     z-index: 1500;
-
+    flex-direction: row;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 5px;
+    .menu-icon {
+        margin: 2px;
+    }
+    .menu-title {
+        margin: 2px;
+        color: white;
+        font-weight: 700 !important;
+    }
     .menu-bar {
         // width: 1200px;
         backdrop-filter: blur(4px);
