@@ -1564,6 +1564,7 @@ export default class TyGroupMap extends mixins(
                 that.loadGroupTyphoonLine()
                 that.loadCenterTyphoonPoints()
                 that.addTyGroupProPathCircles()
+
                 // console.log(arrTyComplexGroupRealdata)
             }
         })
@@ -1576,6 +1577,8 @@ export default class TyGroupMap extends mixins(
         const mymap: L.Map = this.$refs.basemap['mapObject']
         const tyGroupPathLine = new TyGroupPathLine(mymap, that.tyGroupLineList)
         const tempTyGroupPolyLineLayerGroup = tyGroupPathLine.addPolyLines2MapByGroup()
+        // TODO:[-] 22-02-25 尝试将概率圆+路径包络拼接成一个图形
+        tyGroupPathLine.addPathOutline2Map()
         this.currentGroupPathPolyLineLayerGroup = tempTyGroupPolyLineLayerGroup
     }
     loadCenterTyphoonPoints(): void {
@@ -1587,6 +1590,9 @@ export default class TyGroupMap extends mixins(
         const tyGroupCenterPathLine = new TyGroupCenterPathLine(mymap, [...centerGroupLineList])
         const tempTyGroupCenterPathIconLayerGroup = tyGroupCenterPathLine.addCenterCirlePulsing2MapByGroup()
         this.currentCenterGroupPathPolyLineLayerGroup = tyGroupCenterPathLine.addPolyLines2MapByGroup() // 添加中间路径的折线到map
+        // TODO:[-] 22-02-25 暂时加入的加入概率圆
+        tyGroupCenterPathLine.addProRadiusCirle2MapByCenter()
+
         this.currentGroupPathPulsingLayerGroup = tempTyGroupCenterPathIconLayerGroup
     }
 

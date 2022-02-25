@@ -4,13 +4,14 @@ import * as L from 'leaflet'
 */
 import { IconTypeEnum } from '@/enum/common'
 import { DEFAULT_COLOR } from '@/const/common'
-import { TyphoonCircleStatus } from '@/common/circleStatus'
+import { RADIUSUNIT } from '@/const/typhoon'
 import { DEFAULTTYCODE, DEFAULTTIMESTAMP } from '@/const/typhoon'
 import { ScaleColor, TyGroupPathScaleColor } from '@/common/scaleColor'
 import { getTargetTyGroupDistDate, getTargetTyGroupDateRange } from '@/api/tyhoon'
 import { IconTyphoonCirlePulsing } from '@/views/members/icon/pulsingIcon'
 // mid models
 import { TyphoonComplexGroupRealDataMidModel } from '@/middle_model/typhoon'
+import { TyphoonCircleStatus } from '@/common/circleStatus'
 import moment from 'moment'
 export interface ITyGroupPathOptions {
     tyCode: string
@@ -90,6 +91,7 @@ class TyGroupPathLine {
     tyColorScale: any
     protected tyGroupPolyLineLayer: L.Layer[]
     polyColor = DEFAULT_COLOR
+    tyGroupProPathCircles: { lat: number; lon: number; radius: number }[] = []
     // tyCenterPath:any
     constructor(
         mymap: L.Map,
@@ -216,6 +218,97 @@ class TyGroupPathLine {
             return -1
         })
     }
+
+    addPathOutline2Map(): void {
+        this.mergePolyCircle()
+    }
+
+    // 合并多边形与圆形
+    protected mergePolyCircle(): void {
+        /*
+          大体设计
+               将所有路径将排序后的路径提取最外侧的路径形成多边形
+               获取最后时刻的台风中心位置的园
+               对两者填色
+        */
+        // 取出最外侧的 路径后需要对其排序
+        // step1: 描绘最外侧的轮廓，通过多边形
+        const pathOutter1 = this.tyGroupPathLines[0]
+        const latlng1 = pathOutter1.listRealdata.sort((a, b) => {
+            if (a.lat > b.lat || a.lon > b.lon) {
+                return -1
+            } else {
+                return 0
+            }
+        })
+        const pathOutter2 = this.tyGroupPathLines[1]
+        const latlng2 = pathOutter2.listRealdata.sort((a, b) => {
+            if (a.lat > b.lat || a.lon > b.lon) {
+                return 1
+            } else {
+                return 0
+            }
+        })
+        const lines: L.LatLng[] = []
+
+        latlng1.forEach((temp) => {
+            lines.push(new L.LatLng(temp.lat, temp.lon))
+        })
+        latlng2.forEach((temp) => {
+            lines.push(new L.LatLng(temp.lat, temp.lon))
+        })
+
+        L.polygon(lines, { color: '#76eec6', opacity: 1, fillOpacity: 1 }).addTo(this.myMap)
+
+        // step2: 加入顶部圆形
+    }
+
+    // 根据传入的 时间 index 返回当前 dateIndex 对应的 大风概率半径
+    // 只对应时刻 24,48,72,96,120 且对应的 大风概率半径是写死的,注意！！
+    getTyProPathRadius(
+        index: number,
+        count: number,
+        options: { interval: number } = { interval: 6 }
+    ): number {
+        let radius = 0
+        const indexTemp = index - 1
+        // 此处需要加入一个判断，若index=count的话，说明是最后一个时刻也需要返回一个半径
+        if (index === count) {
+            if (count * options.interval < 24) {
+                radius = (60 / options.interval) * count
+            } else if (count * options.interval < 48) {
+                radius = 60 + ((100 - 60) / options.interval) * (count - 24 / options.interval)
+            } else if (count * options.interval < 72) {
+                radius = 100 + ((120 - 100) / options.interval) * (count - 24 / options.interval)
+            } else if (count * options.interval < 96) {
+                radius = 120 + ((150 - 120) / options.interval) * (count - 24 / options.interval)
+            }
+        } else {
+            switch (true) {
+                // TODO:[-] 21-03-26 备份之前的色标
+                case indexTemp * options.interval === 24:
+                    radius = 60
+                    break
+                case indexTemp * options.interval === 48:
+                    radius = 100
+                    break
+                case indexTemp * options.interval === 72:
+                    radius = 120
+                    break
+                case indexTemp * options.interval === 96:
+                    radius = 150
+                    break
+                case indexTemp * options.interval === 120:
+                    radius = 180
+                    break
+                default:
+                    radius = 0
+                    break
+            }
+        }
+
+        return radius
+    }
 }
 
 /**
@@ -330,46 +423,74 @@ class TyGroupCenterPathLine extends TyGroupPathLine {
      *
      * @memberof TyGroupCenterPathLine
      */
-    addRadiusCirle2MapByCenter():void{
+    addProRadiusCirle2MapByCenter(): L.LayerGroup<any> {
         let indexTyGroup = 0
+        let indexDate = 0
         const tyPointsLayers: L.Layer[] = []
+        let tyProRadiusCircleLayerGroup: L.LayerGroup<any> = []
+
         this.tyGroupPathLines.map((temp) => {
             {
                 indexTyGroup++
+                const cirleScaleColor = new ScaleColor(0, temp.listRealdata.length)
+                cirleScaleColor.setScale('Viridis')
                 temp.listRealdata.forEach((tempRealdata) => {
-                    // TODO:[-] 21-08-26 新加入的台风所在位置 point
-                    const tyMax = 10
-                    const tyMin = 1
-                    // TODO:[-] 21-08-13 对于当前台风位置的脉冲icon
-                    const tyCirleIcon = new IconTyphoonCirlePulsing({
-                        val: 10,
-                        max: tyMax,
-                        min: tyMin,
-                        iconType: IconTypeEnum.TY_PATH_ICON
-                    })
+                    indexDate++
                     const typhoonStatus = new TyphoonCircleStatus(
                         tempRealdata.galeRadius,
-                        tempRealdata.realdataBp,
+                        0,
                         tempRealdata.forecastDt,
                         tempRealdata.lat,
                         tempRealdata.lon
                     )
-                    const tyDivIcon = L.divIcon({
-                        className: 'surge_pulsing_icon_default',
-                        html: tyCirleIcon.toHtml()
-                    })
-                    const tyPulsingMarker = L.marker([tempRealdata.lat, tempRealdata.lon], {
-                        icon: tyDivIcon,
-                        customData: typhoonStatus
-                    })
-                    tyPointsLayers.push(tyPulsingMarker)
+                    if (temp.tyPathType === 'c' && temp.tyPathMarking === 0) {
+                        // 根据传入的 时间 index 返回当前 dateIndex 对应的 大风概率半径
+                        // 获取中间路径的总数
+                        const centerPathCount: number = temp.listRealdata.length
+                        const tempProPathRadius: number = this.getTyProPathRadius(
+                            indexDate,
+                            centerPathCount
+                        )
+                        if (tempProPathRadius !== 0) {
+                            this.tyGroupProPathCircles.push({
+                                lat: tempRealdata.lat,
+                                lon: tempRealdata.lon,
+                                radius: tempProPathRadius
+                            })
+                        }
+                    }
+                    // tyPointsLayers.push(tyPulsingMarker)
                 })
             }
         })
+
+        if (this.tyGroupProPathCircles.length > 0) {
+            const mymap: any = this.myMap
+            const cirleLayers: L.Layer[] = []
+            const tyGroupProPathMaxCircle: number = Math.max.apply(
+                Math,
+                this.tyGroupProPathCircles.map((temp) => {
+                    return temp.radius
+                })
+            )
+            const cirleScaleColor = new ScaleColor(0, tyGroupProPathMaxCircle)
+            this.tyGroupProPathCircles.forEach((tempTyGroup) => {
+                const circleTemp = L.circle(new L.LatLng(tempTyGroup.lat, tempTyGroup.lon), {
+                    // color: cirleScaleColor.getColor(tempTyGroup.radius),
+                    color: '#76eec6',
+                    radius: tempTyGroup.radius * RADIUSUNIT,
+                    fill: true,
+                    fillOpacity: 1,
+                    //weight: tempTyGroup.radius,
+                    opacity: 1
+                })
+                cirleLayers.push(circleTemp)
+            })
+            tyProRadiusCircleLayerGroup = L.layerGroup([...cirleLayers]).addTo(mymap)
+        }
+        return tyProRadiusCircleLayerGroup
     }
 }
-
-class TyCenterCircle
 
 /**
  * 对 layers 差值获取 对应时刻的 台风 layer
