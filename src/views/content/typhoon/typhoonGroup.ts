@@ -1,4 +1,6 @@
 import * as L from 'leaflet'
+// TODO:[-] 22-02-25 圆 -> 多边形
+import '@geoman-io/leaflet-geoman-free'
 /*
 + 21-05-18 关于 tyGroupPath 相关的class
 */
@@ -224,7 +226,7 @@ class TyGroupPathLine {
     }
 
     // 合并多边形与圆形
-    protected mergePolyCircle(): void {
+    mergePolyCircle(): L.LatLng[] {
         /*
           大体设计
                将所有路径将排序后的路径提取最外侧的路径形成多边形
@@ -257,8 +259,8 @@ class TyGroupPathLine {
         latlng2.forEach((temp) => {
             lines.push(new L.LatLng(temp.lat, temp.lon))
         })
-
-        L.polygon(lines, { color: '#76eec6', opacity: 1, fillOpacity: 1 }).addTo(this.myMap)
+        return lines
+        // L.polygon(lines, { color: '#76eec6', opacity: 1, fillOpacity: 1 }).addTo(this.myMap)
 
         // step2: 加入顶部圆形
     }
@@ -427,7 +429,10 @@ class TyGroupCenterPathLine extends TyGroupPathLine {
         let indexTyGroup = 0
         let indexDate = 0
         const tyPointsLayers: L.Layer[] = []
-        let tyProRadiusCircleLayerGroup: L.LayerGroup<any> = []
+        const tyProRadiusCircleLayerGroup: L.LayerGroup<any> = []
+
+        const mymap: any = this.myMap
+        const cirleLayers: L.Circle[] = []
 
         this.tyGroupPathLines.map((temp) => {
             {
@@ -465,8 +470,6 @@ class TyGroupCenterPathLine extends TyGroupPathLine {
         })
 
         if (this.tyGroupProPathCircles.length > 0) {
-            const mymap: any = this.myMap
-            const cirleLayers: L.Layer[] = []
             const tyGroupProPathMaxCircle: number = Math.max.apply(
                 Math,
                 this.tyGroupProPathCircles.map((temp) => {
@@ -484,11 +487,88 @@ class TyGroupCenterPathLine extends TyGroupPathLine {
                     //weight: tempTyGroup.radius,
                     opacity: 1
                 })
+
+                // layersCircle.push
                 cirleLayers.push(circleTemp)
             })
-            tyProRadiusCircleLayerGroup = L.layerGroup([...cirleLayers]).addTo(mymap)
+            // tyProRadiusCircleLayerGroup = L.layerGroup([...cirleLayers]).addTo(mymap)
         }
+        this.mergePolyCircle()
+        const circle2poly = L.PM.Utils.circleToPolygon(cirleLayers[1], 60)
         return tyProRadiusCircleLayerGroup
+    }
+
+    getLastRadiusCirle2Poly(): L.Polygon {
+        let indexTyGroup = 0
+        let indexDate = 0
+        const tyPointsLayers: L.Layer[] = []
+        // let tyProRadiusCircleLayerGroup: L.LayerGroup<any> = []
+
+        const mymap: any = this.myMap
+        const cirleLayers: L.Circle[] = []
+
+        this.tyGroupPathLines.map((temp) => {
+            {
+                indexTyGroup++
+                const cirleScaleColor = new ScaleColor(0, temp.listRealdata.length)
+                cirleScaleColor.setScale('Viridis')
+                temp.listRealdata.forEach((tempRealdata) => {
+                    const typhoonStatus = new TyphoonCircleStatus(
+                        tempRealdata.galeRadius,
+                        0,
+                        tempRealdata.forecastDt,
+                        tempRealdata.lat,
+                        tempRealdata.lon
+                    )
+                    if (temp.tyPathType === 'c' && temp.tyPathMarking === 0 && temp.groupBp === 0) {
+                        // 根据传入的 时间 index 返回当前 dateIndex 对应的 大风概率半径
+                        // 获取中间路径的总数
+                        indexDate++
+                        const centerPathCount: number = temp.listRealdata.length
+                        const tempProPathRadius: number = this.getTyProPathRadius(
+                            indexDate,
+                            centerPathCount
+                        )
+                        if (tempProPathRadius !== 0) {
+                            this.tyGroupProPathCircles.push({
+                                lat: tempRealdata.lat,
+                                lon: tempRealdata.lon,
+                                radius: tempProPathRadius
+                            })
+                        }
+                    }
+                    // tyPointsLayers.push(tyPulsingMarker)
+                })
+            }
+        })
+
+        if (this.tyGroupProPathCircles.length > 0) {
+            const tyGroupProPathMaxCircle: number = Math.max.apply(
+                Math,
+                this.tyGroupProPathCircles.map((temp) => {
+                    return temp.radius
+                })
+            )
+            const cirleScaleColor = new ScaleColor(0, tyGroupProPathMaxCircle)
+            this.tyGroupProPathCircles.forEach((tempTyGroup) => {
+                const circleTemp = L.circle(new L.LatLng(tempTyGroup.lat, tempTyGroup.lon), {
+                    // color: cirleScaleColor.getColor(tempTyGroup.radius),
+                    color: '#76eec6',
+                    radius: tempTyGroup.radius * RADIUSUNIT,
+                    fill: true,
+                    fillOpacity: 1,
+                    //weight: tempTyGroup.radius,
+                    opacity: 1
+                })
+
+                // layersCircle.push
+                cirleLayers.push(circleTemp)
+            })
+            // tyProRadiusCircleLayerGroup = L.layerGroup([...cirleLayers]).addTo(mymap)
+        }
+        // this.mergePolyCircle()
+        const circle2poly = L.PM.Utils.circleToPolygon(cirleLayers[1], 60)
+        return circle2poly
     }
 }
 

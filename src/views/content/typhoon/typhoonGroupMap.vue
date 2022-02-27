@@ -212,6 +212,7 @@ import {
     LWMSTileLayer
     // LeafletHeatmap
 } from 'vue2-leaflet'
+
 // import LeafletHeatmap from "vue2-leaflet-heatmap";
 
 // github:https://github.com/Leaflet/Leaflet.heat
@@ -1578,7 +1579,17 @@ export default class TyGroupMap extends mixins(
         const tyGroupPathLine = new TyGroupPathLine(mymap, that.tyGroupLineList)
         const tempTyGroupPolyLineLayerGroup = tyGroupPathLine.addPolyLines2MapByGroup()
         // TODO:[-] 22-02-25 尝试将概率圆+路径包络拼接成一个图形
-        tyGroupPathLine.addPathOutline2Map()
+        // tyGroupPathLine.addPathOutline2Map()
+        const tempCenterPathLine = new TyGroupCenterPathLine(mymap, that.tyGroupLineList)
+        const lastCircle2Poly = tempCenterPathLine.getLastRadiusCirle2Poly()
+        const poly = tyGroupPathLine.mergePolyCircle()
+        const lines = [...poly, ...lastCircle2Poly.getLatLngs()[0]]
+        // L.polygon([...lastCircle2Poly.getLatLngs(), ...poly], {
+        L.polygon(lines, {
+            color: '#76eec6',
+            opacity: 1,
+            fillOpacity: 1
+        }).addTo(mymap)
         this.currentGroupPathPolyLineLayerGroup = tempTyGroupPolyLineLayerGroup
     }
     loadCenterTyphoonPoints(): void {
