@@ -12,7 +12,10 @@ import { ScaleColor, TyGroupPathScaleColor } from '@/common/scaleColor'
 import { getTargetTyGroupDistDate, getTargetTyGroupDateRange } from '@/api/tyhoon'
 import { IconTyphoonCirlePulsing } from '@/views/members/icon/pulsingIcon'
 // mid models
-import { TyphoonComplexGroupRealDataMidModel } from '@/middle_model/typhoon'
+import {
+    TyphoonComplexGroupRealDataMidModel,
+    TyphoonForecastRealDataMidModel
+} from '@/middle_model/typhoon'
 import { TyphoonCircleStatus } from '@/common/circleStatus'
 import moment from 'moment'
 export interface ITyGroupPathOptions {
@@ -573,6 +576,196 @@ class TyGroupCenterPathLine extends TyGroupPathLine {
 }
 
 /**
+ * 台风结束圆
+ * + 22-02-28
+ * 台风路径最后一个时刻的圆
+ *
+ * @class TyphoonCircle
+ */
+class TyphoonCircle {
+    /**
+     * 台风终点中心位置
+     *
+     * @type {L.LatLng}
+     * @memberof TyphoonCircle
+     */
+    // center: L.LatLng
+
+    /**
+     * 台风终点圆半径
+     *
+     * @type {number}
+     * @memberof TyphoonCircle
+     */
+    // radius: number
+
+    // dir: number
+    defaultOptions: { interval: number } = { interval: 6 }
+    circleSpliceNum: number
+    centerPath: TyphoonForecastRealDataMidModel[]
+    // constructor(center: L.LatLng, radius: number, dir: number, circleSpliceNum: number) {
+    //     this.center = center
+    //     this.radius = radius
+    //     this.dir = dir
+    //     this.circleSpliceNum = circleSpliceNum
+    // }
+
+    /**
+     * Creates an instance of TyphoonCircle.
+     * @param {any[]} centerPath 中间路径
+     * @param {number} circleSpliceNum 台风最后位置对圆切分为多边形的切分数量
+     * @memberof TyphoonCircle
+     */
+    constructor(
+        centerPath: TyphoonForecastRealDataMidModel[],
+        circleSpliceNum: number,
+        options: any
+    ) {
+        this.centerPath = centerPath
+        this.circleSpliceNum = circleSpliceNum
+        this.defaultOptions = { ...options }
+    }
+
+    /**
+     * 台风终点中心位置
+     *
+     * @readonly
+     * @type {L.LatLng}
+     * @memberof TyphoonCircle
+     */
+    get circleCenter(): L.LatLng {
+        const count = this.centerPath.length
+        const centerLatlng: L.LatLng = new L.LatLng(
+            this.centerPath[count].lat,
+            this.centerPath[count].lon
+        )
+        return centerLatlng
+    }
+
+    /**
+     * 获取台风终点中心位置的半径
+     *
+     * @readonly
+     * @type {number}
+     * @memberof TyphoonCircle
+     */
+    get circleRadius(): number {
+        let radius = 0
+        const count = this.centerPath.length
+        if (count * this.defaultOptions.interval < 24) {
+            radius = (60 / this.defaultOptions.interval) * count
+        } else if (count * this.defaultOptions.interval < 48) {
+            radius =
+                60 +
+                ((100 - 60) / this.defaultOptions.interval) *
+                    (count - 24 / this.defaultOptions.interval)
+        } else if (count * this.defaultOptions.interval < 72) {
+            radius =
+                100 +
+                ((120 - 100) / this.defaultOptions.interval) *
+                    (count - 24 / this.defaultOptions.interval)
+        } else if (count * this.defaultOptions.interval < 96) {
+            radius =
+                120 +
+                ((150 - 120) / this.defaultOptions.interval) *
+                    (count - 24 / this.defaultOptions.interval)
+        }
+        return radius
+    }
+
+    /**
+     * 获取台风终点位置的方向
+     *
+     * @readonly
+     * @type {void}
+     * @memberof TyphoonCircle
+     */
+    get circleDir(): number {
+        /*
+          获取台风中心路径最后两个位置的经纬度计算角度
+        */
+        const count = this.centerPath.length
+        const lastPoint: L.LatLng = new L.LatLng(
+            this.centerPath[count].lat,
+            this.centerPath[count].lon
+        )
+        const secPoint: L.LatLng = new L.LatLng(
+            this.centerPath[count - 1].lat,
+            this.centerPath[count - 1].lon
+        )
+
+        const angle: number = Math.atan2(lastPoint.lat - secPoint.lat, lastPoint.lng - secPoint.lng) //弧度  0.9272952180016122
+        const theta: number = angle * (180 / Math.PI) //角度  53.13010235415598
+        return theta
+    }
+
+    /**
+     * 获取台风最后一个时间节点的圆形
+     *
+     * @readonly
+     * @type {L.Circle}
+     * @memberof TyphoonCircle
+     */
+    get getCircle(): L.Circle {
+        const circle = new L.Circle(this.circleCenter, {
+            radius: this.circleRadius
+        })
+        return circle
+    }
+
+    /**
+     * 获取圆的多边形
+     *
+     * @return {*}  {L.Polygon}
+     * @memberof TyphoonCircle
+     */
+    getPolygon(): L.Polygon {
+        const circle: L.Circle = this.getCircle
+        const circle2poly = L.PM.Utils.circleToPolygon(circle, this.defaultOptions.interval)
+        return circle2poly
+    }
+
+    /**
+     * 多边形转成lines
+     *
+     * @return {*}  {L.Polyline}
+     * @memberof TyphoonCircle
+     */
+    outLinePolylines(): L.Polyline {
+        const polyLatlngs: L.LatLng[] = this.getPolygon().getLatLngs()
+        const outline = new L.Polyline(polyLatlngs)
+        return outline
+    }
+
+    /**
+     * 获取外侧半圆的多边形
+     *
+     * @return {*}  {L.Polygon}
+     * @memberof TyphoonCircle
+     */
+    semicirclePolygon(splicePolygon: L.Polygon): L.Polygon {
+        const circlePolyLatlngs: L.LatLng[] = this.getPolygon().getLatLngs()
+    }
+}
+
+class TyphoonOutLine {}
+
+/**
+ * 台风多边形
+ * + 22-02-28
+ * 台风集合路径包络
+ *
+ * @class TyphoonPolygron
+ */
+class TyphoonPolygron {
+    tyCircle: TyphoonCircle
+    tyOutLine: TyphoonOutLine
+    constructor(circle: TyphoonCircle, outline: TyphoonOutLine) {
+        this.tyOutLine = outline
+        this.tyCircle = circle
+    }
+}
+/**
  * 对 layers 差值获取 对应时刻的 台风 layer
  *
  * @param {L.Layer[]} layers
@@ -678,4 +871,11 @@ const getTyCenterGroupDiffLayer = (
     return customData
 }
 
-export { TyGroupPath, getTyCenterGroupDiffLayer, TyGroupPathLine, TyGroupCenterPathLine }
+export {
+    TyGroupPath,
+    getTyCenterGroupDiffLayer,
+    TyGroupPathLine,
+    TyGroupCenterPathLine,
+    TyphoonPolygron,
+    TyphoonCircle
+}

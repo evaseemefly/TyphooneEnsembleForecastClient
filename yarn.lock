@@ -9125,6 +9125,11 @@
   "resolved" "https://registry.npm.taobao.org/leaflet-rotatedmarker/download/leaflet-rotatedmarker-0.2.0.tgz"
   "version" "0.2.0"
 
+"leaflet-semicircle@^2.0.4":
+  "integrity" "sha512-7FV9kGBMSQ1CNZYPxoPCEVpDpiIoh/owZV91BWUKYFik5WuaYij0zGEWOE0elTUlRyTHFJHW4rNfQJ2fqreqnA=="
+  "resolved" "https://registry.npmjs.org/leaflet-semicircle/-/leaflet-semicircle-2.0.4.tgz"
+  "version" "2.0.4"
+
 "leaflet-temporal-geojson@^0.4.0":
   "integrity" "sha1-a/YDl4ASBW/+XVUq7yGh0aXcJWE="
   "resolved" "https://registry.npm.taobao.org/leaflet-temporal-geojson/download/leaflet-temporal-geojson-0.4.0.tgz"
@@ -13907,7 +13912,7 @@
 
 "string-width@^2.0.0", "string-width@^2.1.1":
   "integrity" "sha1-q5Pyeo3BPSjKyBXEYhQ6bZASrp4="
-  "resolved" "https://registry.nlark.com/string-width/download/string-width-2.1.1.tgz"
+  "resolved" "https://registry.npm.taobao.org/string-width/download/string-width-2.1.1.tgz"
   "version" "2.1.1"
   dependencies:
     "is-fullwidth-code-point" "^2.0.0"

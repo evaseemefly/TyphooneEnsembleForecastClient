@@ -50,6 +50,7 @@
         "leaflet-coverage": "^0.7.2",
         "leaflet-geotiff": "^0.2.0",
         "leaflet-rotatedmarker": "^0.2.0",
+        "leaflet-semicircle": "^2.0.4",
         "leaflet-temporal-geojson": "^0.4.0",
         "leaflet-velocity": "^1.7.0",
         "leaflet-velocity-ts": "^1.1.7",
