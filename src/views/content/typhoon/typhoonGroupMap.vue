@@ -273,7 +273,12 @@ import { getDaysNum } from '@/common/date'
 // 各类工具类
 import { clearRasterFromMap } from '@/util/map'
 import { formatDate } from '@/common/date'
-import { TyGroupPathLine, TyGroupCenterPathLine } from './typhoonGroup'
+import {
+    TyGroupPathLine,
+    TyGroupCenterPathLine,
+    TyphoonPolygon,
+    TyphoonCircle
+} from './typhoonGroup'
 // 各类 DTO
 import { CustomerMarker, CustomerGisFormMarker } from './marker'
 
@@ -1581,14 +1586,18 @@ export default class TyGroupMap extends mixins(
         // TODO:[-] 22-02-25 尝试将概率圆+路径包络拼接成一个图形
         // tyGroupPathLine.addPathOutline2Map()
         const tempCenterPathLine = new TyGroupCenterPathLine(mymap, that.tyGroupLineList)
+        // 注意此处还需要对最后的圆根据切线进行横断切分
         const lastCircle2Poly = tempCenterPathLine.getLastRadiusCirle2Poly()
+        const tyPolygon = new TyphoonPolygon(that.tyGroupLineList, mymap)
+        tyPolygon.generateCircle()
         const poly = tyGroupPathLine.mergePolyCircle()
-        const lines = [...poly, ...lastCircle2Poly.getLatLngs()[0]]
+        // const lines = [...poly, ...lastCircle2Poly.getLatLngs()[0]]
+        const lines = [...poly]
         // L.polygon([...lastCircle2Poly.getLatLngs(), ...poly], {
         L.polygon(lines, {
-            color: '#76eec6',
-            opacity: 1,
-            fillOpacity: 1
+            color: '#34495e',
+            opacity: 0,
+            fillOpacity: 0.8
         }).addTo(mymap)
         this.currentGroupPathPolyLineLayerGroup = tempTyGroupPolyLineLayerGroup
     }

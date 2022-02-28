@@ -1,6 +1,8 @@
 import * as L from 'leaflet'
 // TODO:[-] 22-02-25 圆 -> 多边形
 import '@geoman-io/leaflet-geoman-free'
+import 'leaflet-semicircle'
+
 /*
 + 21-05-18 关于 tyGroupPath 相关的class
 */
@@ -619,11 +621,11 @@ class TyphoonCircle {
     constructor(
         centerPath: TyphoonForecastRealDataMidModel[],
         circleSpliceNum: number,
-        options: any
+        options?: any
     ) {
         this.centerPath = centerPath
         this.circleSpliceNum = circleSpliceNum
-        this.defaultOptions = { ...options }
+        this.defaultOptions = { ...this.defaultOptions, ...options }
     }
 
     /**
@@ -636,8 +638,8 @@ class TyphoonCircle {
     get circleCenter(): L.LatLng {
         const count = this.centerPath.length
         const centerLatlng: L.LatLng = new L.LatLng(
-            this.centerPath[count].lat,
-            this.centerPath[count].lon
+            this.centerPath[count - 1].lat,
+            this.centerPath[count - 1].lon
         )
         return centerLatlng
     }
@@ -686,17 +688,24 @@ class TyphoonCircle {
         */
         const count = this.centerPath.length
         const lastPoint: L.LatLng = new L.LatLng(
-            this.centerPath[count].lat,
-            this.centerPath[count].lon
-        )
-        const secPoint: L.LatLng = new L.LatLng(
             this.centerPath[count - 1].lat,
             this.centerPath[count - 1].lon
+        )
+        const secPoint: L.LatLng = new L.LatLng(
+            this.centerPath[count - 2].lat,
+            this.centerPath[count - 2].lon
         )
 
         const angle: number = Math.atan2(lastPoint.lat - secPoint.lat, lastPoint.lng - secPoint.lng) //弧度  0.9272952180016122
         const theta: number = angle * (180 / Math.PI) //角度  53.13010235415598
-        return theta
+        const b = (5 * Math.PI) / 2 - theta
+        let beta = 0
+        if (b <= 2 * Math.PI) {
+            beta = (5 * Math.PI) / 2 - theta
+        } else {
+            beta = Math.PI / 2 - theta
+        }
+        return beta + 90
     }
 
     /**
@@ -746,6 +755,26 @@ class TyphoonCircle {
     semicirclePolygon(splicePolygon: L.Polygon): L.Polygon {
         const circlePolyLatlngs: L.LatLng[] = this.getPolygon().getLatLngs()
     }
+
+    semiCircle(): any {
+        // const semiCircle = L.semiCircle([this.circleCenter.lat, this.circleCenter.lng], {
+        //     radius: 500,
+        //     startAngle: 50,
+        //     stopAngle: 210,
+        //     color: 'rgba(255,0,0,0.5)'
+        // })
+
+        return L.semiCircle([this.circleCenter.lat, this.circleCenter.lng], {
+            radius: this.circleRadius * 1000,
+            startAngle: this.circleDir - 90,
+            stopAngle: this.circleDir + 90,
+            // color: '#34495e',
+            // fill: 'rgba(255,0,0,0.5)',
+            fillColor: '#34495e',
+            opacity: 0,
+            fillOpacity: 0.8
+        })
+    }
 }
 
 class TyphoonOutLine {}
@@ -757,12 +786,32 @@ class TyphoonOutLine {}
  *
  * @class TyphoonPolygron
  */
-class TyphoonPolygron {
+class TyphoonPolygon {
     tyCircle: TyphoonCircle
     tyOutLine: TyphoonOutLine
-    constructor(circle: TyphoonCircle, outline: TyphoonOutLine) {
-        this.tyOutLine = outline
-        this.tyCircle = circle
+    tyGroupPath: TyphoonComplexGroupRealDataMidModel[]
+    map: L.Map
+    // constructor(circle: TyphoonCircle, outline: TyphoonOutLine) {
+    //     this.tyOutLine = outline
+    //     this.tyCircle = circle
+    // }
+    constructor(groupPath: TyphoonComplexGroupRealDataMidModel[], map: L.Map) {
+        this.tyGroupPath = groupPath
+        this.map = map
+    }
+
+    get centerGroupPath(): TyphoonComplexGroupRealDataMidModel {
+        const centerGroupPath = this.tyGroupPath.filter((temp) => {
+            return temp.tyPathType === 'c' && temp.tyPathMarking === 0 && temp.groupBp === 0
+        })
+        return centerGroupPath[0]
+    }
+
+    generateCircle(): void {
+        const that = this
+        const circle = new TyphoonCircle(this.centerGroupPath.listRealdata, 60)
+        const semicircle = circle.semiCircle()
+        semicircle.addTo(that.map)
     }
 }
 /**
@@ -876,6 +925,6 @@ export {
     getTyCenterGroupDiffLayer,
     TyGroupPathLine,
     TyGroupCenterPathLine,
-    TyphoonPolygron,
+    TyphoonPolygon,
     TyphoonCircle
 }

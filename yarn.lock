@@ -13912,7 +13912,7 @@
 
 "string-width@^2.0.0", "string-width@^2.1.1":
   "integrity" "sha1-q5Pyeo3BPSjKyBXEYhQ6bZASrp4="
-  "resolved" "https://registry.npm.taobao.org/string-width/download/string-width-2.1.1.tgz"
+  "resolved" "https://registry.nlark.com/string-width/download/string-width-2.1.1.tgz"
   "version" "2.1.1"
   dependencies:
     "is-fullwidth-code-point" "^2.0.0"
