@@ -604,7 +604,7 @@ class TyphoonCircle {
     // dir: number
     defaultOptions: { interval: number } = { interval: 6 }
     circleSpliceNum: number
-    centerPath: TyphoonForecastRealDataMidModel[]
+    groupPath: TyphoonComplexGroupRealDataMidModel[]
     // constructor(center: L.LatLng, radius: number, dir: number, circleSpliceNum: number) {
     //     this.center = center
     //     this.radius = radius
@@ -614,16 +614,16 @@ class TyphoonCircle {
 
     /**
      * Creates an instance of TyphoonCircle.
-     * @param {any[]} centerPath 中间路径
+     * @param {any[]} groupPath 中间路径
      * @param {number} circleSpliceNum 台风最后位置对圆切分为多边形的切分数量
      * @memberof TyphoonCircle
      */
     constructor(
-        centerPath: TyphoonForecastRealDataMidModel[],
+        groupPath: TyphoonComplexGroupRealDataMidModel[],
         circleSpliceNum: number,
         options?: any
     ) {
-        this.centerPath = centerPath
+        this.groupPath = groupPath
         this.circleSpliceNum = circleSpliceNum
         this.defaultOptions = { ...this.defaultOptions, ...options }
     }
@@ -642,6 +642,20 @@ class TyphoonCircle {
             this.centerPath[count - 1].lon
         )
         return centerLatlng
+    }
+
+    /**
+     * 中心路径的各时刻的位置数据
+     *
+     * @readonly
+     * @type {TyphoonForecastRealDataMidModel[]}
+     * @memberof TyphoonCircle
+     */
+    get centerPath(): TyphoonForecastRealDataMidModel[] {
+        const centerGroupPath = this.groupPath.filter((temp) => {
+            return temp.tyPathType === 'c' && temp.tyPathMarking === 0 && temp.groupBp === 0
+        })
+        return centerGroupPath[0].listRealdata
     }
 
     /**
@@ -686,28 +700,57 @@ class TyphoonCircle {
         /*
           获取台风中心路径最后两个位置的经纬度计算角度
         */
+        // 方式1
         const count = this.centerPath.length
-        const lastPoint: L.LatLng = new L.LatLng(
-            this.centerPath[count - 1].lat,
-            this.centerPath[count - 1].lon
-        )
-        const secPoint: L.LatLng = new L.LatLng(
-            this.centerPath[count - 2].lat,
-            this.centerPath[count - 2].lon
-        )
+        // const lastPoint: L.LatLng = new L.LatLng(
+        //     this.centerPath[count - 1].lat,
+        //     this.centerPath[count - 1].lon
+        // )
+        // const secPoint: L.LatLng = new L.LatLng(
+        //     this.centerPath[count - 2].lat,
+        //     this.centerPath[count - 2].lon
+        // )
+        // 方式2:
+        const rightPath = this.groupPath.filter((temp) => {
+            return temp.tyPathType === 'r' && temp.tyPathMarking === 0 && temp.groupBp === 10
+        })[0].listRealdata[count - 1]
 
-        const angle: number = Math.atan2(lastPoint.lat - secPoint.lat, lastPoint.lng - secPoint.lng) //弧度  0.9272952180016122
-        const theta: number = angle * (180 / Math.PI) //角度  53.13010235415598
-        const b = (5 * Math.PI) / 2 - theta
-        let beta = 0
-        if (b <= 2 * Math.PI) {
-            beta = (5 * Math.PI) / 2 - theta
-        } else {
-            beta = Math.PI / 2 - theta
+        const leftPath = this.groupPath.filter((temp) => {
+            return temp.tyPathType === 'l' && temp.tyPathMarking === 0 && temp.groupBp === 10
+        })[0].listRealdata[count - 1]
+
+        const rightPoint: L.LatLng = new L.LatLng(rightPath.lat, rightPath.lon)
+        const leftPoint: L.LatLng = new L.LatLng(leftPath.lat, leftPath.lon)
+        // ---- 以上无问题
+        const angle: number = Math.atan2(
+            rightPoint.lat - leftPoint.lat,
+            rightPoint.lng - leftPoint.lng
+        )
+        let theta: number = angle * (180 / Math.PI)
+        // 目前先只考虑1,2 象限的情况
+        theta = theta + 90
+        // 第二象限
+        if (theta > 90 && theta < 180) {
+            theta = 360 - (theta - 90)
         }
-        return beta + 90
+        return theta
     }
 
+    getCircleRadiusLine(): L.Polyline {
+        const count = this.centerPath.length
+        // 方式2:
+        const rightPath = this.groupPath.filter((temp) => {
+            return temp.tyPathType === 'r' && temp.tyPathMarking === 0 && temp.groupBp === 10
+        })[0].listRealdata[count - 1]
+
+        const leftPath = this.groupPath.filter((temp) => {
+            return temp.tyPathType === 'l' && temp.tyPathMarking === 0 && temp.groupBp === 10
+        })[0].listRealdata[count - 1]
+
+        const rightPoint: L.LatLng = new L.LatLng(rightPath.lat, rightPath.lon)
+        const leftPoint: L.LatLng = new L.LatLng(leftPath.lat, leftPath.lon)
+        return new L.Polyline([rightPoint, leftPoint])
+    }
     /**
      * 获取台风最后一个时间节点的圆形
      *
@@ -763,17 +806,24 @@ class TyphoonCircle {
         //     stopAngle: 210,
         //     color: 'rgba(255,0,0,0.5)'
         // })
-
-        return L.semiCircle([this.circleCenter.lat, this.circleCenter.lng], {
-            radius: this.circleRadius * 1000,
-            startAngle: this.circleDir - 90,
-            stopAngle: this.circleDir + 90,
-            // color: '#34495e',
-            // fill: 'rgba(255,0,0,0.5)',
-            fillColor: '#34495e',
-            opacity: 0,
-            fillOpacity: 0.8
-        })
+        const dir = parseFloat(this.circleDir.toFixed(4)) - 2.5
+        return L.semiCircle(
+            [
+                parseFloat(this.circleCenter.lat.toFixed(4)),
+                parseFloat(this.circleCenter.lng.toFixed(4))
+            ],
+            {
+                radius: this.circleRadius * 1000,
+                startAngle: dir - 90,
+                stopAngle: dir + 90,
+                // color: '#34495e',
+                // fill: 'rgba(255,0,0,0.5)',
+                fillColor: '#34495e',
+                opacity: 0,
+                fillOpacity: 0.8
+            }
+        )
+        // }).setDirection(dir, 180)
     }
 }
 
@@ -809,9 +859,10 @@ class TyphoonPolygon {
 
     generateCircle(): void {
         const that = this
-        const circle = new TyphoonCircle(this.centerGroupPath.listRealdata, 60)
+        const circle = new TyphoonCircle(this.tyGroupPath, 60)
         const semicircle = circle.semiCircle()
         semicircle.addTo(that.map)
+        circle.getCircleRadiusLine().addTo(that.map)
     }
 }
 /**
