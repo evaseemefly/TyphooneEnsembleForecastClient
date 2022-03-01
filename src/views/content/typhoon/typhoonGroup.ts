@@ -240,7 +240,10 @@ class TyGroupPathLine {
         */
         // 取出最外侧的 路径后需要对其排序
         // step1: 描绘最外侧的轮廓，通过多边形
-        const pathOutter1 = this.tyGroupPathLines[0]
+        // const pathOutter1 = this.tyGroupPathLines[0]
+        const pathOutter1 = this.tyGroupPathLines.find((temp) => {
+            return temp.tyPathType === 'r' && temp.groupBp === 0 && temp.tyPathMarking === 6
+        })
         const latlng1 = pathOutter1.listRealdata.sort((a, b) => {
             if (a.lat > b.lat || a.lon > b.lon) {
                 return -1
@@ -248,7 +251,10 @@ class TyGroupPathLine {
                 return 0
             }
         })
-        const pathOutter2 = this.tyGroupPathLines[1]
+        // const pathOutter2 = this.tyGroupPathLines[1]
+        const pathOutter2 = this.tyGroupPathLines.find((temp) => {
+            return temp.tyPathType === 'l' && temp.groupBp === 0 && temp.tyPathMarking === 6
+        })
         const latlng2 = pathOutter2.listRealdata.sort((a, b) => {
             if (a.lat > b.lat || a.lon > b.lon) {
                 return 1
@@ -668,26 +674,55 @@ class TyphoonCircle {
     get circleRadius(): number {
         let radius = 0
         const count = this.centerPath.length
-        if (count * this.defaultOptions.interval < 24) {
-            radius = (60 / this.defaultOptions.interval) * count
-        } else if (count * this.defaultOptions.interval < 48) {
-            radius =
-                60 +
-                ((100 - 60) / this.defaultOptions.interval) *
-                    (count - 24 / this.defaultOptions.interval)
-        } else if (count * this.defaultOptions.interval < 72) {
-            radius =
-                100 +
-                ((120 - 100) / this.defaultOptions.interval) *
-                    (count - 24 / this.defaultOptions.interval)
-        } else if (count * this.defaultOptions.interval < 96) {
-            radius =
-                120 +
-                ((150 - 120) / this.defaultOptions.interval) *
-                    (count - 24 / this.defaultOptions.interval)
-        }
-        return radius
+        const rightPath = this.groupPath.filter((temp) => {
+            return (
+                temp.tyPathType === 'r' &&
+                temp.tyPathMarking === 0 &&
+                temp.groupBp === 10 &&
+                temp.isBpIncrease === false
+            )
+        })[0].listRealdata[count - 1]
+
+        const leftPath = this.groupPath.filter((temp) => {
+            return (
+                temp.tyPathType === 'l' &&
+                temp.tyPathMarking === 0 &&
+                temp.groupBp === 10 &&
+                temp.isBpIncrease === false
+            )
+        })[0].listRealdata[count - 1]
+        radius =
+            Math.sqrt(
+                Math.pow(rightPath.lat - leftPath.lat, 2) +
+                    Math.pow(rightPath.lon - leftPath.lon, 2)
+            ) / 2
+
+        return radius * 100
     }
+
+    // get circleRadius(): number {
+    //     let radius = 0
+    //     const count = this.centerPath.length
+    //     if (count * this.defaultOptions.interval < 24) {
+    //         radius = (60 / this.defaultOptions.interval) * count
+    //     } else if (count * this.defaultOptions.interval < 48) {
+    //         radius =
+    //             60 +
+    //             ((100 - 60) / this.defaultOptions.interval) *
+    //                 (count - 24 / this.defaultOptions.interval)
+    //     } else if (count * this.defaultOptions.interval < 72) {
+    //         radius =
+    //             100 +
+    //             ((120 - 100) / this.defaultOptions.interval) *
+    //                 (count - 24 / this.defaultOptions.interval)
+    //     } else if (count * this.defaultOptions.interval < 96) {
+    //         radius =
+    //             120 +
+    //             ((150 - 120) / this.defaultOptions.interval) *
+    //                 (count - 24 / this.defaultOptions.interval)
+    //     }
+    //     return radius
+    // }
 
     /**
      * 获取台风终点位置的方向
@@ -712,11 +747,21 @@ class TyphoonCircle {
         // )
         // 方式2:
         const rightPath = this.groupPath.filter((temp) => {
-            return temp.tyPathType === 'r' && temp.tyPathMarking === 0 && temp.groupBp === 10
+            return (
+                temp.tyPathType === 'r' &&
+                temp.tyPathMarking === 0 &&
+                temp.groupBp === 10 &&
+                temp.isBpIncrease === false
+            )
         })[0].listRealdata[count - 1]
 
         const leftPath = this.groupPath.filter((temp) => {
-            return temp.tyPathType === 'l' && temp.tyPathMarking === 0 && temp.groupBp === 10
+            return (
+                temp.tyPathType === 'l' &&
+                temp.tyPathMarking === 0 &&
+                temp.groupBp === 10 &&
+                temp.isBpIncrease === false
+            )
         })[0].listRealdata[count - 1]
 
         const rightPoint: L.LatLng = new L.LatLng(rightPath.lat, rightPath.lon)
@@ -740,11 +785,21 @@ class TyphoonCircle {
         const count = this.centerPath.length
         // 方式2:
         const rightPath = this.groupPath.filter((temp) => {
-            return temp.tyPathType === 'r' && temp.tyPathMarking === 0 && temp.groupBp === 10
+            return (
+                temp.tyPathType === 'r' &&
+                temp.tyPathMarking === 0 &&
+                temp.groupBp === 10 &&
+                temp.isBpIncrease === false
+            )
         })[0].listRealdata[count - 1]
 
         const leftPath = this.groupPath.filter((temp) => {
-            return temp.tyPathType === 'l' && temp.tyPathMarking === 0 && temp.groupBp === 10
+            return (
+                temp.tyPathType === 'l' &&
+                temp.tyPathMarking === 0 &&
+                temp.groupBp === 10 &&
+                temp.isBpIncrease === false
+            )
         })[0].listRealdata[count - 1]
 
         const rightPoint: L.LatLng = new L.LatLng(rightPath.lat, rightPath.lon)
@@ -806,7 +861,7 @@ class TyphoonCircle {
         //     stopAngle: 210,
         //     color: 'rgba(255,0,0,0.5)'
         // })
-        const dir = parseFloat(this.circleDir.toFixed(4)) - 2.5
+        const dir = parseFloat(this.circleDir.toFixed(4))
         return L.semiCircle(
             [
                 parseFloat(this.circleCenter.lat.toFixed(4)),
@@ -814,8 +869,8 @@ class TyphoonCircle {
             ],
             {
                 radius: this.circleRadius * 1000,
-                startAngle: dir - 90,
-                stopAngle: dir + 90,
+                startAngle: dir - 89.999,
+                stopAngle: dir + 89.999,
                 // color: '#34495e',
                 // fill: 'rgba(255,0,0,0.5)',
                 fillColor: '#34495e',
@@ -862,7 +917,13 @@ class TyphoonPolygon {
         const circle = new TyphoonCircle(this.tyGroupPath, 60)
         const semicircle = circle.semiCircle()
         semicircle.addTo(that.map)
-        circle.getCircleRadiusLine().addTo(that.map)
+        const circileRadiusLine = circle.getCircleRadiusLine()
+        circileRadiusLine.addTo(that.map)
+        const points = circileRadiusLine.getLatLngs()
+        points.forEach((element) => {
+            L.circle(element, { radius: 50 }).addTo(that.map)
+        })
+        L.circle(circle.circleCenter, { radius: 500 }).addTo(that.map)
     }
 }
 /**
