@@ -1590,11 +1590,12 @@ export default class TyGroupMap extends mixins(
         // 注意此处还需要对最后的圆根据切线进行横断切分
         const lastCircle2Poly = tempCenterPathLine.getLastRadiusCirle2Poly()
         const tyPolygon = new TyphoonPolygon(that.tyGroupLineList, mymap)
-        // TODO:[*] 22-03-02 此处会造成绘制多边形错误
-        tyPolygon.generateCircle(tyGroupPathLine)
+
         const poly = tyGroupPathLine.mergePolyCircle()
         // const lines = [...poly, ...lastCircle2Poly.getLatLngs()[0]]
         const lines = [...poly]
+        // TODO:[*] 22-03-02 此处会造成绘制多边形错误
+        tyPolygon.generateCircle(poly)
         // L.polygon([...lastCircle2Poly.getLatLngs(), ...poly], {
         // TODO:[-] 22-03-02 此处为集合路径的包络多边形绘制
         L.polygon(lines, {

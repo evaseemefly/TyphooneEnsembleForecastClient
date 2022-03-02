@@ -1017,8 +1017,8 @@ class TyphoonPolygon {
         const that = this
         const circle = new TyphoonCircle(this.tyGroupPath, 60)
         // 方法1:  使用描绘半圆的方式，会有一点偏差，暂时注释掉
-        // const semicircle = circle.semiCircle()
-        // semicircle.addTo(that.map)
+        const semicircle = circle.semiCircle()
+        semicircle.addTo(that.map)
         const lastCirclePoly = new TyphoonLastSemiCirclePolygon(
             circle.circleCenter,
             circle.circleRadius,
@@ -1029,7 +1029,7 @@ class TyphoonPolygon {
         // new L.Polyline(tyOutlinePoints).addTo(that.map)
         // lastCirclePoly.getOutterSemicirclePolylines().addTo(that.map)
         const circileRadiusLine = circle.getCircleRadiusLine()
-        circileRadiusLine.addTo(that.map)
+        // circileRadiusLine.addTo(that.map)
         const points = circileRadiusLine.getLatLngs()
         points.forEach((element) => {
             L.circle(element, { radius: 50 }).addTo(that.map)
