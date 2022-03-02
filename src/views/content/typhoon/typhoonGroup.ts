@@ -1,7 +1,8 @@
 import * as L from 'leaflet'
 // TODO:[-] 22-02-25 圆 -> 多边形
 import '@geoman-io/leaflet-geoman-free'
-import 'leaflet-semicircle'
+import 'leaflet-semicircle' // 绘制半圆
+import * as pointInPolygon from 'point-in-polygon' // 判断点是否在多边形中 - https://github.com/substack/point-in-polygon
 
 /*
 + 21-05-18 关于 tyGroupPath 相关的class
@@ -96,7 +97,7 @@ class TyGroupPathLine {
     tyGroupPathLines: Array<TyphoonComplexGroupRealDataMidModel>
     myMap: L.Map
     tyColorScale: any
-    protected tyGroupPolyLineLayer: L.Layer[]
+    public tyGroupPolyLineLayer: L.Layer[]
     polyColor = DEFAULT_COLOR
     tyGroupProPathCircles: { lat: number; lon: number; radius: number }[] = []
     // tyCenterPath:any
@@ -881,8 +882,108 @@ class TyphoonCircle {
         // }).setDirection(dir, 180)
     }
 }
+/**
+ * 台风最后的半径圆多边形
+ *
+ * @class TyphoonLastCirclePolygon
+ */
+class TyphoonLastSemiCirclePolygon {
+    groupPath: TyphoonComplexGroupRealDataMidModel[]
 
-class TyphoonOutLine {}
+    /**
+     *将圆切分为多边形的份数
+     *
+     * @type {number}
+     * @memberof TyphoonLastSemiCirclePolygon
+     */
+    circleSpliceNum: number
+
+    tyOutlinePolygon: L.Polygon
+    center: L.LatLng
+    radius: number
+    defaultOptions: {} = {}
+    constructor(
+        center: L.LatLng,
+        radius: number,
+        groupPath: TyphoonComplexGroupRealDataMidModel[],
+        circleSpliceNum: number,
+        tyOutlinePolygon: L.Polygon,
+        options?: any
+    ) {
+        this.center = center
+        this.radius = radius
+        this.groupPath = groupPath
+        this.circleSpliceNum = circleSpliceNum
+        this.tyOutlinePolygon = tyOutlinePolygon
+        this.defaultOptions = { ...this.defaultOptions, ...options }
+    }
+
+    /**
+     * 获取最后位置的中心圆
+     *
+     * @readonly
+     * @type {L.Circle}
+     * @memberof TyphoonLastSemiCirclePolygon
+     */
+    get lastCenterCircle(): L.Circle {
+        return new L.Circle(this.center, { radius: this.radius })
+    }
+
+    /**
+     * 最后位置的中心圆->多边形-> 点
+     *
+     * @readonly
+     * @type {L.Polygon}
+     * @memberof TyphoonLastSemiCirclePolygon
+     */
+    get lastCenterCirclePolyPoints(): L.LatLng[] {
+        return L.PM.Utils.circleToPolygon(
+            this.lastCenterCircle,
+            this.circleSpliceNum
+        ).getLatLngs()[0]
+    }
+
+    /**
+     * 最后位置的中心圆 -> 多边形 -> 点 -> 多边形
+     *
+     * @readonly
+     * @type {L.Polygon}
+     * @memberof TyphoonLastSemiCirclePolygon
+     */
+    get lastCenterCirclePolylines(): L.Polygon {
+        return new L.Polygon(this.lastCenterCirclePolyPoints)
+    }
+
+    /**
+     * 获取与台风轮廓多边形不相交的最后中心位置的半圆的外侧半圆
+     *
+     * @return {*}  {L.Polyline}
+     * @memberof TyphoonLastSemiCirclePolygon
+     */
+    public getOutterSemicirclePolylines(): L.Polyline {
+        //
+        const that = this
+        const outterPoints: L.LatLng[] = []
+        this.lastCenterCirclePolyPoints.forEach((temp: L.LatLng) => {
+            const isOutPoly = false
+            // isOutPoly = pointInPolygon(temp, that.lastCenterCirclePolylines)
+            if (!isOutPoly) {
+                outterPoints.push(temp)
+            }
+        })
+        return new L.Polyline(outterPoints)
+    }
+
+    /**
+     * 获取与台风轮廓多边形不相交的最后中心位置的半圆的内侧半圆
+     *
+     * @return {*}  {L.Polyline}
+     * @memberof TyphoonLastSemiCirclePolygon
+     */
+    public getInnerSemicirclePolylines(): L.Polyline {}
+}
+
+class TyphoonOutLinePolygon {}
 
 /**
  * 台风多边形
@@ -912,11 +1013,21 @@ class TyphoonPolygon {
         return centerGroupPath[0]
     }
 
-    generateCircle(): void {
+    generateCircle(tyOutlinePoints: L.LatLng[]): void {
         const that = this
         const circle = new TyphoonCircle(this.tyGroupPath, 60)
-        const semicircle = circle.semiCircle()
-        semicircle.addTo(that.map)
+        // 方法1:  使用描绘半圆的方式，会有一点偏差，暂时注释掉
+        // const semicircle = circle.semiCircle()
+        // semicircle.addTo(that.map)
+        const lastCirclePoly = new TyphoonLastSemiCirclePolygon(
+            circle.circleCenter,
+            circle.circleRadius,
+            this.tyGroupPath,
+            60,
+            new L.Polyline(tyOutlinePoints)
+        )
+        // new L.Polyline(tyOutlinePoints).addTo(that.map)
+        // lastCirclePoly.getOutterSemicirclePolylines().addTo(that.map)
         const circileRadiusLine = circle.getCircleRadiusLine()
         circileRadiusLine.addTo(that.map)
         const points = circileRadiusLine.getLatLngs()
@@ -1038,5 +1149,7 @@ export {
     TyGroupPathLine,
     TyGroupCenterPathLine,
     TyphoonPolygon,
-    TyphoonCircle
+    TyphoonOutLinePolygon,
+    TyphoonCircle,
+    TyphoonLastSemiCirclePolygon
 }

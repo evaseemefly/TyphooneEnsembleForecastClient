@@ -1582,6 +1582,7 @@ export default class TyGroupMap extends mixins(
         const that = this
         const mymap: L.Map = this.$refs.basemap['mapObject']
         const tyGroupPathLine = new TyGroupPathLine(mymap, that.tyGroupLineList)
+        // 只加载了集合路径的 line，不包含集合路径包络多边形
         const tempTyGroupPolyLineLayerGroup = tyGroupPathLine.addPolyLines2MapByGroup()
         // TODO:[-] 22-02-25 尝试将概率圆+路径包络拼接成一个图形
         // tyGroupPathLine.addPathOutline2Map()
@@ -1589,11 +1590,13 @@ export default class TyGroupMap extends mixins(
         // 注意此处还需要对最后的圆根据切线进行横断切分
         const lastCircle2Poly = tempCenterPathLine.getLastRadiusCirle2Poly()
         const tyPolygon = new TyphoonPolygon(that.tyGroupLineList, mymap)
-        tyPolygon.generateCircle()
+        // TODO:[*] 22-03-02 此处会造成绘制多边形错误
+        tyPolygon.generateCircle(tyGroupPathLine)
         const poly = tyGroupPathLine.mergePolyCircle()
         // const lines = [...poly, ...lastCircle2Poly.getLatLngs()[0]]
         const lines = [...poly]
         // L.polygon([...lastCircle2Poly.getLatLngs(), ...poly], {
+        // TODO:[-] 22-03-02 此处为集合路径的包络多边形绘制
         L.polygon(lines, {
             color: '#34495e',
             opacity: 0,
