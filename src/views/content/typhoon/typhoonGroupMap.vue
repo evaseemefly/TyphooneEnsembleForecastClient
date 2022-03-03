@@ -1585,24 +1585,26 @@ export default class TyGroupMap extends mixins(
         // 只加载了集合路径的 line，不包含集合路径包络多边形
         const tempTyGroupPolyLineLayerGroup = tyGroupPathLine.addPolyLines2MapByGroup()
         // TODO:[-] 22-02-25 尝试将概率圆+路径包络拼接成一个图形
-        // tyGroupPathLine.addPathOutline2Map()
+        tyGroupPathLine.addPathOutline2Map()
         const tempCenterPathLine = new TyGroupCenterPathLine(mymap, that.tyGroupLineList)
         // 注意此处还需要对最后的圆根据切线进行横断切分
         const lastCircle2Poly = tempCenterPathLine.getLastRadiusCirle2Poly()
-        const tyPolygon = new TyphoonPolygon(that.tyGroupLineList, mymap)
+        const tyPolygon = new TyphoonPolygon(tyGroupPathLine.tyGroupPathLines, mymap)
 
-        const poly = tyGroupPathLine.mergePolyCircle()
+        // 获取台风外侧的包络
+        const outlineLatlngs = tyGroupPathLine.getOutLinePolyLatlng()
         // const lines = [...poly, ...lastCircle2Poly.getLatLngs()[0]]
-        const lines = [...poly]
-        // TODO:[*] 22-03-02 此处会造成绘制多边形错误
-        tyPolygon.generateCircle(poly)
-        // L.polygon([...lastCircle2Poly.getLatLngs(), ...poly], {
+        const outlines = [...outlineLatlngs]
         // TODO:[-] 22-03-02 此处为集合路径的包络多边形绘制
-        L.polygon(lines, {
-            color: '#34495e',
-            opacity: 0,
-            fillOpacity: 0.8
-        }).addTo(mymap)
+        // L.polygon(outlines, {
+        //     color: '#34495e',
+        //     opacity: 0,
+        //     fillOpacity: 0.8
+        // }).addTo(mymap)
+        // TODO:[*] 22-03-02 此处会造成绘制多边形错误
+        tyPolygon.generateCircle(outlineLatlngs)
+        // L.polygon([...lastCircle2Poly.getLatLngs(), ...poly], {
+
         this.currentGroupPathPolyLineLayerGroup = tempTyGroupPolyLineLayerGroup
     }
     loadCenterTyphoonPoints(): void {

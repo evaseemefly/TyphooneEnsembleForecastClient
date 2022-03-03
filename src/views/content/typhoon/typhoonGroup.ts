@@ -21,6 +21,7 @@ import {
 } from '@/middle_model/typhoon'
 import { TyphoonCircleStatus } from '@/common/circleStatus'
 import moment from 'moment'
+import { getTaskStateVal } from '@/enum/task'
 export interface ITyGroupPathOptions {
     tyCode: string
     timestamp: string
@@ -205,10 +206,83 @@ class TyGroupPathLine {
                 arr1.push(temp)
             }
         })
-        // 对于 arr2 对 数字进行排序
+        // [r,l]
+        // 对于 arr2 对 数字进行排序  升序排列
         arr2 = arr2.sort((a, b) => {
             return a.tyPathMarking - b.tyPathMarking
         })
+        console.log('------')
+        //以下均为测试内容
+        arr2.forEach((temp) => {
+            if ((temp.tyPathType === 'l' || temp.tyPathType === 'r') && temp.tyPathMarking === 0) {
+                const logObj = {}
+                logObj['id'] = temp.gpId
+                logObj['index'] = arr2.findIndex((val) => {
+                    return val.gpId === temp.gpId
+                })
+
+                console.log(temp.gpId)
+                console.log(
+                    arr2.findIndex((val) => {
+                        return val.gpId === temp.gpId
+                    })
+                )
+            }
+        })
+        // TODO:[-] 22-03-03 注意 l 与 r 的tyPathMarking =0 的情况都是最外侧的路径，需要提取并排序
+        // 单独找到 ty_marking =0 的放到末尾
+        // 此处需要注意，由于有不同的气压的变化，所以路径需要剔除 p00,p05,p10,p_05,p_10
+        // 方式1:目前只能剔除一个，实际还剩余5种情况
+        // const leftOuttestIndex: number = arr2.findIndex((temp) => {
+        //     return temp.tyPathType === 'l' && temp.tyPathMarking === 0
+        // })
+        // const leftOuttestObj = arr2[leftOuttestIndex]
+        // arr2.splice(leftOuttestIndex, 1)
+        // arr2.push(leftOuttestObj)
+        // const rightOuttestIndex: number = arr2.findIndex((temp) => {
+        //     return temp.tyPathType === 'r' && temp.tyPathMarking === 0
+        // })
+        // const rightOuttestObj = arr2[rightOuttestIndex]
+        // arr2.splice(rightOuttestIndex, 1)
+        // arr2.push(rightOuttestObj)
+        // --
+        // 方式2:
+        const arr2New = [...arr2]
+        arr2.forEach((val, index) => {
+            // const index
+            // if (val.tyPathType === 'l' && val.tyPathMarking === 0) {
+            //     arr2New.splice(index, 1)
+            //     arr2New.push(val)
+            // } else if (val.tyPathType === 'r' && val.tyPathMarking === 0) {
+            //     arr2.splice(index, 1)
+            //     arr2.push(val)
+            // }
+            if (val.gpId === 9644) {
+                console.log('-')
+            }
+            if ((val.tyPathType === 'l' || val.tyPathType === 'r') && val.tyPathMarking === 0) {
+                const indexSpliceObj = arr2New.findIndex((temp) => {
+                    return temp.gpId === val.gpId
+                })
+
+                const spliceObj = arr2New.splice(indexSpliceObj, 1)[0]
+                arr2New.push(spliceObj)
+            }
+        })
+        console.log('sort后')
+        arr2New.forEach((temp) => {
+            if ((temp.tyPathType === 'l' || temp.tyPathType === 'r') && temp.tyPathMarking === 0) {
+                console.log(temp.gpId)
+                console.log(
+                    arr2New.findIndex((val) => {
+                        return val.gpId === temp.gpId
+                    })
+                )
+            }
+        })
+        console.log('-----')
+        // -----
+
         arr1 = arr1.sort((a, b) => {
             if (a.tyPathType === 'c' && b.tyPathType !== 'c') {
                 return -1
@@ -220,19 +294,49 @@ class TyGroupPathLine {
                 return 0
             }
         })
-        this.tyGroupPathLines = [...arr1, ...arr2]
+        this.tyGroupPathLines = [...arr1, ...arr2New]
+        //
+        console.log('合并数组后----')
+        this.tyGroupPathLines.forEach((temp) => {
+            if ((temp.tyPathType === 'l' || temp.tyPathType === 'r') && temp.tyPathMarking === 0) {
+                console.log(temp.gpId)
+                console.log(
+                    arr2New.findIndex((val) => {
+                        return val.gpId === temp.gpId
+                    })
+                )
+            }
+        })
+        console.log('-----')
         // TODO:[-] 21-05-13 新加入一个对其倒叙，因为此种方式排序完的数组，中间路径会出现在最前，也就是最先被叠加
         this.tyGroupPathLines = this.tyGroupPathLines.sort((a, b) => {
             return -1
         })
+        console.log('倒叙排列后')
+        this.tyGroupPathLines.forEach((temp) => {
+            if ((temp.tyPathType === 'l' || temp.tyPathType === 'r') && temp.tyPathMarking === 0) {
+                console.log(temp.gpId)
+                console.log(
+                    arr2.findIndex((val) => {
+                        return val.gpId === temp.gpId
+                    })
+                )
+            }
+        })
+        console.log('-----')
     }
 
     addPathOutline2Map(): void {
-        this.mergePolyCircle()
+        // this.mergePolyCircle()
     }
 
-    // 合并多边形与圆形
-    mergePolyCircle(): L.LatLng[] {
+    /**
+     * 获取最外侧台风路径的包络
+     *
+     * @return {*}  {L.LatLng[]}
+     * @memberof TyGroupPathLine
+     */
+    getOutLinePolyLatlng(): L.LatLng[] {
         /*
           大体设计
                将所有路径将排序后的路径提取最外侧的路径形成多边形
@@ -243,7 +347,7 @@ class TyGroupPathLine {
         // step1: 描绘最外侧的轮廓，通过多边形
         // const pathOutter1 = this.tyGroupPathLines[0]
         const pathOutter1 = this.tyGroupPathLines.find((temp) => {
-            return temp.tyPathType === 'r' && temp.groupBp === 0 && temp.tyPathMarking === 6
+            return temp.tyPathType === 'r' && temp.groupBp === 0 && temp.tyPathMarking === 0
         })
         const latlng1 = pathOutter1.listRealdata.sort((a, b) => {
             if (a.lat > b.lat || a.lon > b.lon) {
@@ -254,7 +358,7 @@ class TyGroupPathLine {
         })
         // const pathOutter2 = this.tyGroupPathLines[1]
         const pathOutter2 = this.tyGroupPathLines.find((temp) => {
-            return temp.tyPathType === 'l' && temp.groupBp === 0 && temp.tyPathMarking === 6
+            return temp.tyPathType === 'l' && temp.groupBp === 0 && temp.tyPathMarking === 0
         })
         const latlng2 = pathOutter2.listRealdata.sort((a, b) => {
             if (a.lat > b.lat || a.lon > b.lon) {
@@ -505,7 +609,7 @@ class TyGroupCenterPathLine extends TyGroupPathLine {
             })
             // tyProRadiusCircleLayerGroup = L.layerGroup([...cirleLayers]).addTo(mymap)
         }
-        this.mergePolyCircle()
+        // this.getOutLinePolyLatlng()
         const circle2poly = L.PM.Utils.circleToPolygon(cirleLayers[1], 60)
         return tyProRadiusCircleLayerGroup
     }
@@ -855,6 +959,21 @@ class TyphoonCircle {
         const circlePolyLatlngs: L.LatLng[] = this.getPolygon().getLatLngs()
     }
 
+    /**
+     * + 22-03-03 获取最后时刻的中心路径圆
+     *
+     * @return {*}  {L.Circle}
+     * @memberof TyphoonCircle
+     */
+    getLastCenterCircle(): L.Circle {
+        return new L.Circle(this.circleCenter, {
+            radius: this.circleRadius * 1000,
+            fillColor: '#34495e',
+            opacity: 0,
+            fillOpacity: 0.8
+        })
+    }
+
     semiCircle(): any {
         // const semiCircle = L.semiCircle([this.circleCenter.lat, this.circleCenter.lng], {
         //     radius: 500,
@@ -1016,9 +1135,10 @@ class TyphoonPolygon {
     generateCircle(tyOutlinePoints: L.LatLng[]): void {
         const that = this
         const circle = new TyphoonCircle(this.tyGroupPath, 60)
+        circle.getLastCenterCircle().addTo(that.map)
         // 方法1:  使用描绘半圆的方式，会有一点偏差，暂时注释掉
         const semicircle = circle.semiCircle()
-        semicircle.addTo(that.map)
+        // semicircle.addTo(that.map)
         const lastCirclePoly = new TyphoonLastSemiCirclePolygon(
             circle.circleCenter,
             circle.circleRadius,
