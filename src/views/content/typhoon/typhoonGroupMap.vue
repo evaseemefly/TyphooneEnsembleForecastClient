@@ -1596,11 +1596,11 @@ export default class TyGroupMap extends mixins(
         // const lines = [...poly, ...lastCircle2Poly.getLatLngs()[0]]
         const outlines = [...outlineLatlngs]
         // TODO:[-] 22-03-02 此处为集合路径的包络多边形绘制
-        // L.polygon(outlines, {
-        //     color: '#34495e',
-        //     opacity: 0,
-        //     fillOpacity: 0.8
-        // }).addTo(mymap)
+        L.polygon(outlines, {
+            color: '#34495e',
+            opacity: 0,
+            fillOpacity: 0.4
+        }).addTo(mymap)
         // TODO:[*] 22-03-02 此处会造成绘制多边形错误
         tyPolygon.generateCircle(outlineLatlngs)
         // L.polygon([...lastCircle2Poly.getLatLngs(), ...poly], {

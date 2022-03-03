@@ -1113,7 +1113,7 @@ class TyphoonOutLinePolygon {}
  */
 class TyphoonPolygon {
     tyCircle: TyphoonCircle
-    tyOutLine: TyphoonOutLine
+    tyOutLine: TyphoonOutLinePolygon
     tyGroupPath: TyphoonComplexGroupRealDataMidModel[]
     map: L.Map
     // constructor(circle: TyphoonCircle, outline: TyphoonOutLine) {
@@ -1132,6 +1132,13 @@ class TyphoonPolygon {
         return centerGroupPath[0]
     }
 
+    /**
+     * * 22-03-03
+     * 生成台风包络 最外侧路径多边形 + 终点圆
+     *
+     * @param {L.LatLng[]} tyOutlinePoints
+     * @memberof TyphoonPolygon
+     */
     generateCircle(tyOutlinePoints: L.LatLng[]): void {
         const that = this
         const circle = new TyphoonCircle(this.tyGroupPath, 60)
@@ -1151,10 +1158,10 @@ class TyphoonPolygon {
         const circileRadiusLine = circle.getCircleRadiusLine()
         // circileRadiusLine.addTo(that.map)
         const points = circileRadiusLine.getLatLngs()
-        points.forEach((element) => {
-            L.circle(element, { radius: 50 }).addTo(that.map)
-        })
-        L.circle(circle.circleCenter, { radius: 500 }).addTo(that.map)
+        // points.forEach((element) => {
+        //     L.circle(element, { radius: 50 }).addTo(that.map)
+        // })
+        // L.circle(circle.circleCenter, { radius: 500 }).addTo(that.map)
     }
 }
 /**
