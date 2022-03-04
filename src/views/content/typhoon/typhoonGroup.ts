@@ -778,31 +778,33 @@ class TyphoonCircle {
      */
     get circleRadius(): number {
         let radius = 0
-        const count = this.centerPath.length
-        const rightPath = this.groupPath.filter((temp) => {
-            return (
-                temp.tyPathType === 'r' &&
-                temp.tyPathMarking === 0 &&
-                temp.groupBp === 10 &&
-                temp.isBpIncrease === false
-            )
-        })[0].listRealdata[count - 1]
+        // const count = this.centerPath.length
+        // const rightPath = this.groupPath.filter((temp) => {
+        //     return (
+        //         temp.tyPathType === 'r' &&
+        //         temp.tyPathMarking === 0 &&
+        //         temp.groupBp === 10 &&
+        //         temp.isBpIncrease === false
+        //     )
+        // })[0].listRealdata[count - 1]
 
-        const leftPath = this.groupPath.filter((temp) => {
-            return (
-                temp.tyPathType === 'l' &&
-                temp.tyPathMarking === 0 &&
-                temp.groupBp === 10 &&
-                temp.isBpIncrease === false
-            )
-        })[0].listRealdata[count - 1]
+        // const leftPath = this.groupPath.filter((temp) => {
+        //     return (
+        //         temp.tyPathType === 'l' &&
+        //         temp.tyPathMarking === 0 &&
+        //         temp.groupBp === 10 &&
+        //         temp.isBpIncrease === false
+        //     )
+        // })[0].listRealdata[count - 1]
+        const rightPath: L.LatLng = this.getCircleRadiusLine().getLatLngs()[0]
+        const leftPath: L.LatLng = this.getCircleRadiusLine().getLatLngs()[1]
         radius =
             Math.sqrt(
                 Math.pow(rightPath.lat - leftPath.lat, 2) +
-                    Math.pow(rightPath.lon - leftPath.lon, 2)
+                    Math.pow(rightPath.lng - leftPath.lng, 2)
             ) / 2
 
-        return radius * 100
+        return radius * 111
     }
 
     // get circleRadius(): number {
