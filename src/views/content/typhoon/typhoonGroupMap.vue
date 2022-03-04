@@ -594,6 +594,7 @@ export default class TyGroupMap extends mixins(
     }
     // TODO:[-] + 21-05-31 中间路径的 cirleLayers 集合
     tyGroupCenterCirleLayers: L.Layer[] = []
+    tyOutlineGroupLayers: L.LayerGroup = null
     // + 21-05-12 台风集合预报路径的概率半径集合 24: 60, 48:100,72:120,96:150,120:180
     tyGroupProPathCircles: { lat: number; lon: number; radius: number }[] = []
     currentStationSurgeList: StationSurgeMiModel[] = []
@@ -901,12 +902,20 @@ export default class TyGroupMap extends mixins(
         this.groupLayerSurgeStationDivForm = null
     }
 
-    // TODO:[-] 21-10-08 清除当前台风折线群组 layer
+    // 21-10-08 清除当前台风折线群组 layer
     clearGroupLayer(tempPolyLine: L.LayerGroup | L.Marker | null): void {
         const mymap: L.Map = this.$refs.basemap['mapObject']
         if (tempPolyLine) {
             // mymap.remove(tempPolyLine)
             mymap.removeLayer(tempPolyLine)
+        }
+    }
+
+    // + 22-03-04 清除当前台风的外侧包络layers
+    clearTyOutlineGroupLayer(): void {
+        if (this.tyOutlineGroupLayers != null) {
+            const mymap: L.Map = this.$refs.basemap['mapObject']
+            mymap.removeLayer(this.tyOutlineGroupLayers)
         }
     }
 
@@ -1437,6 +1446,7 @@ export default class TyGroupMap extends mixins(
             this.clearGroupLayer(this.currentGroupPathPolyLineLayerGroup)
             this.clearGroupLayer(this.currentCenterGroupPathPolyLineLayerGroup)
             this.clearGroupLayer(this.currentGroupPathPulsingLayerGroup)
+            this.clearTyOutlineGroupLayer()
         }
         if (this.tyRealDataDivIcon) {
             this.clearTyRealDataLayer()
@@ -1585,26 +1595,15 @@ export default class TyGroupMap extends mixins(
         // 只加载了集合路径的 line，不包含集合路径包络多边形
         const tempTyGroupPolyLineLayerGroup = tyGroupPathLine.addPolyLines2MapByGroup()
         // TODO:[-] 22-02-25 尝试将概率圆+路径包络拼接成一个图形
-        tyGroupPathLine.addPathOutline2Map()
+        // tyGroupPathLine.addPathOutline2Map()
         const tempCenterPathLine = new TyGroupCenterPathLine(mymap, that.tyGroupLineList)
         // 注意此处还需要对最后的圆根据切线进行横断切分
         const lastCircle2Poly = tempCenterPathLine.getLastRadiusCirle2Poly()
-        const tyPolygon = new TyphoonPolygon(tyGroupPathLine.tyGroupPathLines, mymap)
-
+        const tyPolygon = new TyphoonPolygon(that.tyGroupLineList, mymap)
         // 获取台风外侧的包络
-        const outlineLatlngs = tyGroupPathLine.getOutLinePolyLatlng()
-        // const lines = [...poly, ...lastCircle2Poly.getLatLngs()[0]]
-        const outlines = [...outlineLatlngs]
-        // TODO:[-] 22-03-02 此处为集合路径的包络多边形绘制
-        L.polygon(outlines, {
-            color: '#34495e',
-            opacity: 0,
-            fillOpacity: 0.4
-        }).addTo(mymap)
         // TODO:[*] 22-03-02 此处会造成绘制多边形错误
-        tyPolygon.generateCircle(outlineLatlngs)
-        // L.polygon([...lastCircle2Poly.getLatLngs(), ...poly], {
-
+        this.tyOutlineGroupLayers = tyPolygon.generateCircle()
+        // const tyOutLineGroupLayer = tyPolygon.generateCircle(outlines)
         this.currentGroupPathPolyLineLayerGroup = tempTyGroupPolyLineLayerGroup
     }
     loadCenterTyphoonPoints(): void {

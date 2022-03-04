@@ -180,6 +180,20 @@ class TyGroupPathLine {
         return this.tyGroupPolyLineLayer
     }
 
+    /**
+     * + 22-03-04
+     * 获取台风集合路径外侧路径的多边形
+     * @return {*}  {L.Polygon}
+     * @memberof TyGroupPathLine
+     */
+    public getOutLinePoly(): L.Polygon {
+        return new L.Polygon(this.getOutLinePolyLatlng(), {
+            color: '#34495e',
+            opacity: 0,
+            fillOpacity: 0.4
+        })
+    }
+
     public addPolyLines2MapByGroup(): L.LayerGroup<any> {
         const tyGroupPolyLineLayers = this.getTyGroupPolyLineLayers()
         const tempTyGroupPolyLineLayerGroup = L.layerGroup([...tyGroupPolyLineLayers]).addTo(
@@ -771,6 +785,7 @@ class TyphoonCircle {
 
     /**
      * 获取台风终点中心位置的半径
+     * 单位 km
      *
      * @readonly
      * @type {number}
@@ -800,11 +815,11 @@ class TyphoonCircle {
         const leftPath: L.LatLng = this.getCircleRadiusLine().getLatLngs()[1]
         radius =
             Math.sqrt(
-                Math.pow(rightPath.lat - leftPath.lat, 2) +
-                    Math.pow(rightPath.lng - leftPath.lng, 2)
+                Math.pow((rightPath.lat - leftPath.lat) * 111, 2) +
+                    Math.pow((rightPath.lng - leftPath.lng) * 111, 2)
             ) / 2
 
-        return radius * 111
+        return radius
     }
 
     // get circleRadius(): number {
@@ -1141,29 +1156,29 @@ class TyphoonPolygon {
      * @param {L.LatLng[]} tyOutlinePoints
      * @memberof TyphoonPolygon
      */
-    generateCircle(tyOutlinePoints: L.LatLng[]): void {
+    generateCircle(tyOutlinePoints: L.LatLng[] = []): L.LayerGroup {
         const that = this
-        const circle = new TyphoonCircle(this.tyGroupPath, 60)
-        circle.getLastCenterCircle().addTo(that.map)
+        const circleTy = new TyphoonCircle(this.tyGroupPath, 60)
+        const polyTyGroupPath = new TyGroupPathLine(this.map, this.tyGroupPath)
+        // 台风最外侧路径多边形
+        const polyTyGroupPathLayer = polyTyGroupPath.getOutLinePoly()
+        // 台风终点圆形
+        const circleTyLayer = circleTy.getLastCenterCircle()
+        const groupLayers = new L.LayerGroup([circleTyLayer, polyTyGroupPathLayer])
         // 方法1:  使用描绘半圆的方式，会有一点偏差，暂时注释掉
-        const semicircle = circle.semiCircle()
+        const semicircle = circleTy.semiCircle()
         // semicircle.addTo(that.map)
         const lastCirclePoly = new TyphoonLastSemiCirclePolygon(
-            circle.circleCenter,
-            circle.circleRadius,
+            circleTy.circleCenter,
+            circleTy.circleRadius,
             this.tyGroupPath,
             60,
             new L.Polyline(tyOutlinePoints)
         )
         // new L.Polyline(tyOutlinePoints).addTo(that.map)
         // lastCirclePoly.getOutterSemicirclePolylines().addTo(that.map)
-        const circileRadiusLine = circle.getCircleRadiusLine()
-        // circileRadiusLine.addTo(that.map)
-        const points = circileRadiusLine.getLatLngs()
-        // points.forEach((element) => {
-        //     L.circle(element, { radius: 50 }).addTo(that.map)
-        // })
-        // L.circle(circle.circleCenter, { radius: 500 }).addTo(that.map)
+        const circileRadiusLine = circleTy.getCircleRadiusLine()
+        return groupLayers.addTo(that.map)
     }
 }
 /**
