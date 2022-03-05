@@ -197,6 +197,12 @@ import 'mapbox-gl/dist/mapbox-gl'
 // github:https://github.com/mapbox/mapbox-gl-leaflet
 // TODO:[-] WATCH!注意此处安装了 mapbox-gl-leaflet 不要参考 github 官网上的引入方式，该库名称为 mapbox-gl-leaflet
 import 'mapbox-gl-leaflet'
+
+import 'leaflet.heat'
+import * as heat from 'leaflet.heat/dist/leaflet-heat'
+import 'heatmap.js'
+import HeatmapOverlay from 'heatmap.js/plugins/leaflet-heatmap'
+
 // + mapbox的leaflet插件
 // import 'mapbox.js'
 // window.mapboxgl = mapboxgl
@@ -218,8 +224,7 @@ import {
 // github:https://github.com/Leaflet/Leaflet.heat
 // npm:https://www.npmjs.com/package/leaflet.heat
 // import {}  "leaflet.heat";
-// 注意此处的引用方式，极其蛋疼
-import HeatmapOverlay from 'heatmap.js/plugins/leaflet-heatmap'
+
 // TODO:[-] 21-04-20 加入的 scaleColor
 import { ScaleColor, TyGroupPathScaleColor } from '@/common/scaleColor'
 // 此种方式较为繁琐：https://www.patrick-wied.at/static/heatmapjs/example-heatmap-leaflet.html
@@ -269,6 +274,7 @@ import { CanvasLayerMidModel } from '@/middle_model/geo'
 // + 21-06-8 加入 station 的 Mid model
 import { IconFormMinStationSurgeMidModel, StationSurgeMiModel } from '@/middle_model/station'
 import { getDaysNum } from '@/common/date'
+import { SplitLine, SplitGroupPathLine } from '@/common/line2points'
 
 // 各类工具类
 import { clearRasterFromMap } from '@/util/map'
@@ -1600,6 +1606,75 @@ export default class TyGroupMap extends mixins(
         // 注意此处还需要对最后的圆根据切线进行横断切分
         const lastCircle2Poly = tempCenterPathLine.getLastRadiusCirle2Poly()
         const tyPolygon = new TyphoonPolygon(that.tyGroupLineList, mymap)
+        // TODO:[-] 22-03-04 获取所有的路径折线
+        const allPathPolyline: L.Polyline[] = tyGroupPathLine.getTyGroupPolyLineLayers()
+        // --------
+        // 获取全部路径的散点
+        const allPathSplitPoints: L.LatLng[] = []
+        const allPathSplitHeadDatas: { lat: number; lng: number; count: number }[] = []
+        // 方式1: 测试在每条 grouppath 中插值出散点，将 polyline -> points
+        // for (let index = 0; index < allPathPolyline.length; index++) {
+        //     const splictLine = new SplitLine(allPathPolyline[index])
+
+        //     const splictLine2PointsList: L.LatLng[] = splictLine.getSplitLatlngs(0.1)
+
+        //     splictLine2PointsList.forEach((temp) => {
+        //         // 在地图上打点，测试使用
+        //         // const tempCircle = new L.Circle(temp)
+        //         // tempCircle.addTo(mymap)
+        //         allPathSplitHeadDatas.push({
+        //             lat: temp.lat,
+        //             lng: temp.lng,
+        //             count: 2
+        //         })
+        //     })
+        //     allPathSplitPoints = [...allPathSplitPoints, ...splictLine2PointsList]
+        // }
+
+        // ----
+
+        const splictLine = new SplitGroupPathLine(that.tyGroupLineList)
+
+        const splictLine2PointsList = splictLine.getSplitGroupModel(0.2)
+
+        splictLine2PointsList.forEach((temp) => {
+            // 在地图上打点，测试使用
+            // const tempCircle = new L.Circle(temp)
+            // tempCircle.addTo(mymap)
+            const count = 7
+            allPathSplitHeadDatas.push({
+                lat: temp.latlng.lat,
+                lng: temp.latlng.lng,
+                count: temp.tyMarking === 0 ? 0 : Math.pow(count - temp.tyMarking, 2) * 10
+            })
+        })
+
+        //
+        const heatConfig = {
+            // 此半径可以有效的滤掉由于 status = 2 造成的应该滤掉区域
+            radius: 0.25,
+            // radius: 0.01,
+            maxOpacity: 0.8,
+            minOpacity: 0,
+            blur: 0.35,
+            scaleRadius: true,
+            useLocalExtrema: true,
+            latField: 'lat',
+            lngField: 'lng',
+            valueField: 'count'
+        }
+        const heatData = {
+            max: 500,
+            data: allPathSplitHeadDatas
+        }
+        // let heatLayer: L.heatLayer = null
+
+        const heatLayer = new HeatmapOverlay(heatConfig)
+        // heatLayer = L.heatLayer(heatConfig)
+
+        heatLayer.setData(heatData)
+        const testHeat = heatLayer.addTo(mymap)
+        // --------
         // 获取台风外侧的包络
         // TODO:[*] 22-03-02 此处会造成绘制多边形错误
         this.tyOutlineGroupLayers = tyPolygon.generateCircle()

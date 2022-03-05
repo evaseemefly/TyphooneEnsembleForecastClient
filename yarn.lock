@@ -7817,7 +7817,7 @@
 
 "heatmap.js@^2.0.5":
   "integrity" "sha1-Rm07hlE/XUkRKknSVwCrJzAUkVM="
-  "resolved" "https://registry.npm.taobao.org/heatmap.js/download/heatmap.js-2.0.5.tgz"
+  "resolved" "https://registry.npmjs.org/heatmap.js/-/heatmap.js-2.0.5.tgz"
   "version" "2.0.5"
 
 "hex-color-regex@^1.1.0":
@@ -9150,7 +9150,7 @@
 
 "leaflet.heat@^0.2.0":
   "integrity" "sha1-EJ2M9Ybwre5B8Fr/Ax4np3/swik="
-  "resolved" "https://registry.npm.taobao.org/leaflet.heat/download/leaflet.heat-0.2.0.tgz"
+  "resolved" "https://registry.npmjs.org/leaflet.heat/-/leaflet.heat-0.2.0.tgz"
   "version" "0.2.0"
 
 "leaflet@^0.7.3":
@@ -13453,6 +13453,11 @@
   "integrity" "sha1-CLh+iPTTrWtorgZ95AD0N8HtTaM="
   "resolved" "https://registry.npm.taobao.org/simple-xml-dom/download/simple-xml-dom-1.0.0.tgz"
   "version" "1.0.0"
+
+"simpleheat@^0.4.0":
+  "integrity" "sha1-4t6NRUj88aaWC2Nr+pOdBbzUmns="
+  "resolved" "https://registry.npmjs.org/simpleheat/-/simpleheat-0.4.0.tgz"
+  "version" "0.4.0"
 
 "skmeans@0.9.7":
   "integrity" "sha512-hNj1/oZ7ygsfmPZ7ZfN5MUBRoGg1gtpnImuJBgLO0ljQ67DtJuiQaiYdS4lUA6s0KCwnPhGivtC/WRwIZLkHyg=="
