@@ -985,7 +985,7 @@ class TyphoonCircle {
     getLastCenterCircle(): L.Circle {
         return new L.Circle(this.circleCenter, {
             radius: this.circleRadius * 1000,
-            fillColor: '#34495e',
+            fillColor: '#00968798',
             opacity: 0,
             fillOpacity: 0.8
         })

@@ -89,6 +89,11 @@ class SplitLine {
     }
 }
 
+/**
+ * 切分集合路径
+ *
+ * @class SplitGroupPathLine
+ */
 class SplitGroupPathLine {
     tyGroupPathLines: TyphoonComplexGroupRealDataMidModel[]
     constructor(groupLines: TyphoonComplexGroupRealDataMidModel[]) {
@@ -107,7 +112,19 @@ class SplitGroupPathLine {
         })
     }
 
-    private _initSplit(
+    /**
+     * 对集合路径根据 spliceUnit 进行插值，并返回插值后的集合(不再按照group进行分组)
+     *
+     * @private
+     * @param {number} spliceUnit 插值的单位(°)
+     * @return {*}  {{
+     *         latlng: L.LatLng
+     *         tyType: string
+     *         tyMarking: number
+     *     }[]}
+     * @memberof SplitGroupPathLine
+     */
+    private _interpolateLines(
         spliceUnit: number
     ): {
         latlng: L.LatLng
@@ -119,8 +136,6 @@ class SplitGroupPathLine {
             tyType: string
             tyMarking: number
         }[] = []
-        // const count = this.getPolyLatlng.length
-        // const polyPoints = this.getPolyLatlng
         this.tyGroupPathLines.forEach((tempGroupPath) => {
             const count = tempGroupPath.listRealdata.length
             tempGroupPath.listRealdata.forEach((tempTyRealData, index: number) => {
@@ -157,7 +172,18 @@ class SplitGroupPathLine {
         return splitPointsList
     }
 
-    public getSplitGroupModel(
+    /**
+     * 获取插值后的路径集合(包含了权重: tyMarking)
+     *
+     * @param {number} [spliceUnit=0.05]
+     * @return {*}  {{
+     *         latlng: L.LatLng
+     *         tyType: string
+     *         tyMarking: number
+     *     }[]}
+     * @memberof SplitGroupPathLine
+     */
+    public getSplitedGroupModelList(
         spliceUnit = 0.05
     ): {
         latlng: L.LatLng
@@ -165,7 +191,7 @@ class SplitGroupPathLine {
         tyMarking: number
     }[] {
         this._filterSamePath()
-        return this._initSplit(spliceUnit)
+        return this._interpolateLines(spliceUnit)
     }
 }
 

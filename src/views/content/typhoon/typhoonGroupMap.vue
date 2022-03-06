@@ -198,8 +198,6 @@ import 'mapbox-gl/dist/mapbox-gl'
 // TODO:[-] WATCH!注意此处安装了 mapbox-gl-leaflet 不要参考 github 官网上的引入方式，该库名称为 mapbox-gl-leaflet
 import 'mapbox-gl-leaflet'
 
-import 'leaflet.heat'
-import * as heat from 'leaflet.heat/dist/leaflet-heat'
 import 'heatmap.js'
 import HeatmapOverlay from 'heatmap.js/plugins/leaflet-heatmap'
 
@@ -219,16 +217,8 @@ import {
     // LeafletHeatmap
 } from 'vue2-leaflet'
 
-// import LeafletHeatmap from "vue2-leaflet-heatmap";
-
-// github:https://github.com/Leaflet/Leaflet.heat
-// npm:https://www.npmjs.com/package/leaflet.heat
-// import {}  "leaflet.heat";
-
 // TODO:[-] 21-04-20 加入的 scaleColor
 import { ScaleColor, TyGroupPathScaleColor } from '@/common/scaleColor'
-// 此种方式较为繁琐：https://www.patrick-wied.at/static/heatmapjs/example-heatmap-leaflet.html
-import 'heatmap.js'
 import moment from 'moment'
 // 各类组件
 import TimeBar from '@/views/members/bar/TimeBar.vue'
@@ -1635,7 +1625,7 @@ export default class TyGroupMap extends mixins(
 
         const splictLine = new SplitGroupPathLine(that.tyGroupLineList)
 
-        const splictLine2PointsList = splictLine.getSplitGroupModel(0.2)
+        const splictLine2PointsList = splictLine.getSplitedGroupModelList(0.2)
 
         splictLine2PointsList.forEach((temp) => {
             // 在地图上打点，测试使用
@@ -1649,7 +1639,7 @@ export default class TyGroupMap extends mixins(
             })
         })
 
-        //
+        // TODO:[-] 22-03-06 对于台风路径加入了热图，效果一般暂时不使用
         const heatConfig = {
             // 此半径可以有效的滤掉由于 status = 2 造成的应该滤掉区域
             radius: 0.25,
@@ -1667,14 +1657,11 @@ export default class TyGroupMap extends mixins(
             max: 500,
             data: allPathSplitHeadDatas
         }
-        // let heatLayer: L.heatLayer = null
-
         const heatLayer = new HeatmapOverlay(heatConfig)
-        // heatLayer = L.heatLayer(heatConfig)
-
         heatLayer.setData(heatData)
-        const testHeat = heatLayer.addTo(mymap)
-        // --------
+        // todo:[-] 22-03-06 暂时不使用热图的方式进行加载
+        // const testHeat = heatLayer.addTo(mymap)
+        // heatMap --------
         // 获取台风外侧的包络
         // TODO:[*] 22-03-02 此处会造成绘制多边形错误
         this.tyOutlineGroupLayers = tyPolygon.generateCircle()
