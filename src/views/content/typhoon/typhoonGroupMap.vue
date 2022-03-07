@@ -1936,11 +1936,13 @@ export default class TyGroupMap extends mixins(
             )
             const tyMax = 10
             const tyMin = 1
+            // TODO:[-] 22-03-07 注意此处的台风脉冲点icon存在偏移
             // + 21-08-13 对于当前台风位置的脉冲icon
             const tyCirleIcon = new IconTyphoonCirlePulsing({
                 val: 10,
                 max: tyMax,
-                min: tyMin
+                min: tyMin,
+                iconType: IconTypeEnum.TY_PULSING_ICON
             })
             const tyDivIcon = L.divIcon({
                 className: 'surge_pulsing_icon_default',

@@ -62,18 +62,21 @@ class IconCirlePulsing {
         // TODO:[-] 22-02-22 之前的设计会造成内外侧两个div都出现偏移的问题，现修改为只对外侧进行位移
         // 位移向量为((r2-r1)/2,(r2-r1)/2)
         // 第一个div是外侧脉冲,第二个div是内部的icon
-        //     const divHtml = `<div class="my-leaflet-pulsing-marker" >
-        //     <div class="my-leaflet-icon-border ${this.getAlarmColor()}" style="width: ${iconBorderWidth}px;height:${iconBorderHeight}px;left:${-iconBorderWidth /
-        //         2}px;top:${-iconBorderHeight / 2}px"></div>
-        //     <div class="my-leaflet-pulsing-icon ${this.getAlarmColor()}" style="width: ${iconPulsingWidth}px;height:${iconPulsingHeight}px;left:${-iconPulsingWidth /
-        //         2}px;top:${-iconPulsingHeight / 2}px"></div>
-        //   </div>`
-        const x = (iconBorderWidth - iconPulsingHeight) / 2
-        const y = (iconBorderHeight - iconPulsingHeight) / 2
+        // TODO:[*] 22-03-07 注意此处 my-leaflet-icon-border orange 会有一个 3px的border的距离，所以加入此部分
+        // TODO:[!] 22-03-07 注意此处的 border 是动态的，需要再查看一下！
         const divHtml = `<div class="my-leaflet-pulsing-marker" >
-        <div class="my-leaflet-icon-border ${this.getAlarmColor()}" style="width: ${iconBorderWidth}px;height:${iconBorderHeight}px;"></div>
-        <div class="my-leaflet-pulsing-icon ${this.getAlarmColor()}" style="width: ${iconPulsingWidth}px;height:${iconPulsingHeight}px;"></div>
-      </div>`
+            <div class="my-leaflet-icon-border ${this.getAlarmColor()}" style="width: ${iconBorderWidth}px;height:${iconBorderHeight}px;left:${-iconBorderWidth /
+            4 -
+            3}px;top:${-iconBorderHeight / 4 - 3}px"></div>
+            <div class="my-leaflet-pulsing-icon ${this.getAlarmColor()}" style="width: ${iconPulsingWidth}px;height:${iconPulsingHeight}px;left:${-iconPulsingWidth /
+            4}px;top:${-iconPulsingHeight / 4}px"></div>
+          </div>`
+        //     const x = (iconBorderWidth - iconPulsingHeight) / 2
+        //     const y = (iconBorderHeight - iconPulsingHeight) / 2
+        //     const divHtml = `<div class="my-leaflet-pulsing-marker" >
+        //     <div class="my-leaflet-icon-border ${this.getAlarmColor()}" style="width: ${iconBorderWidth}px;height:${iconBorderHeight}px;"></div>
+        //     <div class="my-leaflet-pulsing-icon ${this.getAlarmColor()}" style="width: ${iconPulsingWidth}px;height:${iconPulsingHeight}px;"></div>
+        //   </div>`
         return divHtml
     }
 
@@ -199,19 +202,36 @@ class IconTyphoonCirlePulsing {
         let divHtml = ''
         switch (true) {
             case this.config.iconType === IconTypeEnum.TY_PULSING_ICON:
+                // - 22-03-07 暂时注释掉台风脉冲信号(带位置偏移)
+                // divHtml = `<div class="my-leaflet-pulsing-marker" >
+                //     <div class="my-leaflet-icon-border ${this.getAlarmColor()}" style="width: ${iconBorderWidth}px;height:${iconBorderHeight}px;left:${
+                //     that.shiftX
+                // }px;top:${that.shiftY}px"></div>
+                //     <div class="my-leaflet-pulsing-icon ${this.getAlarmColor()}" style="width: ${iconPulsingWidth}px;height:${iconPulsingHeight}px;"></div>
+                //   </div>`
+                //---
+                // TODO:[-] 22-03-07 注意此处的icon div 均需要 left:-width/2;top:-height/2
                 divHtml = `<div class="my-leaflet-pulsing-marker" >
-            <div class="my-leaflet-icon-border ${this.getAlarmColor()}" style="width: ${iconBorderWidth}px;height:${iconBorderHeight}px;left:${
-                    that.shiftX
-                }px;top:${that.shiftY}px"></div>
-            <div class="my-leaflet-pulsing-icon ${this.getAlarmColor()}" style="width: ${iconPulsingWidth}px;height:${iconPulsingHeight}px;"></div>
-          </div>`
+                    <div class="my-leaflet-icon-border ${this.getAlarmColor()}" style="width: ${iconBorderWidth}px;height:${iconBorderHeight}px;left:${-iconBorderWidth /
+                    4}px;top:${-iconBorderHeight / 4}px"></div>
+                    <div class="my-leaflet-pulsing-icon ${this.getAlarmColor()}" style="width: ${iconPulsingWidth}px;height:${iconPulsingHeight}px;left:${-iconPulsingWidth /
+                    4}px;top:${-iconPulsingHeight / 4}px"></div>
+                  </div>`
+                //---
+                //         divHtml = `<div class="my-leaflet-pulsing-marker" >
+                //     <div class="my-leaflet-icon-border ${this.getAlarmColor()}" style="width: ${iconBorderWidth}px;height:${iconBorderHeight}px;"></div>
+                //     <div class="my-leaflet-pulsing-icon ${this.getAlarmColor()}" style="width: ${iconPulsingWidth}px;height:${iconPulsingHeight}px;"></div>
+                //   </div>`
                 break
             case this.config.iconType === IconTypeEnum.TY_PATH_ICON:
                 // 台风路径示意点
-                const cirleRadius = '12px'
+                const cirleUnit = 12
+                const cirleRadius = `${cirleUnit}px`
                 divHtml = `<div class="my-leaflet-pulsing-marker" >
-                <div class="my-leaflet-icon-border orange}" style="width:${cirleRadius};height:${cirleRadius};left:${that.shiftX}px;top:${that.shiftY}px"></div>
-                <div class="my-leaflet-pulsing-icon orange}" style="width: ${cirleRadius};height:${cirleRadius};"></div>
+                <div class="my-leaflet-icon-border orange}" style="width:${cirleRadius};height:${cirleRadius};left:${-cirleUnit /
+                    4}px;top:${-cirleUnit / 4}px"></div>
+                <div class="my-leaflet-pulsing-icon orange}" style="width: ${cirleRadius};height:${cirleRadius};left:${-cirleUnit /
+                    4}px;top:${-cirleUnit / 4}px"></div>
               </div>`
                 break
         }
