@@ -925,6 +925,15 @@ export default class TyGroupMap extends mixins(
         }
     }
 
+    // + 22-03-07 清除当前路径的台风集合路径外沿集合layers
+    clearTyGroupOutlineGroupLayer(): void {
+        const mymap: L.Map = this.$refs.basemap['mapObject']
+        if (this.tyOutlineGroupLayers) {
+            mymap.removeLayer(this.tyOutlineGroupLayers)
+            this.tyOutlineGroupLayers = null
+        }
+    }
+
     // + 21-05-20 清除掉 逐时的风暴潮增水栅格图层
     clearSurgeHourlyRasterLayer(): void {
         const that = this
@@ -1443,6 +1452,7 @@ export default class TyGroupMap extends mixins(
             this.clearGroupLayer(this.currentCenterGroupPathPolyLineLayerGroup)
             this.clearGroupLayer(this.currentGroupPathPulsingLayerGroup)
             this.clearTyOutlineGroupLayer()
+            this.clearTyGroupOutlineGroupLayer()
         }
         if (this.tyRealDataDivIcon) {
             this.clearTyRealDataLayer()
@@ -1639,27 +1649,28 @@ export default class TyGroupMap extends mixins(
             })
         })
 
-        // TODO:[-] 22-03-06 对于台风路径加入了热图，效果一般暂时不使用
-        const heatConfig = {
-            // 此半径可以有效的滤掉由于 status = 2 造成的应该滤掉区域
-            radius: 0.25,
-            // radius: 0.01,
-            maxOpacity: 0.8,
-            minOpacity: 0,
-            blur: 0.35,
-            scaleRadius: true,
-            useLocalExtrema: true,
-            latField: 'lat',
-            lngField: 'lng',
-            valueField: 'count'
-        }
-        const heatData = {
-            max: 500,
-            data: allPathSplitHeadDatas
-        }
-        const heatLayer = new HeatmapOverlay(heatConfig)
-        heatLayer.setData(heatData)
-        // todo:[-] 22-03-06 暂时不使用热图的方式进行加载
+        // 22-03-06 对于台风路径加入了热图，效果一般暂时不使用
+        // 22-03-06 暂时不使用热图的方式进行加载
+        // const heatConfig = {
+        //     // 此半径可以有效的滤掉由于 status = 2 造成的应该滤掉区域
+        //     radius: 0.25,
+        //     // radius: 0.01,
+        //     maxOpacity: 0.8,
+        //     minOpacity: 0,
+        //     blur: 0.35,
+        //     scaleRadius: true,
+        //     useLocalExtrema: true,
+        //     latField: 'lat',
+        //     lngField: 'lng',
+        //     valueField: 'count'
+        // }
+        // const heatData = {
+        //     max: 500,
+        //     data: allPathSplitHeadDatas
+        // }
+        // const heatLayer = new HeatmapOverlay(heatConfig)
+        // heatLayer.setData(heatData)
+
         // const testHeat = heatLayer.addTo(mymap)
         // heatMap --------
         // 获取台风外侧的包络
@@ -2152,6 +2163,7 @@ export default class TyGroupMap extends mixins(
         if (val.isShow != oldVal.isShow) {
             if (!val.isShow) {
                 this.clearGroupLayer(this.currentGroupPathPolyLineLayerGroup)
+                this.clearTyGroupOutlineGroupLayer()
             } else if (val.isShow) {
                 const showMsg = `加载台风:${val.tyCode}集合路径`
                 this.$notify({ title: '成功', message: showMsg, type: 'success' })
