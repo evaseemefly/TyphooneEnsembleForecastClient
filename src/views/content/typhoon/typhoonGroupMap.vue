@@ -41,29 +41,17 @@
                     :transparent="worldLineWMS.options.transparent"
                     :zIndex="worldLineWMS.options.zindex"
                 ></l-wms-tile-layer>
-
-                <!-- TODO:[-] 20-08-07 加入预报区域的线段(非多边形，因为很多情况无法闭合) -->
+                <!-- TODO:[-] 22-03-08 加入的风暴潮预报的三个区域的多边形区域 -->
                 <l-polyline
-                    :lat-lngs="currentPolyLine.latlngs"
+                    v-for="temp in getPolyLines"
+                    :key="temp.id"
+                    :lat-lngs="temp.latlngs"
                     :fill="false"
-                    :color="currentPolyLine.style.color"
-                    :stroke="currentPolyLine.style.stroke"
-                    :opacity="currentPolyLine.style.opacity"
-                ></l-polyline>
-                <!-- TODO:[-] 20-08-11 加入的风场的预报区域的线段 -->
-                <l-polyline
-                    :lat-lngs="windPolyLine.latlngs"
-                    :fill="false"
-                    :color="windPolyLine.style.color"
-                    :stroke="windPolyLine.style.stroke"
-                    :opacity="windPolyLine.style.opacity"
-                ></l-polyline>
-                <!-- ------------------- -->
-                <l-polyline
-                    :lat-lngs="polyline.latlngs"
-                    :fill="false"
-                    :color="polyline.color"
-                ></l-polyline>
+                    :color="temp.style.color"
+                    :stroke="temp.style.stroke"
+                    :opacity="temp.style.opacity"
+                >
+                </l-polyline>
                 <!-- <l-marker :lat-lng="makerLatlng"></l-marker> -->
                 <l-circle :lat-lng="makerLatlng"></l-circle>
             </l-map>
@@ -311,6 +299,7 @@ import { ConstantMixin } from '@/views/content/oilspilling/mixin/constant'
 import { TestMixin } from '@/views/content/oilspilling/mixin/testMixin'
 import { ConstArrowMixin } from '@/views/content/oilspilling/mixin/constArrow'
 import { WFSMixin } from '@/views/content/oilspilling/mixin/wfsMixin'
+import { MapMixin } from '@/views/content/typhoon/mixin/constMap'
 // TODO:[*] 21-03-10 加入的海浪等值线测试 mixin
 // import { WaveMixin } from '@/views/content/oilspilling/mixin/testWaveMixin'
 // + 21-03-24 修改后的 海浪 等值线
@@ -453,7 +442,8 @@ export default class TyGroupMap extends mixins(
     ConstantMixin,
     ConstArrowMixin,
     WaveMixin,
-    WFSMixin
+    WFSMixin,
+    MapMixin
 ) {
     mydata: any = null
     code = DEFAULT
@@ -492,39 +482,6 @@ export default class TyGroupMap extends mixins(
 
     // 20-08-09 + 当前选中的coverageInfos
     // coverageInfoList: { coverageArea: number; coverageType: number }[] = []
-
-    // 预报区域(线,非多边形)
-    currentPolyLine: IPolyLine = {
-        latlngs: [
-            [41.0, 129.836],
-            [41.0, 133.0],
-            [22.2, 133.0],
-            [22.2, 120.8931],
-            [22.2, 120.6888],
-            [22.2, 114.2333]
-        ],
-        style: {
-            stroke: true,
-            opacity: 0.7,
-            color: '#16a085'
-        }
-    }
-
-    // 20-08-11 风场预报区域
-    windPolyLine: IPolyLine = {
-        latlngs: [
-            [0.0, 100.0],
-            [0.0, 150.0],
-            [50.0, 150.0],
-            [50.0, 100],
-            [0.0, 100.0]
-        ],
-        style: {
-            stroke: true,
-            opacity: 0.7,
-            color: '#f39c12'
-        }
-    }
     // TODO:[-] 20-05-26 maker icon 样式
     icon_marker = L.icon({
         iconUrl: '/leaflet/images/marker-icon.png',
@@ -868,7 +825,7 @@ export default class TyGroupMap extends mixins(
                                 className: 'station-surge-icon-default',
                                 html: iconSurgeMinArr[index].toHtml(),
                                 // 坐标，[相对于原点的水平位置（左加右减），相对原点的垂直位置（上加下减）]
-                                iconAnchor: [-20, 30]
+                                iconAnchor: [-10, 0]
                             })
                             L.marker([res.data[index].lat, res.data[index].lon], {
                                 icon: stationDivIcon
@@ -1063,7 +1020,7 @@ export default class TyGroupMap extends mixins(
                                 className: iconSurgeMinArr[index].getClassName(),
                                 html: iconSurgeMinArr[index].toHtml(),
                                 // 坐标，[相对于原点的水平位置（左加右减），相对原点的垂直位置（上加下减）]
-                                iconAnchor: [-20, 30]
+                                iconAnchor: [-20, 10]
                             })
 
                             const surgePulsingMarker = L.marker(
@@ -1342,7 +1299,7 @@ export default class TyGroupMap extends mixins(
                 className: iconSurgeMinArr[index].getClassName(),
                 html: iconSurgeMinArr[index].toHtml(),
                 // 坐标，[相对于原点的水平位置（左加右减），相对原点的垂直位置（上加下减）]
-                iconAnchor: [-20, 30]
+                iconAnchor: [10, 30]
             })
             const tempStationSurge = that.currentStationSurgeList[index]
             const surgePulsingMarker = L.marker([tempStationSurge.lat, tempStationSurge.lon], {
@@ -1389,7 +1346,7 @@ export default class TyGroupMap extends mixins(
                             className: iconSurgeMin.getClassName(),
                             html: iconSurgeMin.toHtml(),
                             // 坐标，[相对于原点的水平位置（左加右减），相对原点的垂直位置（上加下减）]
-                            iconAnchor: [-20, 30]
+                            iconAnchor: [10, 30]
                         })
                         const tempStationSurgeMarker = L.marker([customData.lat, customData.lon], {
                             icon: stationSurgeMinDivICOn,
