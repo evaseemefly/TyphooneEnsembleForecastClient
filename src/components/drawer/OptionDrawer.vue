@@ -1,12 +1,11 @@
 <template>
     <div>
         <el-drawer
-            title="我是标题"
+            title="配置项"
             :visible.sync="drawer"
             :direction="direction"
             :before-close="handleClose"
         >
-            <span>我来啦!</span>
             <div class="drawer-content">
                 <OptionsDrawerCard></OptionsDrawerCard>
             </div>

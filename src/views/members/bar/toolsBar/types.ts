@@ -32,7 +32,7 @@ interface IChildOptions {
     group?: number
 }
 interface IExpand {
-    // 是否展开
+    // 是否展开 展开: true | 否则: false
     isExpanded: boolean
     // 是否有子节点
     hasChildren: boolean

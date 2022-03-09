@@ -128,7 +128,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
     }
     toolsBar: IExpandModel[] = [
         {
-            isExpanded: false,
+            isExpanded: true,
             html: '',
             iconClass: 'fas fa-tasks',
             title: '选择图层',
@@ -142,7 +142,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
             children: [
                 // + 21-03-26 海浪等值线按钮
                 {
-                    isExpanded: false,
+                    isExpanded: true,
                     html: '',
                     iconClass: 'fas fa-route',
                     title: '集合路径',
@@ -156,7 +156,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     isTitleShow: false
                 },
                 {
-                    isExpanded: false,
+                    isExpanded: true,
                     html: '',
                     iconClass: 'fas fa-infinity',
                     title: '最大风暴增水',
@@ -170,7 +170,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     isTitleShow: false
                 },
                 {
-                    isExpanded: false,
+                    isExpanded: true,
                     html: '',
                     iconClass: 'fas fa-wave-square',
                     title: '逐时风暴增水',
@@ -185,7 +185,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     isTitleShow: false
                 },
                 {
-                    isExpanded: false,
+                    isExpanded: true,
                     html: '',
                     iconClass: 'fas fa-percentage',
                     title: '概率风暴增水',
@@ -261,7 +261,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                 // },
                 // 显示潮位站位置示意不显示对应的增水
                 {
-                    isExpanded: false,
+                    isExpanded: true,
                     html: '',
                     iconClass: 'fas fa-home',
                     title: '海洋站',
