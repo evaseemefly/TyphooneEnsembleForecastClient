@@ -7817,7 +7817,7 @@
 
 "heatmap.js@^2.0.5":
   "integrity" "sha1-Rm07hlE/XUkRKknSVwCrJzAUkVM="
-  "resolved" "https://registry.npmjs.org/heatmap.js/-/heatmap.js-2.0.5.tgz"
+  "resolved" "https://registry.npm.taobao.org/heatmap.js/download/heatmap.js-2.0.5.tgz"
   "version" "2.0.5"
 
 "hex-color-regex@^1.1.0":
@@ -9150,7 +9150,7 @@
 
 "leaflet.heat@^0.2.0":
   "integrity" "sha1-EJ2M9Ybwre5B8Fr/Ax4np3/swik="
-  "resolved" "https://registry.npmjs.org/leaflet.heat/-/leaflet.heat-0.2.0.tgz"
+  "resolved" "https://registry.npm.taobao.org/leaflet.heat/download/leaflet.heat-0.2.0.tgz"
   "version" "0.2.0"
 
 "leaflet@^0.7.3":
@@ -13917,7 +13917,7 @@
 
 "string-width@^2.0.0", "string-width@^2.1.1":
   "integrity" "sha1-q5Pyeo3BPSjKyBXEYhQ6bZASrp4="
-  "resolved" "https://registry.nlark.com/string-width/download/string-width-2.1.1.tgz"
+  "resolved" "https://registry.npm.taobao.org/string-width/download/string-width-2.1.1.tgz"
   "version" "2.1.1"
   dependencies:
     "is-fullwidth-code-point" "^2.0.0"

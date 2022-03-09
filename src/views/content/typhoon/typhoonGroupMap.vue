@@ -130,6 +130,7 @@
             <CreatedCaseForm ref="caseForm"></CreatedCaseForm>
         </div> -->
         <CreateCaseForm></CreateCaseForm>
+        <OptionsDrawer></OptionsDrawer>
 
         <!-- <div class="">
             <GridDetailForm ref="gridForm"></GridDetailForm>
@@ -235,6 +236,8 @@ import TaskRateCard from '@/components/card/TaskRateCard.vue'
 // + 21-07-01 加入了 createCaseForm
 import CreateCaseForm from '@/components/form/CreateCaseForm.vue'
 import QuarterView from '@/components/charts/QuarterChartView.vue'
+// + 22-03-09 加入了左侧的 配置抽屉组件
+import OptionsDrawer from '@/components/drawer/OptionDrawer.vue'
 // -----
 // 各api
 import { loadOilSpillingAvgRealData, getTargetCodeDateRange } from '@/api/api'
@@ -428,7 +431,8 @@ const DEFAULT_SCATTER_PAGE_COUNT = 1000
         RightStationBar,
         CreateCaseForm,
         TaskRateCard,
-        QuarterView
+        QuarterView,
+        OptionsDrawer // 抽屉组件
         // GridDetailForm
         // LeafletHeatmap
     }
