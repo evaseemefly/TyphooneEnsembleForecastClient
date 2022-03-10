@@ -209,6 +209,7 @@ class IconTyphoonCirlePulsing {
                     2}px;top:${-iconBorderHeight / 2}px"></div>
                     <div class="my-leaflet-pulsing-icon ${this.getAlarmColor()}" style="width: ${iconPulsingWidth}px;height:${iconPulsingHeight}px;left:${-iconPulsingWidth /
                     2}px;top:${-iconPulsingHeight / 2}px"></div>
+                    <div class="fas fa-fan"><i class="fas fa-fan"></i></div>
                   </div>`
                 //---
                 //         divHtml = `<div class="my-leaflet-pulsing-marker" >
@@ -225,6 +226,7 @@ class IconTyphoonCirlePulsing {
                     2}px;top:${-cirleUnit / 2}px"></div>
                 <div class="my-leaflet-pulsing-icon orange}" style="width: ${cirleRadius};height:${cirleRadius};left:${-cirleUnit /
                     2}px;top:${-cirleUnit / 2}px"></div>
+                    <div class="fas fa-fan" style="width: 30px;height:30px;left:-15px;top:-15px;color: white;position: absolute; color: #a3bacfb8;"><i class="fas fa-fan"></i></div>
               </div>`
                 break
         }
