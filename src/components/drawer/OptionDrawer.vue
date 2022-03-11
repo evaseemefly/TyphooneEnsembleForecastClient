@@ -7,24 +7,23 @@
             :before-close="handleClose"
         >
             <div class="drawer-content">
-                <OptionsDrawerCard></OptionsDrawerCard>
+                <div class="options-drawer-card-root">
+                    <TyphoonOptionsCard></TyphoonOptionsCard>
+                </div>
             </div>
         </el-drawer>
     </div>
 </template>
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
-import OptionsDrawerCard from '@/components/card/OptionsDrawerCard.vue'
+import OptionsDrawerCard from '@/components/card/BaseOptionsCard.vue'
+import TyphoonOptionsCard from '@/components/card/TyphoonOptionsCard.vue'
 // 配置项抽屉
-@Component({ components: { OptionsDrawerCard } })
+@Component({ components: { OptionsDrawerCard, TyphoonOptionsCard } })
 export default class OptionsDrawer extends Vue {
     mydata: any = null
-    drawer = true
+    drawer = false
     direction = 'ltr'
-    mounted() {}
-    get computedTest() {
-        return null
-    }
 }
 </script>
 <style lang="less">
@@ -36,5 +35,8 @@ export default class OptionsDrawer extends Vue {
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+.options-drawer-card-root {
+    width: 80%;
 }
 </style>
