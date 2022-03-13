@@ -73,5 +73,6 @@ export enum ToolTypeEnum {
     /**
      *选取位置按钮
      */
-    SELECTPOSITION = 4
+    SELECTPOSITION = 4,
+    OPTIONS = 5
 }

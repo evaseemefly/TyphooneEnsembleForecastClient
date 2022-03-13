@@ -100,7 +100,8 @@ import {
     SET_MAP_LAYERS,
     SET_CURRENT_LATLNG_LOCK,
     GET_IS_INIT_LAYERS,
-    SET_IS_INIT_LAYERS
+    SET_IS_INIT_LAYERS,
+    SET_SHOW_OPTS_FORM
 } from '@/store/types'
 import { IExpandModel, ToolTypeEnum } from './types'
 
@@ -121,6 +122,7 @@ import { mixins } from 'vue-class-component'
 export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, FactorSelectBaseBar) {
     // 是否展开窗口| false:未展开, true:展开了|默认未展开
     isExpanded = false
+    isShowOpts = false
     mounted() {
         this.toolsBar = [...this.toolsBar, ...this.toolsShowTypeBar, ...this.toolsFactorBar]
         this.getToolsBar()
@@ -136,8 +138,9 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
             isChildren: false,
             toolType: ToolTypeEnum.OPTION,
             val: '',
-            checked: true,
-            isTitleShow: true,
+            checked: false,
+            isTitleShow: false,
+
             // isFather: true,
             children: [
                 // + 21-03-26 海浪等值线按钮
@@ -273,7 +276,21 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     checked: false,
                     group: 3,
                     isTitleShow: false
-                } // 显示潮位站位置示意不显示对应的增水
+                }, // 显示潮位站位置示意不显示对应的增水
+                {
+                    isExpanded: true,
+                    html: '',
+                    iconClass: 'fas fa-sitemap',
+                    title: '配置',
+                    hasChildren: false,
+                    isChildren: true,
+                    toolType: ToolTypeEnum.OPTIONS,
+                    layerType: LayerTypeEnum.UN_LAYER,
+                    val: '',
+                    checked: false,
+                    group: 4,
+                    isTitleShow: false
+                }
                 // {
                 //     isExpanded: false,
                 //     html: '',
@@ -746,7 +763,10 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                 temp.isShow = !temp.isShow
                 this.setCurrentLatlngLock(!temp.isShow)
             })
+        } else if (item.toolType === ToolTypeEnum.OPTIONS) {
+            this.showOptions()
         }
+
         // 2-3 TODO:[-] 21-08-11 若 存在 showOptions 属性，则对 showOptions 取反
         if (item['showOptions'] !== undefined) {
             item.showOptions = !item.showOptions
@@ -800,6 +820,13 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
             })
         }
     }
+
+    showOptions(): void {
+        this.isShowOpts = !this.isShowOpts
+        this.setShowOptsForm(this.isShowOpts)
+    }
+
+    @Mutation(SET_SHOW_OPTS_FORM, { namespace: 'common' }) setShowOptsForm
 
     @Watch('getIsInitLayers')
     onIsInitLayers(isInit: boolean): void {

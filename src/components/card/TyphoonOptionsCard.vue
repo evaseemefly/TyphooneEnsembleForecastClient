@@ -3,9 +3,13 @@
 *
 -->
 <script lang="ts">
+// --
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
+import { Mutation } from 'vuex-class'
 import IBaseOptionsCard from '@/components/card/BaseOptionsCard.vue'
 import { GroupPathLayerOptEnum } from '@/enum/layersOpt/LayersOpt'
+// -- store
+import { SET_TY_GROUP_PATH_LATERS_OPTS } from '@/store/types'
 @Component({})
 export default class TyphoonOptionsCard extends IBaseOptionsCard {
     optionItems: {
@@ -62,5 +66,13 @@ export default class TyphoonOptionsCard extends IBaseOptionsCard {
         }
         return keys
     }
+
+    @Watch('getOptionVals')
+    onOptionVals(vals: number[]): void {
+        console.log(`监听到optionsvals:${vals}`)
+        this.setTyGroupPathLayersOpts(vals)
+    }
+
+    @Mutation(SET_TY_GROUP_PATH_LATERS_OPTS, { namespace: 'opts' }) setTyGroupPathLayersOpts
 }
 </script>

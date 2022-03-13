@@ -11,7 +11,7 @@ class ScaleColor {
         this.min = min
         this.max = max
     }
-    setScale(scaleName: string | string[] = 'Viridis') {
+    setScale(scaleName: string | string[] = 'Viridis'): void {
         this.scale = chroma.scale(scaleName)
     }
     getColor(val: number): string {
@@ -49,16 +49,17 @@ class TyGroupPathScaleColor extends ScaleColor {
             '#cf3759',
             '#93003a'
         ])
+        // this.scale = chroma.scale('Viridis')
         // this.scale = chroma.scale([
-        //     '#93003a',
-        //     '#cf3759',
-        //     '#f4777f',
-        //     '#ffbcaf',
-        //     '#ffffe0',
-        //     '#a5d5d8',
-        //     '#73a2c6',
-        //     '#4771b2',
-        //     '#00429d'
+        //     '#569ddf',
+        //     '#48a5e7',
+        //     '#3badef',
+        //     '#2db5f7',
+        //     '#20bdff',
+        //     '#41cdf2',
+        //     '#63dee5',
+        //     '#84eed8',
+        //     '#a5fecb'
         // ])
     }
 }

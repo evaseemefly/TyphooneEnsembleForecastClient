@@ -97,7 +97,7 @@ class TyGroupPath {
 class TyGroupPathLine {
     tyGroupPathLines: Array<TyphoonComplexGroupRealDataMidModel>
     myMap: L.Map
-    tyColorScale: any
+    tyColorScale: TyGroupPathScaleColor
     public tyGroupPolyLineLayer: L.Layer[]
     polyColor = DEFAULT_COLOR
     tyGroupProPathCircles: { lat: number; lon: number; radius: number }[] = []
@@ -125,18 +125,45 @@ class TyGroupPathLine {
         this.tyColorScale = new TyGroupPathScaleColor(0, this.tyGroupPathListCount)
     }
 
+    protected setColorScale(scaleName: string | string[] = 'Viridis'): void {
+        if (this.tyColorScale !== undefined) {
+            this.tyColorScale.setColorScale(scaleName)
+        }
+    }
+
     public getTyColor(index: number): string {
         return this.tyColorScale.getColor(index)
     }
 
     protected initTyGroupPolyLineLayer(isDynamicColorScale = true): void {
         let indexTyGroup = 0
-
+        // this.setColorScale([
+        //     '#00429d',
+        //     '#2e59a8',
+        //     '#4771b2',
+        //     '#5d8abd',
+        //     '#73a2c6',
+        //     '#8abccf',
+        //     '#a5d5d8',
+        //     '#c5eddf',
+        //     '#ffffe0'
+        // ])
         this.tyGroupPathLines.map((temp) => {
             indexTyGroup++
             const polygonPoint: L.LatLng[] = []
             const cirleScaleColor = new ScaleColor(0, temp.listRealdata.length)
-            cirleScaleColor.setScale('Viridis')
+            // cirleScaleColor.setScale('Viridis')
+            cirleScaleColor.setScale([
+                '#00429d',
+                '#2e59a8',
+                '#4771b2',
+                '#5d8abd',
+                '#73a2c6',
+                '#8abccf',
+                '#a5d5d8',
+                '#c5eddf',
+                '#ffffe0'
+            ])
             let indexDate = 0
             const cirleLayers: L.Layer[] = []
             // TODO:[*] 22-02-09 尝试在每个节点加入 cirle

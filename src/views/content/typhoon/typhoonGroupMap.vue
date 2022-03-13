@@ -306,7 +306,8 @@ import { MapMixin } from '@/views/content/typhoon/mixin/constMap'
 // TODO:[*] 21-03-10 加入的海浪等值线测试 mixin
 // import { WaveMixin } from '@/views/content/oilspilling/mixin/testWaveMixin'
 // + 21-03-24 修改后的 海浪 等值线
-import { WaveMixin } from '@/views/content/oilspilling/mixin/waveMixin'
+// import { WaveMixin } from '@/views/content/oilspilling/mixin/waveMixin'
+import { BaseOptionsMixin } from '@/views/content/typhoon/mixin/optionsMixin'
 // TODO:[-] 20-09-07 对 raster 的业务逻辑进行了拆分
 import {
     RasterIsoline,
@@ -338,6 +339,7 @@ import { TyGroupPath, getTyCenterGroupDiffLayer } from './typhoonGroup'
 // 引入枚举
 import { DictEnum } from '@/enum/dict'
 import { LayerTypeEnum, SurgeProLayerEnum, MapLayerEnum, StationIconLayerEnum } from '@/enum/map'
+import { GroupPathLayerOptEnum } from '@/enum/layersOpt/LayersOpt'
 
 // api
 // + 21 typhoon api
@@ -374,7 +376,8 @@ import {
     SET_SCALE_KEY,
     SET_SCALE_RANGE,
     GET_BASE_MAP_KEY, // + 21-08-23 监听切换地图的 baseMapKey
-    SET_MAP_NOW
+    SET_MAP_NOW,
+    GET_TY_GROUP_PATH_LATERS_OPTS // +22-03-13 台风集合预报路径配置项
 } from '@/store/types'
 import {
     DEFAULT_LAYER_ID,
@@ -445,9 +448,10 @@ export default class TyGroupMap extends mixins(
     TestMixin,
     ConstantMixin,
     ConstArrowMixin,
-    WaveMixin,
+    // WaveMixin,
     WFSMixin,
-    MapMixin
+    MapMixin,
+    BaseOptionsMixin
 ) {
     mydata: any = null
     code = DEFAULT
@@ -1636,9 +1640,12 @@ export default class TyGroupMap extends mixins(
         // heatMap --------
         // 获取台风外侧的包络
         // TODO:[*] 22-03-02 此处会造成绘制多边形错误
-        this.tyOutlineGroupLayers = tyPolygon.generateCircle()
-        // const tyOutLineGroupLayer = tyPolygon.generateCircle(outlines)
-        this.currentGroupPathPolyLineLayerGroup = tempTyGroupPolyLineLayerGroup
+        // + 22-03-13 加入了根据配置是否加载 台风集合路径外包络多边形图层
+        if (this.isShowOutlinePolyLayer) {
+            this.tyOutlineGroupLayers = tyPolygon.generateCircle()
+            // const tyOutLineGroupLayer = tyPolygon.generateCircle(outlines)
+            this.currentGroupPathPolyLineLayerGroup = tempTyGroupPolyLineLayerGroup
+        }
     }
     loadCenterTyphoonPoints(): void {
         const mymap: any = this.$refs.basemap['mapObject']

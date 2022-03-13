@@ -18,7 +18,7 @@
                         {{ child.checked ? '' : ' ' }}
                     </div>
                 </div>
-                <font>{{ child.title }}</font>
+                <font class="font-shadow-base">{{ child.title }}</font>
             </div>
         </div>
     </div>
@@ -76,6 +76,7 @@ export default class IBaseOptionsCard extends Vue {
 }
 </script>
 <style scoped lang="less">
+@import '../../styles/base';
 .options-drawer-card-root {
     width: 80%;
 

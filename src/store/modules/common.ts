@@ -4,7 +4,9 @@ import {
     SET_SCALE_KEY,
     GET_SCALE_KEY,
     GET_SCALE_RANGE,
-    SET_SCALE_RANGE
+    SET_SCALE_RANGE,
+    GET_SHOW_OPTS_FORM,
+    SET_SHOW_OPTS_FORM
 } from '../types'
 import { CaseTypeEnum } from '@/enum/case'
 import { DEFAULT_DICT_KEY, DEFAULT_SELECT_VAL } from '@/const/common'
@@ -19,6 +21,7 @@ interface Common {
     // color scale 的key
     scaleKey: string
     scaleRange: number[]
+    isShowOptionsForm: boolean
 }
 
 // const actions={
@@ -28,7 +31,8 @@ const state: Common = {
     // productType: ProductType.oil
     productType: CaseTypeEnum.OIL,
     scaleKey: DEFAULT_SELECT_VAL,
-    scaleRange: []
+    scaleRange: [],
+    isShowOptionsForm: false
 }
 const getters = {
     productType: (state) => state.productType,
@@ -39,6 +43,9 @@ const getters = {
     },
     [GET_SCALE_RANGE](state: Common): number[] {
         return state.scaleRange
+    },
+    [GET_SHOW_OPTS_FORM](state: Common): boolean {
+        return state.isShowOptionsForm
     }
 }
 // 使用dispatch调用
@@ -66,6 +73,9 @@ const mutations = {
     },
     [SET_SCALE_RANGE](state: Common, range: number[]): void {
         state.scaleRange = range
+    },
+    [SET_SHOW_OPTS_FORM](state: Common, val: boolean): void {
+        state.isShowOptionsForm = val
     }
 }
 
