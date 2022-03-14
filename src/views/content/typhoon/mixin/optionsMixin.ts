@@ -62,6 +62,21 @@ class BaseOptionsMixin extends Vue {
         })
         return false
     }
+
+    /**
+     * 判断是否显示 实时台风信息form(div)
+     *
+     * @readonly
+     * @type {boolean}
+     * @memberof BaseOptionsMixin
+     */
+    get isShowTyRealDataForm(): boolean {
+        return (
+            this.optsTyGroupPathLayers.findIndex((temp) => {
+                return temp === GroupPathLayerOptEnum.TY_REAL_DATA_FORM
+            }) > 0
+        )
+    }
 }
 
 export { BaseOptionsMixin }

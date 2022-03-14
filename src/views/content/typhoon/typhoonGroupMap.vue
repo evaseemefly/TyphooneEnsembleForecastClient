@@ -615,7 +615,8 @@ export default class TyGroupMap extends mixins(
         isShow: true,
         layerType: DefaultTyGroupPathOptions.layerType,
         gpId: DEFAULT_TYPHOON_GROUP_PATH_ID,
-        isShowOutlinePolyLayer: false
+        isShowOutlinePolyLayer: true, // 是否显示台风外侧路径多边形图层
+        isShowTyDetailForm: false // 是否显示台风实时信息form(div)
         // isShowOutlinePolyLayer:
         //     this.isShowOutlinePolyLayer !== undefined ? this.isShowOutlinePolyLayer : true,
         // isShowOutlinePolyLayer: this.isShowOutlinePolyLayerTest
@@ -623,6 +624,11 @@ export default class TyGroupMap extends mixins(
     @Watch('isShowOutlinePolyLayer')
     onShowOutlinePolyLayer(val: boolean): void {
         this.tyGroupOptions.isShowOutlinePolyLayer = val
+    }
+
+    @Watch('isShowTyRealDataForm')
+    onShowTyRealDataForm(val: boolean): void {
+        this.tyGroupOptions.isShowTyDetailForm = val
     }
     stationSurgeIconOptions: ITyStationLayerOptions = {
         isShow: false,
@@ -1850,7 +1856,8 @@ export default class TyGroupMap extends mixins(
 
     // 找到当前时间对应的 tyGroup 对应的 realdata,信息,并添加至map
     // 21-08-15 加入差值
-    addTyTargetDtRealData2Map(targetDt: Date): void {
+    // isShowTyRealDataForm 是否显示台风当前信息框
+    addTyTargetDtRealData2Map(targetDt: Date, isShowTyRealDataForm = false): void {
         const that = this
         const mymap: any = this.$refs.basemap['mapObject']
         this.clearTyRealDataLayer()
@@ -1947,7 +1954,9 @@ export default class TyGroupMap extends mixins(
                 fillOpacity: 0.5
             }).addTo(mymap)
             // + 21-04-22 鼠标移入当前 circle 显示该 divIcon
-            this.addTyphoonRealDataDiv2Map(typhoonStatus)
+            if (isShowTyRealDataForm) {
+                this.addTyphoonRealDataDiv2Map(typhoonStatus)
+            }
         }
     }
 
@@ -2062,7 +2071,7 @@ export default class TyGroupMap extends mixins(
         this.tyFieldOptions.forecastDt = valNew
         this.stationSurgeIconOptions.forecastDt = valNew
         // TODO:[-] 21-05-31 将 当前时间对应的台风信息form 添加至 map
-        this.addTyTargetDtRealData2Map(valNew)
+        this.addTyTargetDtRealData2Map(valNew, this.tyGroupOptions.isShowTyDetailForm)
     }
 
     @Watch('stationSurgeIconOptions', { immediate: true, deep: true })
@@ -2154,6 +2163,11 @@ export default class TyGroupMap extends mixins(
                 this.clearTyGroupOutlineGroupLayer()
             } else if (val.isShow) {
                 this.loadGroupTyphoonLine(true)
+            }
+        }
+        if (val.isShowTyDetailForm != oldVal.isShowTyDetailForm) {
+            if (!val.isShowTyDetailForm) {
+                this.clearTyRealDataLayer()
             }
         }
     }

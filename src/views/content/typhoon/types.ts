@@ -94,6 +94,7 @@ export interface ITyGroupPathOptions extends ILayerDisplayOptions {
     timeStamp: string
     gpId: number
     isShowOutlinePolyLayer: boolean
+    isShowTyDetailForm: boolean // 是否显示台风当前位置的详情form
 }
 
 /**
@@ -111,7 +112,8 @@ const DefaultTyGroupPathOptions: ITyGroupPathOptions = {
     timeStamp: DEFAULTTIMESTAMP,
     isShow: false,
     layerType: LayerTypeEnum.GROUP_PATH_LAYER,
-    isShowOutlinePolyLayer: true
+    isShowOutlinePolyLayer: true,
+    isShowTyDetailForm: false
 }
 
 export interface ITyLayer extends ILayerDisplayOptions, ISurgeLayer {}

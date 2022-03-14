@@ -27,7 +27,12 @@ enum GroupPathLayerOptEnum {
     /**
      * 台风的当前大风半径 circle
      */
-    TY_CIRCLE_LAYER = 715
+    TY_CIRCLE_LAYER = 715,
+
+    /**
+     * 台风实时信息form div
+     */
+    TY_REAL_DATA_FORM = 716
 }
 
 export { GroupPathLayerOptEnum }

@@ -24,28 +24,34 @@ export default class TyphoonOptionsCard extends IBaseOptionsCard {
                 val: 'opt1',
                 checked: true
             },
-            {
-                title: '集合路径',
-                key: GroupPathLayerOptEnum.GROUP_PATH_LAYER,
-                val: 'opt2',
-                checked: false
-            },
+            // {
+            //     title: '集合路径',
+            //     key: GroupPathLayerOptEnum.GROUP_PATH_LAYER,
+            //     val: 'opt2',
+            //     checked: false
+            // },
             {
                 title: '集合路径外轮廓',
                 key: GroupPathLayerOptEnum.OUTLINE_POLYGON_LAYER,
                 val: 'opt3',
-                checked: false
+                checked: true
             },
+            // {
+            //     title: '终点的中心概率圆',
+            //     key: GroupPathLayerOptEnum.LAST_CENTER_CIRCLE_LAYER,
+            //     val: 'opt3',
+            //     checked: false
+            // },
+            // {
+            //     title: '台风的当前大风半径',
+            //     key: GroupPathLayerOptEnum.TY_CIRCLE_LAYER,
+            //     val: 'opt3',
+            //     checked: false
+            // },
             {
-                title: '终点的中心概率圆',
-                key: GroupPathLayerOptEnum.LAST_CENTER_CIRCLE_LAYER,
-                val: 'opt3',
-                checked: false
-            },
-            {
-                title: '台风的当前大风半径',
-                key: GroupPathLayerOptEnum.TY_CIRCLE_LAYER,
-                val: 'opt3',
+                title: '台风实时信息框',
+                key: GroupPathLayerOptEnum.TY_REAL_DATA_FORM,
+                val: 'opt4',
                 checked: false
             }
         ]
