@@ -2155,14 +2155,14 @@ export default class TyGroupMap extends mixins(
             } else if (val.isShow) {
                 const showMsg = `加载台风:${val.tyCode}集合路径`
                 this.$notify({ title: '成功', message: showMsg, type: 'success' })
-                this.loadGroupTyphoonLine()
+                this.loadGroupTyphoonLine(val.isShowOutlinePolyLayer)
             }
         }
         if (val.isShowOutlinePolyLayer != oldVal.isShowOutlinePolyLayer) {
             if (!val.isShowOutlinePolyLayer) {
                 this.clearTyGroupOutlineGroupLayer()
             } else if (val.isShow) {
-                this.loadGroupTyphoonLine(true)
+                this.loadGroupTyphoonLine(val.isShowOutlinePolyLayer)
             }
         }
         if (val.isShowTyDetailForm != oldVal.isShowTyDetailForm) {

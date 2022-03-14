@@ -5,6 +5,7 @@
             :visible.sync="drawer"
             :direction="direction"
             :before-close="handleClose"
+            :size="drawerSize"
         >
             <div class="drawer-content">
                 <div class="options-drawer-card-root">
@@ -27,6 +28,7 @@ export default class OptionsDrawer extends Vue {
     mydata: any = null
     drawer = false
     direction = 'ltr'
+    drawerSize = '20%' // 设置抽屉的宽度
 
     @Getter(GET_SHOW_OPTS_FORM, { namespace: 'common' }) getShowOptsForm
 
