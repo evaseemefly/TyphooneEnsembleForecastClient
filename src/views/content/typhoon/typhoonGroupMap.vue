@@ -614,7 +614,15 @@ export default class TyGroupMap extends mixins(
         forecastDt: DefaultTyGroupPathOptions.forecastDt,
         isShow: true,
         layerType: DefaultTyGroupPathOptions.layerType,
-        gpId: DEFAULT_TYPHOON_GROUP_PATH_ID
+        gpId: DEFAULT_TYPHOON_GROUP_PATH_ID,
+        isShowOutlinePolyLayer: false
+        // isShowOutlinePolyLayer:
+        //     this.isShowOutlinePolyLayer !== undefined ? this.isShowOutlinePolyLayer : true,
+        // isShowOutlinePolyLayer: this.isShowOutlinePolyLayerTest
+    }
+    @Watch('isShowOutlinePolyLayer')
+    onShowOutlinePolyLayer(val: boolean): void {
+        this.tyGroupOptions.isShowOutlinePolyLayer = val
     }
     stationSurgeIconOptions: ITyStationLayerOptions = {
         isShow: false,
@@ -1559,7 +1567,7 @@ export default class TyGroupMap extends mixins(
 
     // + 21-04-20 将 台风 list add to map
     // + 21-10-19 将获取色标提取到外面来
-    loadGroupTyphoonLine(): void {
+    loadGroupTyphoonLine(isShowOutlinePolyLayer = false): void {
         const that = this
         const mymap: L.Map = this.$refs.basemap['mapObject']
         const tyGroupPathLine = new TyGroupPathLine(mymap, that.tyGroupLineList)
@@ -1570,7 +1578,7 @@ export default class TyGroupMap extends mixins(
         const tempCenterPathLine = new TyGroupCenterPathLine(mymap, that.tyGroupLineList)
         // 注意此处还需要对最后的圆根据切线进行横断切分
         const lastCircle2Poly = tempCenterPathLine.getLastRadiusCirle2Poly()
-        const tyPolygon = new TyphoonPolygon(that.tyGroupLineList, mymap)
+
         // TODO:[-] 22-03-04 获取所有的路径折线
         const allPathPolyline: L.Polyline[] = tyGroupPathLine.getTyGroupPolyLineLayers()
         // --------
@@ -1641,7 +1649,8 @@ export default class TyGroupMap extends mixins(
         // 获取台风外侧的包络
         // TODO:[*] 22-03-02 此处会造成绘制多边形错误
         // + 22-03-13 加入了根据配置是否加载 台风集合路径外包络多边形图层
-        if (this.isShowOutlinePolyLayer) {
+        if (isShowOutlinePolyLayer) {
+            const tyPolygon = new TyphoonPolygon(that.tyGroupLineList, mymap)
             this.tyOutlineGroupLayers = tyPolygon.generateCircle()
             // const tyOutLineGroupLayer = tyPolygon.generateCircle(outlines)
             this.currentGroupPathPolyLineLayerGroup = tempTyGroupPolyLineLayerGroup
@@ -2126,7 +2135,7 @@ export default class TyGroupMap extends mixins(
     }
 
     // TODO:[-] 21-05-19 根据监听当前的 tyGroupOptions 来确定 指定 tyGroupPath(center) 对应的时间与 tyCode,timeStamp
-    @Watch('tyGroupOptions', { immediate: true, deep: true })
+    @Watch('getTyGroupOptions', { immediate: true, deep: true })
     onTyGroupOptions(val: ITyGroupPathOptions, oldVal: ITyGroupPathOptions): void {
         // 现在 isShow=true 且 old isShow=false
         // 需要前后两次 isShow 发生了变化才会触发以下操作
@@ -2138,6 +2147,13 @@ export default class TyGroupMap extends mixins(
                 const showMsg = `加载台风:${val.tyCode}集合路径`
                 this.$notify({ title: '成功', message: showMsg, type: 'success' })
                 this.loadGroupTyphoonLine()
+            }
+        }
+        if (val.isShowOutlinePolyLayer != oldVal.isShowOutlinePolyLayer) {
+            if (!val.isShowOutlinePolyLayer) {
+                this.clearTyGroupOutlineGroupLayer()
+            } else if (val.isShow) {
+                this.loadGroupTyphoonLine(true)
             }
         }
     }
@@ -2596,6 +2612,10 @@ export default class TyGroupMap extends mixins(
     zoomUpdated(valNew: number, valOld: number): void {
         this.zoom = valNew
         // console.log(`new:${valNew}|old:${valOld}`)
+    }
+
+    get getTyGroupOptions(): ITyGroupPathOptions {
+        return { ...this.tyGroupOptions }
     }
 
     get getStationOptions(): { stationCode: string; stationName: string } {

@@ -93,6 +93,7 @@ export interface ITyGroupPathOptions extends ILayerDisplayOptions {
     forecastDt: Date
     timeStamp: string
     gpId: number
+    isShowOutlinePolyLayer: boolean
 }
 
 /**
@@ -109,7 +110,8 @@ const DefaultTyGroupPathOptions: ITyGroupPathOptions = {
     forecastDt: DEFAULT_DATE,
     timeStamp: DEFAULTTIMESTAMP,
     isShow: false,
-    layerType: LayerTypeEnum.GROUP_PATH_LAYER
+    layerType: LayerTypeEnum.GROUP_PATH_LAYER,
+    isShowOutlinePolyLayer: true
 }
 
 export interface ITyLayer extends ILayerDisplayOptions, ISurgeLayer {}
