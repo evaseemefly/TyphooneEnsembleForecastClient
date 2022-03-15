@@ -325,6 +325,35 @@ class IconTyphoonCirlePulsing {
 }
 
 /**
+ * 台风自定义 icon (图片)
+ *
+ * @class IconTyphoonCustom
+ * @extends {IconTyphoonCirlePulsing}
+ */
+class IconTyphoonCustom extends IconTyphoonCirlePulsing {
+    toHtml(): string {
+        const that = this
+        const iconBorderWidth = that.getPlusingIconRectangle()[0]
+        const iconBorderHeight = that.getPlusingIconRectangle()[1]
+        const iconPulsingWidth = that.getPlusingIconBorderRectangle()[0]
+        const iconPulsingHeight = that.getPlusingIconBorderRectangle()[1]
+        let divHtml = ''
+        const cirleUnit = 12
+        const cirleRadius = `${cirleUnit}px`
+        divHtml = `<div class="my-leaflet-pulsing-marker" >
+                <div class="my-leaflet-custom-icon-border orange}" style="width:${cirleRadius};height:${cirleRadius};left:${-cirleUnit /
+            2}px;top:${-cirleUnit / 2}px"></div>
+                <div class="my-leaflet-custom-icon orange}" style="width: ${cirleRadius};height:${cirleRadius};left:${-cirleUnit /
+            2}px;top:${-cirleUnit / 2}px">
+            <img>
+            </div>
+              </div>`
+
+        return divHtml
+    }
+}
+
+/**
  * 海洋站精简 icon form 精简信息框
  *
  * @class IconStationSurge
@@ -395,4 +424,10 @@ class IconDetailedStationSurge {
         this.productTypeStr = productTypeStr
     }
 }
-export { IconCirlePulsing, IconMinStationSurge, IconDetailedStationSurge, IconTyphoonCirlePulsing }
+export {
+    IconCirlePulsing,
+    IconMinStationSurge,
+    IconDetailedStationSurge,
+    IconTyphoonCirlePulsing,
+    IconTyphoonCustom
+}

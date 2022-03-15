@@ -13,7 +13,7 @@ import { RADIUSUNIT } from '@/const/typhoon'
 import { DEFAULTTYCODE, DEFAULTTIMESTAMP } from '@/const/typhoon'
 import { ScaleColor, TyGroupPathScaleColor } from '@/common/scaleColor'
 import { getTargetTyGroupDistDate, getTargetTyGroupDateRange } from '@/api/tyhoon'
-import { IconTyphoonCirlePulsing } from '@/views/members/icon/pulsingIcon'
+import { IconTyphoonCirlePulsing, IconTyphoonCustom } from '@/views/members/icon/pulsingIcon'
 // mid models
 import {
     TyphoonComplexGroupRealDataMidModel,
@@ -185,7 +185,7 @@ class TyGroupPathLine {
                 color: polyColor,
                 opacity: 0.2,
                 fillOpacity: 0.2,
-                weight: 1.5
+                weight: 1.7
             })
             // TODO:[*] 22-02-09 尝试在每个节点加入 cirle
             // polygonPoint.map((temp) => {
@@ -540,11 +540,18 @@ class TyGroupCenterPathLine extends TyGroupPathLine {
             {
                 indexTyGroup++
                 temp.listRealdata.forEach((tempRealdata) => {
-                    // TODO:[-] 21-08-26 新加入的台风所在位置 point
+                    // [-] 21-08-26 新加入的台风所在位置 point
                     const tyMax = 10
                     const tyMin = 1
-                    // TODO:[-] 21-08-13 对于当前台风位置的脉冲icon
-                    const tyCirleIcon = new IconTyphoonCirlePulsing({
+                    // [-] 21-08-13 对于当前台风位置的脉冲icon
+                    // TODO:[-] 22-03-15 目前尝试使用自定义台风icon图标的方式
+                    // const tyCirleIcon = new IconTyphoonCirlePulsing({
+                    //     val: 10,
+                    //     max: tyMax,
+                    //     min: tyMin,
+                    //     iconType: IconTypeEnum.TY_PATH_ICON
+                    // })
+                    const tyCirleIcon = new IconTyphoonCustom({
                         val: 10,
                         max: tyMax,
                         min: tyMin,
@@ -565,7 +572,22 @@ class TyGroupCenterPathLine extends TyGroupPathLine {
                         icon: tyDivIcon,
                         customData: typhoonStatus
                     })
-                    tyPointsLayers.push(tyPulsingMarker)
+                    // TODO:[-] 22-03-15 修改为 台风img marker
+                    const tyCustomIcon = L.icon({
+                        iconUrl: '/static/icons/ty_icon.svg',
+                        // shadowUrl: '/public/static/icons/ty_icon.svg',
+
+                        iconSize: [40, 40], // size of the icon
+                        // shadowSize: [50, 64], // size of the shadow
+                        iconAnchor: [20, 20], // point of the icon which will correspond to marker's location
+                        className: 'my-leaflet-custom-icon'
+                        // shadowAnchor: [4, 62], // the same for the shadow
+                        // popupAnchor: [-3, -76] // point from which the popup should open relative to the iconAnchor
+                    })
+                    const tyCustomMarker = L.marker([tempRealdata.lat, tempRealdata.lon], {
+                        icon: tyCustomIcon
+                    })
+                    tyPointsLayers.push(tyCustomMarker)
                 })
             }
         })
