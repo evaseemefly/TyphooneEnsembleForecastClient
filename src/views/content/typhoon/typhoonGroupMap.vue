@@ -1562,7 +1562,7 @@ export default class TyGroupMap extends mixins(
                 that.tyGroupLineList = arrTyComplexGroupRealdata
                 // TODO:[*] ! WARNING 21-05-07 此处注意需要动态的获取 tyTimestamp 与 tyCode
                 // 21-10-19 注意此处不再加载中间路径
-                that.loadGroupTyphoonLine()
+                that.loadGroupTyphoonLine(this.tyGroupOptions.isShowOutlinePolyLayer)
                 that.loadCenterTyphoonPoints()
                 that.addTyGroupProPathCircles()
 

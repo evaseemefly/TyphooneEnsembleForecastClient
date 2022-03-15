@@ -37,6 +37,16 @@ export default class IBaseOptionsCard extends Vue {
         options: { title: string; key: number; val: string; checked: boolean }[]
     }
 
+    @Prop()
+    defaultOptionsItems: {
+        cardTitle: string
+        options: { title: string; key: number; val: string; checked: boolean }[]
+    }
+
+    created() {
+        this.optionItems = this.defaultOptionsItems
+    }
+
     unChecked(val: { checked: boolean }): void {
         val.checked = !val.checked
     }

@@ -52,7 +52,7 @@ class BaseOptionsMixin extends Vue {
         return (
             this.optsTyGroupPathLayers.findIndex((temp) => {
                 return temp === GroupPathLayerOptEnum.OUTLINE_POLYGON_LAYER
-            }) > 0
+            }) >= 0
         )
     }
 

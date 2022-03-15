@@ -9,7 +9,9 @@
         >
             <div class="drawer-content">
                 <div class="options-drawer-card-root">
-                    <TyphoonOptionsCard></TyphoonOptionsCard>
+                    <TyphoonOptionsCard
+                        :defaultOptionsItems="tyGroupDefaultOptions"
+                    ></TyphoonOptionsCard>
                 </div>
             </div>
         </el-drawer>
@@ -18,6 +20,7 @@
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 import { Mutation, namespace, Getter } from 'vuex-class'
+import { GroupPathLayerOptEnum } from '@/enum/layersOpt/LayersOpt'
 import OptionsDrawerCard from '@/components/card/BaseOptionsCard.vue'
 import TyphoonOptionsCard from '@/components/card/TyphoonOptionsCard.vue'
 // vuex 常量
@@ -29,6 +32,21 @@ export default class OptionsDrawer extends Vue {
     drawer = false
     direction = 'ltr'
     drawerSize = '20%' // 设置抽屉的宽度
+
+    tyGroupDefaultOptions: {
+        cardTitle: string
+        options: { title: string; key: number; val: string; checked: boolean }[]
+    } = {
+        cardTitle: '',
+        options: [
+            {
+                title: '台风中心路径',
+                key: GroupPathLayerOptEnum.CENTER_PATH_LAYER,
+                val: 'opt1',
+                checked: true
+            }
+        ]
+    }
 
     @Getter(GET_SHOW_OPTS_FORM, { namespace: 'common' }) getShowOptsForm
 

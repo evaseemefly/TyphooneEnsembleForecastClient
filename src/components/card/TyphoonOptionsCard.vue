@@ -15,39 +15,33 @@ export default class TyphoonOptionsCard extends IBaseOptionsCard {
     optionItems: {
         cardTitle: string
         options: { title: string; key: number; val: string; checked: boolean }[]
-    } = {
-        cardTitle: '台风集合路径配置项',
-        options: [
+    } = { cardTitle: '台风集合路径配置项', options: [] }
+    mounted() {
+        this._initData()
+    }
+    created() {
+        console.log('drawer被创建了')
+    }
+
+    beforeCreate() {
+        console.log('drawer拟被创建')
+    }
+
+    _initData() {
+        // TODO:[-] 22-03-15 注意此处由于通过计算属性监听 optionItems 的变化，所以需要在 mounted 中进行初始化的操作
+        this.optionItems.options = [
             {
                 title: '台风中心路径',
                 key: GroupPathLayerOptEnum.CENTER_PATH_LAYER,
                 val: 'opt1',
                 checked: true
             },
-            // {
-            //     title: '集合路径',
-            //     key: GroupPathLayerOptEnum.GROUP_PATH_LAYER,
-            //     val: 'opt2',
-            //     checked: false
-            // },
             {
                 title: '集合路径外轮廓',
                 key: GroupPathLayerOptEnum.OUTLINE_POLYGON_LAYER,
                 val: 'opt3',
                 checked: true
             },
-            // {
-            //     title: '终点的中心概率圆',
-            //     key: GroupPathLayerOptEnum.LAST_CENTER_CIRCLE_LAYER,
-            //     val: 'opt3',
-            //     checked: false
-            // },
-            // {
-            //     title: '台风的当前大风半径',
-            //     key: GroupPathLayerOptEnum.TY_CIRCLE_LAYER,
-            //     val: 'opt3',
-            //     checked: false
-            // },
             {
                 title: '台风实时信息框',
                 key: GroupPathLayerOptEnum.TY_REAL_DATA_FORM,
@@ -56,7 +50,6 @@ export default class TyphoonOptionsCard extends IBaseOptionsCard {
             }
         ]
     }
-    mounted() {}
 
     get getOptionVals(): number[] {
         const children = this.optionItems.options.filter((child) => {
@@ -73,9 +66,9 @@ export default class TyphoonOptionsCard extends IBaseOptionsCard {
         return keys
     }
 
-    @Watch('getOptionVals')
+    @Watch('getOptionVals', { immediate: true })
     onOptionVals(vals: number[]): void {
-        console.log(`监听到optionsvals:${vals}`)
+        // console.log(`监听到optionsvals:${vals}`)
         this.setTyGroupPathLayersOpts(vals)
     }
 

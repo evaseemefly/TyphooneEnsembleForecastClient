@@ -215,7 +215,8 @@ class TyGroupPathLine {
      */
     public getOutLinePoly(): L.Polygon {
         return new L.Polygon(this.getOutLinePolyLatlng(), {
-            color: '#34495e',
+            // color: '#34495e',
+            color: '#dddddd56',
             opacity: 0,
             fillOpacity: 0.4
         })
