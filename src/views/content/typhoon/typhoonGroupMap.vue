@@ -615,7 +615,7 @@ export default class TyGroupMap extends mixins(
         isShow: true,
         layerType: DefaultTyGroupPathOptions.layerType,
         gpId: DEFAULT_TYPHOON_GROUP_PATH_ID,
-        isShowOutlinePolyLayer: true, // 是否显示台风外侧路径多边形图层
+        isShowOutlinePolyLayer: false, // 是否显示台风外侧路径多边形图层
         isShowTyDetailForm: false // 是否显示台风实时信息form(div)
         // isShowOutlinePolyLayer:
         //     this.isShowOutlinePolyLayer !== undefined ? this.isShowOutlinePolyLayer : true,
@@ -779,6 +779,13 @@ export default class TyGroupMap extends mixins(
         //     this.finishDate = new Date(Math.max(...res))
         //     this.startDate = new Date(Math.min(...res))
         // })
+        this._initOptionsField()
+    }
+
+    _initOptionsField(): void {
+        // TODO:[-] 22-03-15 注意需要将 tyGroupOptions.isShowOutlinePolyLayer 根据 mixin 中的 isShowOutlinePolyLayer 计算属性赋值放到 mounted 中
+        this.tyGroupOptions.isShowOutlinePolyLayer = this.isShowOutlinePolyLayer
+        this.tyGroupOptions.isShowTyDetailForm = this.isShowTyRealDataForm
     }
 
     // 加载海洋站风暴潮增水
@@ -2161,6 +2168,7 @@ export default class TyGroupMap extends mixins(
         if (val.isShowOutlinePolyLayer != oldVal.isShowOutlinePolyLayer) {
             if (!val.isShowOutlinePolyLayer) {
                 this.clearTyGroupOutlineGroupLayer()
+                // this.clearGroupLayer(this.currentGroupPathPolyLineLayerGroup)
             } else if (val.isShow) {
                 this.loadGroupTyphoonLine(val.isShowOutlinePolyLayer)
             }

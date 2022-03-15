@@ -13,7 +13,7 @@ export interface IOpts {
     tyGroupPathLayersOpts?: { options: GroupPathLayerOptEnum[] }
 }
 const state: IOpts = {
-    tyGroupPathLayersOpts: undefined
+    tyGroupPathLayersOpts: { options: [] }
 }
 const getters = {
     // tyGroupPathLayersOpts: (state: IOpts): { options: GroupPathLayerOptEnum[] } | undefined =>

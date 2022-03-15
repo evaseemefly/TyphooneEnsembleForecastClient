@@ -185,7 +185,7 @@ class TyGroupPathLine {
                 color: polyColor,
                 opacity: 0.2,
                 fillOpacity: 0.2,
-                weight: 3
+                weight: 1.5
             })
             // TODO:[*] 22-02-09 尝试在每个节点加入 cirle
             // polygonPoint.map((temp) => {

@@ -19,36 +19,10 @@ export default class TyphoonOptionsCard extends IBaseOptionsCard {
     mounted() {
         this._initData()
     }
-    created() {
-        console.log('drawer被创建了')
-    }
-
-    beforeCreate() {
-        console.log('drawer拟被创建')
-    }
 
     _initData() {
         // TODO:[-] 22-03-15 注意此处由于通过计算属性监听 optionItems 的变化，所以需要在 mounted 中进行初始化的操作
-        this.optionItems.options = [
-            {
-                title: '台风中心路径',
-                key: GroupPathLayerOptEnum.CENTER_PATH_LAYER,
-                val: 'opt1',
-                checked: true
-            },
-            {
-                title: '集合路径外轮廓',
-                key: GroupPathLayerOptEnum.OUTLINE_POLYGON_LAYER,
-                val: 'opt3',
-                checked: true
-            },
-            {
-                title: '台风实时信息框',
-                key: GroupPathLayerOptEnum.TY_REAL_DATA_FORM,
-                val: 'opt4',
-                checked: false
-            }
-        ]
+        this.optionItems = this.defaultOptionsItems
     }
 
     get getOptionVals(): number[] {
