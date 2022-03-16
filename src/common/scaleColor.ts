@@ -49,18 +49,28 @@ class TyGroupPathScaleColor extends ScaleColor {
         //     '#cf3759',
         //     '#93003a'
         // ])
+        // this.scale = chroma.scale([
+        //     '#007991',
+        //     '#1d899a',
+        //     '#2e99a2',
+        //     '#3ca9ab',
+        //     '#49bab3',
+        //     '#55cbbc',
+        //     '#61dcc5',
+        //     '#6dedcd',
+        //     '#78ffd6'
+        // ])
         this.scale = chroma.scale([
-            '#007991',
-            '#1d899a',
-            '#2e99a2',
-            '#3ca9ab',
-            '#49bab3',
-            '#55cbbc',
-            '#61dcc5',
-            '#6dedcd',
-            '#78ffd6'
+            '#06beb6',
+            '#19bcb7',
+            '#24bbb8',
+            '#2db9b9',
+            '#34b8bb',
+            '#3ab6bc',
+            '#3fb4bd',
+            '#44b3be',
+            '#48b1bf'
         ])
-
         // this.scale = chroma.scale('Viridis')
         // this.scale = chroma.scale([
         //     '#569ddf',

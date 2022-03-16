@@ -102,10 +102,20 @@ class TyGroupPathLine {
     polyColor = DEFAULT_COLOR
     tyGroupProPathCircles: { lat: number; lon: number; radius: number }[] = []
     // tyCenterPath:any
+
+    /**
+     * Creates an instance of TyGroupPathLine.
+     * @param {L.Map} mymap
+     * @param {Array<TyphoonComplexGroupRealDataMidModel>} tyGroupPathLines
+     * @param {boolean} [isDynamicColorScale=true]
+     * @param {{ lineWeight: number }} options
+     * @memberof TyGroupPathLine
+     */
     constructor(
         mymap: L.Map,
         tyGroupPathLines: Array<TyphoonComplexGroupRealDataMidModel>,
-        isDynamicColorScale = true
+        isDynamicColorScale = true,
+        options: { lineWeight: number; opacity: number } = { lineWeight: 1.7, opacity: 0.2 }
     ) {
         this.tyGroupPathLines = tyGroupPathLines
         this.myMap = mymap
@@ -114,7 +124,7 @@ class TyGroupPathLine {
         this.sortTyGroupLinesList()
         //
         this.initColorScale()
-        this.initTyGroupPolyLineLayer(isDynamicColorScale)
+        this.initTyGroupPolyLineLayer(isDynamicColorScale, options)
     }
 
     get tyGroupPathListCount(): number {
@@ -135,22 +145,23 @@ class TyGroupPathLine {
         return this.tyColorScale.getColor(index)
     }
 
-    protected initTyGroupPolyLineLayer(isDynamicColorScale = true): void {
+    /**
+     * 将当前 this.tyGroupPathLines 的路径折线添加至 map
+     *
+     * @protected
+     * @param {boolean} [isDynamicColorScale=true]
+     * @param {{ lineWeight: number }} options 配置项
+     * @memberof TyGroupPathLine
+     */
+    protected initTyGroupPolyLineLayer(
+        isDynamicColorScale = true,
+        options: { lineWeight: number; opacity: number } = { lineWeight: 1.7, opacity: 0.2 }
+    ): void {
         let indexTyGroup = 0
-        // this.setColorScale([
-        //     '#00429d',
-        //     '#2e59a8',
-        //     '#4771b2',
-        //     '#5d8abd',
-        //     '#73a2c6',
-        //     '#8abccf',
-        //     '#a5d5d8',
-        //     '#c5eddf',
-        //     '#ffffe0'
-        // ])
         this.tyGroupPathLines.map((temp) => {
             indexTyGroup++
             const polygonPoint: L.LatLng[] = []
+            // 动态色标对象
             const cirleScaleColor = new ScaleColor(0, temp.listRealdata.length)
             // cirleScaleColor.setScale('Viridis')
             cirleScaleColor.setScale([
@@ -183,9 +194,9 @@ class TyGroupPathLine {
             // 为当前 线段添加 自定义 data
             const groupPolyLine = L.polyline(polygonPoint, {
                 color: polyColor,
-                opacity: 0.2,
+                opacity: options.opacity,
                 fillOpacity: 0.2,
-                weight: 1.7
+                weight: options.lineWeight
             })
             // TODO:[*] 22-02-09 尝试在每个节点加入 cirle
             // polygonPoint.map((temp) => {
@@ -222,6 +233,12 @@ class TyGroupPathLine {
         })
     }
 
+    /**
+     * 添加中间路径的折线到地图上
+     *
+     * @return {*}  {L.LayerGroup<any>}
+     * @memberof TyGroupPathLine
+     */
     public addPolyLines2MapByGroup(): L.LayerGroup<any> {
         const tyGroupPolyLineLayers = this.getTyGroupPolyLineLayers()
         const tempTyGroupPolyLineLayerGroup = L.layerGroup([...tyGroupPolyLineLayers]).addTo(
@@ -480,8 +497,12 @@ class TyGroupPathLine {
  */
 class TyGroupCenterPathLine extends TyGroupPathLine {
     protected tyCenterPointsLayers: L.Layer[] = []
-    constructor(mymap: L.Map, tyGroupPathLines: Array<any>) {
-        super(mymap, tyGroupPathLines, false)
+    constructor(
+        mymap: L.Map,
+        tyGroupPathLines: Array<any>,
+        options: { lineWeight: number; opacity: number } = { lineWeight: 1.7, opacity: 0.2 }
+    ) {
+        super(mymap, tyGroupPathLines, false, options)
         this.initCenterPulsingIcon()
     }
     /**

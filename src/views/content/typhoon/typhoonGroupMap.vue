@@ -1669,13 +1669,18 @@ export default class TyGroupMap extends mixins(
             this.currentGroupPathPolyLineLayerGroup = tempTyGroupPolyLineLayerGroup
         }
     }
+
+    // 加载中间路径的 polyline 与 center
     loadCenterTyphoonPoints(): void {
         const mymap: any = this.$refs.basemap['mapObject']
         const centerGroupLineList = this.tyGroupLineList.filter((temp) => {
             return temp.groupBp === 0 && temp.tyPathType === 'c' && temp.tyPathMarking === 0
         })
         // TODO:[*] 注意此处若使用 this.mymap 会出错
-        const tyGroupCenterPathLine = new TyGroupCenterPathLine(mymap, [...centerGroupLineList])
+        const tyGroupCenterPathLine = new TyGroupCenterPathLine(mymap, [...centerGroupLineList], {
+            lineWeight: 5,
+            opacity: 0.8
+        })
         const tempTyGroupCenterPathIconLayerGroup = tyGroupCenterPathLine.addCenterCirlePulsing2MapByGroup()
         this.currentCenterGroupPathPolyLineLayerGroup = tyGroupCenterPathLine.addPolyLines2MapByGroup() // 添加中间路径的折线到map
         // TODO:[-] 22-02-25 暂时加入的加入概率圆
