@@ -224,12 +224,26 @@ export default class CreateCaseForm extends Vue {
         bp: number
         // radius: number
     }[] = [
-        { forecastDt: new Date(2020, 8, 18, 5), lon: 116, lat: 20.5, bp: 995 },
-        { forecastDt: new Date(2020, 8, 18, 11), lon: 115.1, lat: 21.1, bp: 980 },
-        { forecastDt: new Date(2020, 8, 18, 17), lon: 114, lat: 21.4, bp: 970 },
-        { forecastDt: new Date(2020, 8, 18, 23), lon: 113.2, lat: 22.1, bp: 970 },
-        { forecastDt: new Date(2020, 8, 19, 5), lon: 112.3, lat: 22.8, bp: 992 },
-        { forecastDt: new Date(2020, 8, 19, 11), lon: 111.2, lat: 23.7, bp: 998 }
+        // { forecastDt: new Date(2020, 8, 18, 5), lon: 116, lat: 20.5, bp: 995 },
+        // { forecastDt: new Date(2020, 8, 18, 11), lon: 115.1, lat: 21.1, bp: 980 },
+        // { forecastDt: new Date(2020, 8, 18, 17), lon: 114, lat: 21.4, bp: 970 },
+        // { forecastDt: new Date(2020, 8, 18, 23), lon: 113.2, lat: 22.1, bp: 970 },
+        // { forecastDt: new Date(2020, 8, 19, 5), lon: 112.3, lat: 22.8, bp: 992 },
+        // { forecastDt: new Date(2020, 8, 19, 11), lon: 111.2, lat: 23.7, bp: 998 }
+        // 以下台风为 狮子山
+        { forecastDt: new Date(2020, 10, 7, 5), lon: 113.3, lat: 16, bp: 1002 },
+        { forecastDt: new Date(2020, 10, 7, 11), lon: 111.5, lat: 16.4, bp: 995 },
+        { forecastDt: new Date(2020, 10, 7, 17), lon: 111.4, lat: 17.1, bp: 995 },
+        { forecastDt: new Date(2020, 10, 7, 23), lon: 111.3, lat: 17.4, bp: 995 },
+        { forecastDt: new Date(2020, 10, 8, 5), lon: 111.3, lat: 17.5, bp: 992 },
+        { forecastDt: new Date(2020, 10, 8, 11), lon: 110.9, lat: 17.9, bp: 995 },
+        { forecastDt: new Date(2020, 10, 8, 17), lon: 110.8, lat: 18.8, bp: 992 },
+        { forecastDt: new Date(2020, 10, 8, 23), lon: 110.5, lat: 19.3, bp: 990 },
+        { forecastDt: new Date(2020, 10, 9, 5), lon: 109.8, lat: 19.3, bp: 990 },
+        { forecastDt: new Date(2020, 10, 9, 11), lon: 110.1, lat: 19.7, bp: 990 },
+        { forecastDt: new Date(2020, 10, 9, 17), lon: 110, lat: 20, bp: 990 },
+        { forecastDt: new Date(2020, 10, 9, 23), lon: 109.3, lat: 20.1, bp: 990 },
+        { forecastDt: new Date(2020, 10, 10, 5), lon: 108.7, lat: 20.5, bp: 990 }
     ]
     forecastAreaList = [
         {

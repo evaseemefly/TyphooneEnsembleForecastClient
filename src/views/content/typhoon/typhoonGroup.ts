@@ -574,7 +574,9 @@ class TyGroupCenterPathLine extends TyGroupPathLine {
                     })
                     // TODO:[-] 22-03-15 修改为 台风img marker
                     const tyCustomIcon = L.icon({
-                        iconUrl: '/static/icons/ty_icon.svg',
+                        // iconUrl: '/static/icons/ty_icon.svg',
+                        // iconUrl: '/static/icons/ty_icon_noshadow.svg',
+                        iconUrl: '/static/icons/ty_icon_blue.svg',
                         // shadowUrl: '/public/static/icons/ty_icon.svg',
 
                         iconSize: [40, 40], // size of the icon
