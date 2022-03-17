@@ -30,7 +30,7 @@ import 'georaster-layer-for-leaflet'
 import GeoTIFF, { fromUrl, fromUrls, fromArrayBuffer, fromBlob } from 'geotiff'
 import * as plotty from 'plotty'
 // ---
-import { loadCurrentTif, loadFieldSurgeTif, loadProSurgeTif } from '@/api/geo'
+import { loadCurrentTif, loadFieldSurgeTif, loadProSurgeTif, loadMaxSurgeRange } from '@/api/geo'
 import { MaxSurge } from './surge'
 import { AreaEnum } from '@/enum/area'
 import { DictEnum, ProductEnum } from '@/enum/dict'
@@ -525,8 +525,10 @@ class FieldSurgeGeoLayer extends SurgeRasterGeoLayer {
         const that = this
         const forecastDtStr = moment(this.forecastDt).format('YYYY-MM-DD HH')
         try {
+            const maxRangeResp = await loadMaxSurgeRange(that.tyCode, that.tyTimestamp)
             const tifResp = await loadFieldSurgeTif(that.tyCode, that.tyTimestamp, that.forecastDt)
             const urlGeoTifUrl = tifResp.data
+            const maxRange: { max: number; min: number } = maxRangeResp.data
             // 大体思路 获取 geotiff file 的路径，二进制方式读取 -> 使用 georaster 插件实现转换 -> 获取色标，
             // TODO:[-] 20-11-02 将之前的逻辑方式修改为 await 的方式
             // TODO:[-] 20-11-05 在 fetch 请求头中加入跨域的部分
@@ -566,7 +568,7 @@ class FieldSurgeGeoLayer extends SurgeRasterGeoLayer {
             // const min = 0
             // const max = 0.5
             const range = max - min
-            this.scaleRange = [min, max]
+            this.scaleRange = [maxRange.min, maxRange.max]
             // const scale = chroma.scale('Viridis')
             // + 21-07-30 参考 windy 的色标
             // const scale = chroma.scale([

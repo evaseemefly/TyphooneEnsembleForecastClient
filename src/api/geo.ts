@@ -268,6 +268,24 @@ const loadProSurgeTif = (
     })
 }
 
+/**
+ * + 22-03-17
+ *   获取最大风暴增水的范围
+ * @param {string} tyCode
+ * @param {string} tyTimeStamp
+ * @return {*}
+ */
+const loadMaxSurgeRange = (tyCode: string, tyTimeStamp: string) => {
+    const url = `${host}${area}/coverage/surge/range`
+    return axios.get(url, {
+        headers: authHeader(),
+        params: {
+            ty_code: tyCode,
+            ty_timestamp: tyTimeStamp
+        }
+    })
+}
+
 export {
     loadCoverageList,
     loadCoverageInfo,
@@ -281,5 +299,6 @@ export {
     loadWaveBarPaged,
     loadFieldSurgeTif,
     loadMaxSurgeTif,
-    loadProSurgeTif
+    loadProSurgeTif,
+    loadMaxSurgeRange
 }

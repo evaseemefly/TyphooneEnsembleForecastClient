@@ -1,5 +1,5 @@
 <template>
-    <div class="dateBar" ref="datebar">
+    <div class="dateBar" ref="datebar" v-resize="resize">
         <div class="progress-line" @mouseover="overProgressLine" @click="setTimeBar">
             <div id="played" class="played" style="width: 10px;"></div>
             <div class="avbl"></div>
@@ -76,6 +76,31 @@ import { Debounce } from 'vue-debounce-decorator'
 @Component({
     filters: {
         fortmatDate2YMD
+    },
+    // 在vue-property-decorator 中使用 自定义指令参考:
+    // https://github.com/kaorun343/vue-property-decorator/issues/77
+    directives: {
+        resize: {
+            // 指令的名称
+            bind(el, binding) {
+                // el为绑定的元素，binding为绑定给指令的对象
+                const width = '',
+                    height = ''
+                function isReize() {
+                    const style = document.defaultView.getComputedStyle(el)
+                    console.log(style)
+                    // if (width !== style.width || height !== style.height) {
+                    //     binding.value() // 关键
+                    // }
+                    // width = style.width
+                    // height = style.height
+                }
+                el.__vueSetInterval__ = setInterval(isReize, 300)
+            },
+            unbind(el) {
+                clearInterval(el.__vueSetInterval__)
+            }
+        }
     }
 })
 export default class TimeBar extends Vue {
@@ -621,7 +646,7 @@ export default class TimeBar extends Vue {
                 const lastIndex = tempArr.length - 1
                 tempArr = tempArr.slice(1, lastIndex)
                 tempArr.forEach((temp: ChildNode) => {
-                    (temp as HTMLElement).style.width = this.lenUnit * this.interval + 'px'
+                    ;(temp as HTMLElement).style.width = this.lenUnit * this.interval + 'px'
                     // temp.style.width = this.lenUnit * this.interval + "px";
                 })
             }

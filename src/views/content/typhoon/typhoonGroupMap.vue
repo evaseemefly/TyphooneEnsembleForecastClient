@@ -241,7 +241,7 @@ import OptionsDrawer from '@/components/drawer/OptionDrawer.vue'
 // -----
 // 各api
 import { loadOilSpillingAvgRealData, getTargetCodeDateRange } from '@/api/api'
-import { loadFieldSurgeTif } from '@/api/geo'
+import { loadFieldSurgeTif, loadMaxSurgeRange } from '@/api/geo'
 
 // TODO:[-] 20-01-23 尝试将oil的部分操作放在oil 类中()
 // TODO:[-] 21-01-12
