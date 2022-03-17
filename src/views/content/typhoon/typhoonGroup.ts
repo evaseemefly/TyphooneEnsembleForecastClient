@@ -607,8 +607,10 @@ class TyGroupCenterPathLine extends TyGroupPathLine {
                         // shadowAnchor: [4, 62], // the same for the shadow
                         // popupAnchor: [-3, -76] // point from which the popup should open relative to the iconAnchor
                     })
+                    // TODO:[-] 22-03-17 修改之前的台风中心路径由脉冲mark改为台风标准图片marker，切记需要加入 customData!!
                     const tyCustomMarker = L.marker([tempRealdata.lat, tempRealdata.lon], {
-                        icon: tyCustomIcon
+                        icon: tyCustomIcon,
+                        customData: typhoonStatus
                     })
                     tyPointsLayers.push(tyCustomMarker)
                 })
