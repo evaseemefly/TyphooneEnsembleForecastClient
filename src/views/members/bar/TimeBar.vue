@@ -1,5 +1,5 @@
 <template>
-    <div class="dateBar" ref="datebar" v-resize="resize">
+    <div class="dateBar resize-element" ref="datebar">
         <div class="progress-line" @mouseover="overProgressLine" @click="setTimeBar">
             <div id="played" class="played" style="width: 10px;"></div>
             <div class="avbl"></div>
@@ -52,7 +52,7 @@
 </template>
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
-
+import { mixins } from 'vue-class-component'
 import { Mutation, State, namespace, Getter } from 'vuex-class'
 
 import { DateModel } from '@/model/bar/timebar'
@@ -68,11 +68,13 @@ import dateformat from 'dateformat'
 import { fortmatDate2YMD } from '@/common/filter'
 // 引入 mid model
 import { CaseDateInfo } from '@/middle_model/case'
+import { ResizeMixin } from './mixin/resize'
 // import _ from 'underscore'
 // 直接使用 lodash 在配合 vue-property-decorator 时会出现不执行的问题
 import lodash from 'lodash'
 import { debounce } from 'lodash-es'
 import { Debounce } from 'vue-debounce-decorator'
+import { mixin } from 'vue/types/umd'
 @Component({
     filters: {
         fortmatDate2YMD
@@ -88,7 +90,9 @@ import { Debounce } from 'vue-debounce-decorator'
                     height = ''
                 function isReize() {
                     const style = document.defaultView.getComputedStyle(el)
-                    console.log(style)
+                    const record = { height: el.clientHeight, width: el.clientWidth }
+                    console.log(record)
+                    // console.log(style)
                     // if (width !== style.width || height !== style.height) {
                     //     binding.value() // 关键
                     // }
@@ -103,7 +107,7 @@ import { Debounce } from 'vue-debounce-decorator'
         }
     }
 })
-export default class TimeBar extends Vue {
+export default class TimeBar extends mixins(ResizeMixin) {
     mydata: any = null
     datelist: Array<DateModel> = []
     allDateList: Array<DateModel> = []
@@ -278,12 +282,11 @@ export default class TimeBar extends Vue {
         }
     }
 
-    getHeightWidth(): void {
-        this.contentStyleObj.width = this.$refs.datebar.offsetWidth
-        this.contentStyleObj.height = this.$refs.datebar.offsetHeight
-        console.log(
-            `当前 time bar 大小:h:${this.contentStyleObj.height}|w:${this.contentStyleObj.width}`
-        )
+    // [-] 22-03-18 修改此处获取长宽为recordOldValue
+    @Watch('recordOldValue', { immediate: true, deep: true })
+    onRecordWidth(): void {
+        this.contentStyleObj.width = this.recordOldValue.width
+        this.contentStyleObj.height = this.recordOldValue.height
     }
 
     prefixInteger(num: string, length: string): string {
@@ -659,7 +662,7 @@ export default class TimeBar extends Vue {
     mounted() {
         // var myself = this;
         const myself = this
-        this.getHeightWidth()
+        // this.getHeightWidth()
         this.initDate()
         this.caseDateInfo = new CaseDateInfo()
         //  21-01-18 新加入来的为 timebar 加入初始化的 startDt 的所在位置的橙色线条
@@ -667,6 +670,9 @@ export default class TimeBar extends Vue {
         window.onresize = () => {
             myself.contentStyleObj.width = myself.$refs.datebar.offsetWidth
         }
+        // TODO:[-] 22-03-18 加入通过 resizemixin 挂在监听指定div的resize
+        this.watchDivClassName = 'dateBar'
+        this.mountedResize('dateBar')
         // window.onresize = () => {
         //     return (() => {
         //         myself.contentStyleObj.width = myself.$refs.datebar.offsetWidth
