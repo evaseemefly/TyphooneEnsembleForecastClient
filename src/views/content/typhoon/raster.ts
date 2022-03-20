@@ -15,7 +15,7 @@ import chroma from 'chroma-js'
 // import * as GeoTIFF from 'geotiff'
 
 // import * as leafletGeotiff from 'leaflet-canvaslayer-field/dist/leaflet.canvaslayer.field.js'
-// import 'leaflet-canvaslayer-field/dist/leaflet.canvaslayer.field.js'
+import 'leaflet-canvaslayer-field/dist/leaflet.canvaslayer.field.js'
 // import 'leaflet-canvaslayer-field'
 
 // TODO:[-] 20-09-12 暂时放弃使用 d3js，自己手绘，采用现成的第三方库:
