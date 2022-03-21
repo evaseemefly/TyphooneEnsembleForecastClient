@@ -683,12 +683,13 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         if (!item.isChildren) {
             item.isExpanded = !item.isExpanded
         }
+        // item.checked = !item.checked
+        // item.isExpanded = !item.isExpanded
         this.converToolsBar.map((child) => {
             if (child.pid === item.id) {
                 child.isExpanded = !item.isExpanded
             }
         })
-        item.checked = !item.checked
         // 2-1 若为 layer 则去执行修改layer的操作
         if (
             item.toolType == ToolTypeEnum.LAYER &&
@@ -724,16 +725,14 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
             // })
             // tempArr[tempIndex].checked = !item.checked
             // this.converToolsBar = tempArr
-            //---
             // 修改数组的方式3:[可行]
-            // const tempIndex = this.converToolsBar.findIndex((temp) => {
-            //     return temp.id == item.id
-            // })
-            // // 更新数组
-            // const tempObj = this.converToolsBar[tempIndex]
-            // tempObj.checked = !item.checked
-            // this.$set(this.converToolsBar, tempIndex, tempObj)
-            // --
+            const tempIndex = this.converToolsBar.findIndex((temp) => {
+                return temp.id == item.id
+            })
+            // 更新数组
+            const tempObj = this.converToolsBar[tempIndex]
+            tempObj.checked = !item.checked
+            this.$set(this.converToolsBar, tempIndex, tempObj)
             // 修改数组的方式4:[ ]
             // this.converToolsBar.map((temp) => {
             //     if (temp.id === item.id) {
