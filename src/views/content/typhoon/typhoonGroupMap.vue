@@ -322,7 +322,8 @@ import {
     SurgeRasterGeoLayer,
     ProSurgeGeoLayer,
     ProSurgeGeoLayerByGeotiffjsWay1,
-    ProSurgeGeoLayerByGeotiffjsWay2
+    ProSurgeGeoLayerByGeotiffjsWay2,
+    SurgeRasterTifLayer
 } from '@/views/content/typhoon/raster'
 // TODO:[*] 21-04-28 + 脉冲 icon 用来示意海洋站所在位置
 import {
@@ -2196,12 +2197,20 @@ export default class TyGroupMap extends mixins(
             if (this.uniqueRasterLayer) {
                 clearRasterFromMap(mymap, this.uniqueRasterLayer)
             }
+            // TODO:[-] 22-03-21 此处修改为使用新的 canvas 渲染 geotiff raster
             const surgeRasterLayer = new SurgeRasterGeoLayer({
                 tyCode: val.tyCode,
                 tyTimestamp: val.tyTimeStamp,
                 forecastDt: this.forecastDt,
                 scaleList: scaleList
             })
+            // const surgeRasterLayer = new SurgeRasterTifLayer({
+            //     tyCode: val.tyCode,
+            //     tyTimestamp: val.tyTimeStamp,
+            //     forecastDt: this.forecastDt,
+            //     scaleList: scaleList
+            // })
+
             surgeRasterLayer.add2map(mymap, that.$message).then((layer) => {
                 // console.log(surgeRasterLayer)
                 this.setScaleRange(surgeRasterLayer.scaleRange || [])

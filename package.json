@@ -17,6 +17,7 @@
         "@fortawesome/fontawesome-svg-core": "^1.2.25",
         "@fortawesome/vue-fontawesome": "^0.1.8",
         "@geoman-io/leaflet-geoman-free": "^2.11.4",
+        "@turf/inside": "^5.0.0",
         "@turf/turf": "^5.1.6",
         "@types/bootstrap": "^4.3.1",
         "@types/echarts": "^4.1.10",

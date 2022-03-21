@@ -1394,10 +1394,17 @@
 
 "@turf/inside@^4.7.3":
   "integrity" "sha1-5KhJafKIaJGzQ7Ebg/2jCV+6VCw="
-  "resolved" "https://registry.npm.taobao.org/@turf/inside/download/@turf/inside-4.7.3.tgz"
+  "resolved" "https://registry.npmjs.org/@turf/inside/-/inside-4.7.3.tgz"
   "version" "4.7.3"
   dependencies:
     "@turf/invariant" "^4.7.3"
+
+"@turf/inside@^5.0.0":
+  "integrity" "sha1-MRk8fxQpRpv6oWxmhfVCNOWRMaA="
+  "resolved" "https://registry.npmjs.org/@turf/inside/-/inside-5.0.0.tgz"
+  "version" "5.0.0"
+  dependencies:
+    "@turf/invariant" "^5.0.0"
 
 "@turf/interpolate@5.1.x":
   "integrity" "sha1-DxLwq3VtbdEK+ykMpuh3ve8BPqo="
@@ -1429,10 +1436,10 @@
 
 "@turf/invariant@^4.7.3":
   "integrity" "sha1-U482fSPBE/yEnXDJpSS4Vjh0YB0="
-  "resolved" "https://registry.npm.taobao.org/@turf/invariant/download/@turf/invariant-4.7.3.tgz?cache=0&sync_timestamp=1607827188928&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40turf%2Finvariant%2Fdownload%2F%40turf%2Finvariant-4.7.3.tgz"
+  "resolved" "https://registry.npmjs.org/@turf/invariant/-/invariant-4.7.3.tgz"
   "version" "4.7.3"
 
-"@turf/invariant@^5.1.5", "@turf/invariant@5.1.x":
+"@turf/invariant@^5.0.0", "@turf/invariant@^5.1.5", "@turf/invariant@5.1.x":
   "integrity" "sha1-9Z9P76CSJLFdzhZR+QPIaNV6JOE="
   "resolved" "https://registry.npm.taobao.org/@turf/invariant/download/@turf/invariant-5.1.5.tgz?cache=0&sync_timestamp=1607827188928&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40turf%2Finvariant%2Fdownload%2F%40turf%2Finvariant-5.1.5.tgz"
   "version" "5.1.5"
@@ -8409,8 +8416,8 @@
   "version" "4.0.6"
 
 "ih-leaflet-canvaslayer-field@^1.5.3":
-  "integrity" "sha512-ZT9IQ9Fj98t8a3b5fQd94C6giuPfRTu6aaYS8O885aum2tKaBWFi/BtQblyMOUqpOcEyUNf4SMEQlSWx20Da3g=="
-  "resolved" "https://registry.npmjs.org/ih-leaflet-canvaslayer-field/-/ih-leaflet-canvaslayer-field-1.5.3.tgz"
+  "integrity" "sha1-hRM4BbY83MuniGFjZuHupJxKgms="
+  "resolved" "https://registry.npm.taobao.org/ih-leaflet-canvaslayer-field/download/ih-leaflet-canvaslayer-field-1.5.3.tgz"
   "version" "1.5.3"
   dependencies:
     "@turf/inside" "^4.7.3"
@@ -14223,7 +14230,7 @@
 
 "string-width@^2.0.0", "string-width@^2.1.1":
   "integrity" "sha1-q5Pyeo3BPSjKyBXEYhQ6bZASrp4="
-  "resolved" "https://registry.nlark.com/string-width/download/string-width-2.1.1.tgz"
+  "resolved" "https://registry.npm.taobao.org/string-width/download/string-width-2.1.1.tgz"
   "version" "2.1.1"
   dependencies:
     "is-fullwidth-code-point" "^2.0.0"
