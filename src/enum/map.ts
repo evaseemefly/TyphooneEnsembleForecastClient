@@ -12,7 +12,7 @@ enum BaseLayerTypeEnum {
     /**
      *静态潮位站位置示意icon
      */
-    STATION_ICON_LAYER = 702, // 静态潮位站位置示意icon
+    STATION_ICON_STATIC_LAYER = 702, // 静态潮位站位置示意icon
 
     /**
      * 潮位站逐时示意icon
@@ -23,6 +23,7 @@ enum BaseLayerTypeEnum {
      *潮位站极值示意icon
      */
     STATION_ICON_MAX_LAYER = 704, // 潮位站极值示意icon
+    STATION_ICON_LAYER = 705,
     // 栅格-逐时增水图层
     RASTER_HOURLY_SURGE_LAYER = 1104,
     // + 21-08-01 最大增水图层

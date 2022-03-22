@@ -271,7 +271,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     hasChildren: false,
                     isChildren: true,
                     toolType: ToolTypeEnum.LAYER,
-                    layerType: LayerTypeEnum.STATION_ICON_FIELD_LAYER,
+                    layerType: LayerTypeEnum.STATION_ICON_LAYER,
                     val: '',
                     checked: false,
                     group: 3,
@@ -820,6 +820,31 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                 }
             })
         }
+        // TODO:[-] 22-03-22 加入若取消 surge layer 需要同时取消 station layer
+        // 判断是否为 surge layer
+        const isInLayer =
+            [
+                LayerTypeEnum.RASTER_MAX_SURGE_LAYER,
+                LayerTypeEnum.RASTER_PRO_SURGE_LAYER,
+                LayerTypeEnum.RASTER_HOURLY_SURGE_LAYER
+            ].findIndex((layer) => {
+                return layer === item.layerType
+            }) >= 0
+        // 判断当前点击的item是 surge layer ，且是未选中状态 -> 从当前convertList 中找到 station layer并设置为未选择状态
+        if (item.toolType === ToolTypeEnum.LAYER && isInLayer && !item.checked) {
+            const stationLayerIndex = this.converToolsBar.findIndex((layer) => {
+                return layer.layerType === LayerTypeEnum.STATION_ICON_LAYER
+            })
+            // const stationLayerIndex = [
+            //     LayerTypeEnum.STATION_ICON_STATIC_LAYER,
+            //     LayerTypeEnum.STATION_ICON_FIELD_LAYER,
+            //     LayerTypeEnum.STATION_ICON_MAX_LAYER,
+            //     LayerTypeEnum.STATION_ICON_LAYER
+            // ].findIndex((layer) => {
+            //     return layer === item.layerType
+            // })
+            this.converToolsBar[stationLayerIndex].checked = false
+        }
     }
 
     showOptions(): void {
@@ -859,17 +884,13 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
             需要判断: 若选中了逐时增水场 -> 删掉 STATION_ICON_LAYER 修改为 -> RASTER_HOURLY_SURGE_LAYER
         */
         const stationIndex = layers.findIndex((temp) => {
-            return (
-                temp.layerType === LayerTypeEnum.STATION_ICON_LAYER ||
-                temp.layerType === LayerTypeEnum.STATION_ICON_FIELD_LAYER ||
-                temp.layerType === LayerTypeEnum.STATION_ICON_MAX_LAYER
-            )
+            return temp.layerType === LayerTypeEnum.STATION_ICON_LAYER
         })
-        if (stationIndex > 0) {
+        if (stationIndex >= 0) {
             if (
                 layers.findIndex((temp) => {
                     return temp.layerType === LayerTypeEnum.RASTER_HOURLY_SURGE_LAYER
-                }) > 0
+                }) >= 0
             ) {
                 // layers.map((temp) => {
                 //     temp.layerType = LayerTypeEnum.STATION_ICON_FIELD_LAYER
@@ -878,11 +899,11 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
             } else if (
                 layers.findIndex((temp) => {
                     return temp.layerType === LayerTypeEnum.RASTER_MAX_SURGE_LAYER
-                }) > 0
+                }) >= 0
             ) {
                 layers[stationIndex].layerType = LayerTypeEnum.STATION_ICON_MAX_LAYER
             } else {
-                layers[stationIndex].layerType = LayerTypeEnum.STATION_ICON_MAX_LAYER
+                layers[stationIndex].layerType = LayerTypeEnum.STATION_ICON_STATIC_LAYER
             }
         }
         layersTypeList = layers.map((temp) => {
