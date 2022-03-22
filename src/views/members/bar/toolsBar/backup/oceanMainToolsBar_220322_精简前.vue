@@ -32,6 +32,15 @@
                     ]"
                 ></div>
             </div>
+            <!-- 不再需要对 font 加入 checked 的 样式 -->
+            <!-- <div
+                class="tools-font"
+                :class="[
+                    item.checked ? 'checked' : '',
+                    item.isTitleShow ? 'show-font form-fade-in' : 'hidden-font form-fade-out'
+                ]"
+                @click="onClick(item)"
+            > -->
             <div
                 class="tools-font"
                 :class="[item.isTitleShow ? 'show-font form-fade-in' : 'hidden-font form-fade-out']"
@@ -94,12 +103,12 @@ import {
     SET_IS_INIT_LAYERS,
     SET_SHOW_OPTS_FORM
 } from '@/store/types'
-import { IExpandModel, ToolTypeEnum } from './types'
+import { IExpandModel, ToolTypeEnum } from '../types'
 
 // 引入其他的需要继承的组件
-import OilShowTypeSelectBar from './showTypeSelectBaseBar.vue'
-import FactorSelectBaseBar from './factorSelectBaseBar.vue'
-import { DEFAULT_LAYER_ITEM } from './const'
+import OilShowTypeSelectBar from '../showTypeSelectBaseBar.vue'
+import FactorSelectBaseBar from '../factorSelectBaseBar.vue'
+import { DEFAULT_LAYER_ITEM } from '../const'
 import { mixins } from 'vue-class-component'
 // ----
 // TODO:[-] 20-11-11 组件中的类型放在 ./types.ts 文件中
@@ -116,7 +125,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
     isShowOpts = false
     mounted() {
         this.toolsBar = [...this.toolsBar, ...this.toolsShowTypeBar, ...this.toolsFactorBar]
-        this.initToolsBar2ConvertedBar()
+        this.getToolsBar()
         this.checkLayerInToolsBar(this.layers, [])
     }
     toolsBar: IExpandModel[] = [
@@ -326,6 +335,11 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
     proSurgeLayerVal: LayerTypeEnum = LayerTypeEnum.UN_LAYER
     proSurgeLayerItem: { group: number; layerType: LayerTypeEnum; val: string } = null
 
+    // tempOptions?: { key: number; val: string }[] = [
+    //     { key: 0, val: '测试1' },
+    //     { key: 1, val: '测试2' }
+    // ]
+
     converToolsBar: {
         id: number
         // 只有 isChildren 才有 pid
@@ -349,7 +363,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
     }[] = []
 
     // 将 toolsbar 转换 -> convertToolsBar
-    initToolsBar2ConvertedBar(): {
+    getToolsBar(): {
         isExpanded: boolean
         html: string
         iconClass: string
@@ -390,6 +404,24 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         })
         // this.converToolsBar = convertTools
         return convertTools
+    }
+
+    get getConverToolsBar(): {
+        id: number
+        // 只有 isChildren 才有 pid
+        pid?: number
+        // 是否展开
+        isExpanded: boolean
+        html: string
+        iconClass: string
+        title: string
+        // 是否有 子节点
+        isChildren: boolean
+        toolType: ToolTypeEnum
+        val: string
+        checked: boolean
+    }[] {
+        return [...this.converToolsBar]
     }
 
     @Watch('converToolsBar')
@@ -434,6 +466,8 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         if (item.layerType) {
             this.proSurgeLayerItem = item
         }
+
+        // this.insertLayers(item)
     }
 
     @Watch('proSurgeLayerItem')
@@ -443,13 +477,6 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
     ): void {
         // step: 若 oldLayer 存在则从当前 layers 中找到并去掉，若不存在则不执行以上操作
         if (newLayer.optionsType !== LayerTypeEnum.UN_LAYER) {
-            // TODO:[-] 22-03-22 在此处需要从 checkedLayers 中删除 概率增水场
-            const index = this.checkedLayers.findIndex((temp) => {
-                return temp === LayerTypeEnum.RASTER_PRO_SURGE_LAYER
-            })
-            this.checkedLayers.splice(index, 1)
-            // --
-            this.checkedLayers.push(newLayer.optionsType)
             this.insertLayers({
                 group: newLayer.group,
                 layerType: newLayer.optionsType,
@@ -545,6 +572,15 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
 
     // 插入layers ，若已经存在则删除
     insertLayers(tempLayerType: { group: number; layerType: LayerTypeEnum; val: string }): void {
+        // if (this.layers.indexOf(tempLayerType) === -1) {
+        //     this.layers.push(tempLayerType)
+        // } else {
+        //     // 若已经存在则删除
+        //     const index = this.layers.findIndex((temp) => temp === tempLayerType)
+        //     if (index != -1) {
+        //         this.layers.splice(index, 1)
+        //     }
+        // }
         const index = this._getTargetLayerInLayersIndex(tempLayerType)
         const indexSameGroup = this._getTargetLayerExistSameGroup(tempLayerType)
         if (index >= 0) {
@@ -556,7 +592,18 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
             this._removeLayerByIndex(indexSameGroup)
         } else {
             this.layersItem.push(tempLayerType)
-            this.checkedLayers.push(tempLayerType.layerType)
+            // TODO:[-] 22-02-23 此处需要加入 station -> layers 的判断
+            // 若当前点击的是 station layer 则需要判断是否已经选择了极值与逐时选项
+            // if (
+            //     tempLayerType.layerType === LayerTypeEnum.STATION_ICON_LAYER &&
+            //     this.layersItem.findIndex((temp) => {
+            //         return temp.layerType === LayerTypeEnum.RASTER_HOURLY_SURGE_LAYER
+            //     }) > 0
+            // ) {
+            //     this.layersItem.push(LayerTypeEnum.STATION_ICON_FIELD_LAYER)
+            // } else {
+
+            // }
         }
     }
 
@@ -568,13 +615,9 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                 convertedLayers.push(temp.layerType)
             }
         })
-
         this.setLayers(convertedLayers)
-        this.checkedLayers = convertedLayers
         return convertedLayers
     }
-
-    checkedLayers: LayerTypeEnum[] = []
 
     // 从当前 layers 中删除指定layers
     removeLayers(tempLayerType: { group: number; layerType: LayerTypeEnum; val: string }): void {
@@ -830,6 +873,57 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         }
     }
 
+    // @Watch('getLayers')
+    // onLayers(layers: LayerTypeEnum[], oldLayers: LayerTypeEnum[]): void {
+    //     // console.log(layers)
+    //     console.log(`new:${layers},old:${oldLayers}`)
+    //     this.setLayers(layers)
+    //     this.checkLayerInToolsBar(layers, oldLayers)
+    // }
+
+    @Watch('getLayersItem')
+    onLayersItem(
+        layers: { group: number; layerType: LayerTypeEnum; val: string }[],
+        oldLayers: { group: number; layerType: LayerTypeEnum; val: string }[]
+    ): void {
+        console.log(`new:${layers},old:${oldLayers}`)
+        // 加入 station 的layers的组合判断
+        let layersTypeList: LayerTypeEnum[] = []
+        // 若当前 layers 中存在 STATION_ICON_LAYER 说明选中了海洋站按钮
+        /*
+            需要判断: 若选中了逐时增水场 -> 删掉 STATION_ICON_LAYER 修改为 -> RASTER_HOURLY_SURGE_LAYER
+        */
+        const stationIndex = layers.findIndex((temp) => {
+            return temp.layerType === LayerTypeEnum.STATION_ICON_LAYER
+        })
+        if (stationIndex >= 0) {
+            if (
+                layers.findIndex((temp) => {
+                    return temp.layerType === LayerTypeEnum.RASTER_HOURLY_SURGE_LAYER
+                }) >= 0
+            ) {
+                // layers.map((temp) => {
+                //     temp.layerType = LayerTypeEnum.STATION_ICON_FIELD_LAYER
+                // })
+                layers[stationIndex].layerType = LayerTypeEnum.STATION_ICON_FIELD_LAYER
+            } else if (
+                layers.findIndex((temp) => {
+                    return temp.layerType === LayerTypeEnum.RASTER_MAX_SURGE_LAYER
+                }) >= 0
+            ) {
+                layers[stationIndex].layerType = LayerTypeEnum.STATION_ICON_MAX_LAYER
+            } else {
+                layers[stationIndex].layerType = LayerTypeEnum.STATION_ICON_STATIC_LAYER
+            }
+        }
+        layersTypeList = layers.map((temp) => {
+            return temp.layerType
+        })
+        this.layers = layersTypeList
+        this.setLayers(layersTypeList)
+        this.checkLayerItemInToolsBar(layers, oldLayers)
+    }
+
     checkLayerInToolsBar(newLayers: LayerTypeEnum[], oldLayers: LayerTypeEnum[]): void {
         const that = this
         if (newLayers.length > 0) {
@@ -876,7 +970,6 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         }
     }
 
-    // 暂时不用
     checkLayerItemInToolsBar(
         newLayers: { group: number; layerType: LayerTypeEnum; val: string }[],
         oldLayers: { group: number; layerType: LayerTypeEnum; val: string }[]
@@ -945,6 +1038,15 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         }
         // else if (item)
         return isShow
+    }
+
+    // get getLayers(): LayerTypeEnum[] {
+    //     return [...this.layers]
+    // }
+
+    get getLayersItem(): { group: number; layerType: LayerTypeEnum; val: string }[] {
+        // return [...this.layersItem]
+        return []
     }
 }
 </script>
