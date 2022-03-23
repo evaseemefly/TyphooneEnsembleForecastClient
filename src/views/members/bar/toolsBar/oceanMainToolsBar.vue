@@ -192,12 +192,12 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     group: 1,
                     isTitleShow: false,
                     options: [
-                        {
-                            key: -1,
-                            val: '未选择',
-                            optionsType: LayerTypeEnum.UN_LAYER,
-                            group: 1
-                        },
+                        // {
+                        //     key: -1,
+                        //     val: '未选择',
+                        //     optionsType: LayerTypeEnum.UN_LAYER,
+                        //     group: 1
+                        // },
                         {
                             key: 0,
                             val: '大于0.5m',
@@ -456,6 +456,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
             // this.checkedLayers.push(newLayer.optionsType)
             // TODO:[-] 22-03-23 此处需要加入判断 概率增水场是否在当前的layers中
             this._checkProSurgeRaster(newLayer)
+
             this.insertLayers({
                 group: newLayer.group,
                 layerType: newLayer.optionsType,
@@ -564,6 +565,24 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
     ): boolean {
         let existed = false
         // 若传入的当前 surge type 不为 pro surge
+        const rasterProSurgeLayerEnum = this.toolsBar[0].children.filter((temp) => {
+            return temp.layerType === LayerTypeEnum.RASTER_PRO_SURGE_LAYER
+        })
+        // 获取当前 layer -> .options 中 group==1的所有 options，并获取所有options的 optionsType
+        const rasterProSurgeLayersEnums: LayerTypeEnum[] = []
+        if (rasterProSurgeLayerEnum.length > 0) {
+            rasterProSurgeLayerEnum[0].options
+                .filter((temp) => {
+                    return temp.group === 1 && temp.optionsType
+                })
+                .forEach((lay) => {
+                    if (lay.optionsType !== undefined) {
+                        rasterProSurgeLayersEnums.push(lay.optionsType)
+                    }
+                })
+        }
+        //
+
         if (tempLayerType.optionsType !== LayerTypeEnum.RASTER_PRO_SURGE_LAYER) {
             // 判断当前的 checkedLayers 中是否存在当前的 实际概率增水场 type
             const index = this.checkedLayers.findIndex((temp) => {
@@ -575,6 +594,21 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                 if (toPop) {
                     this.checkedLayers.splice(index, 1)
                 }
+            }
+            // 判断当前的 checkedLayers 中是否存在 rasterProSurgeLayersEnums 的layer
+
+            const intersection = this.checkedLayers.filter((item) =>
+                new Set(rasterProSurgeLayersEnums).has(item)
+            )
+            if (intersection.length > 0) {
+                intersection.forEach((item) => {
+                    const spliceIndex = this.checkedLayers.findIndex((layerTemp) => {
+                        return layerTemp === item
+                    })
+                    if (spliceIndex >= 0) {
+                        this.checkedLayers.splice(spliceIndex, 1)
+                    }
+                })
             }
         }
         return existed
@@ -592,9 +626,9 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
             // this.removeLayers(tempLayerType)
             this._removeLayerByIndex(indexSameGroup)
         } else {
-            this.layersItem.push(tempLayerType)
-            this.checkedLayers.push(tempLayerType.layerType)
         }
+        this.layersItem.push(tempLayerType)
+        this.checkedLayers.push(tempLayerType.layerType)
     }
 
     // TODO:[-] 22-03-22 获取 convertedLayers 中的checked 的layers
@@ -610,7 +644,9 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         this.checkedLayers = convertedLayers
         return convertedLayers
     }
-
+    get getCheckedLayersSet(): Set<LayerTypeEnum> {
+        return new Set(this.checkedLayers)
+    }
     checkedLayers: LayerTypeEnum[] = []
 
     // 从当前 layers 中删除指定layers
