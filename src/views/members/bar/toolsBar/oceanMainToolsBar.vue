@@ -168,7 +168,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     title: '逐时风暴增水',
                     hasChildren: false,
                     isChildren: true,
-                    hasOptions: true,
+                    hasOptions: false,
                     toolType: ToolTypeEnum.LAYER,
                     layerType: LayerTypeEnum.RASTER_HOURLY_SURGE_LAYER,
                     val: '逐时风暴增水',
@@ -343,6 +343,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         isRadio?: boolean
         group?: number
         optionsType?: ToolBarOptionsEnum
+
         options?: { key: number; val: string }[]
         layerType: LayerTypeEnum
         isTitleShow: false
@@ -447,9 +448,14 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
             const index = this.checkedLayers.findIndex((temp) => {
                 return temp === LayerTypeEnum.RASTER_PRO_SURGE_LAYER
             })
-            this.checkedLayers.splice(index, 1)
+            if (index >= 0) {
+                this.checkedLayers.splice(index, 1)
+            }
+
             // --
-            this.checkedLayers.push(newLayer.optionsType)
+            // this.checkedLayers.push(newLayer.optionsType)
+            // TODO:[-] 22-03-23 此处需要加入判断 概率增水场是否在当前的layers中
+            this._checkProSurgeRaster(newLayer)
             this.insertLayers({
                 group: newLayer.group,
                 layerType: newLayer.optionsType,
@@ -543,6 +549,37 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         return index
     }
 
+    /*
+        + 22-03-22 
+        判断当前 checkedLayers 中是否已经存在了 pro surge 
+
+    */
+    _checkProSurgeRaster(
+        tempLayerType: {
+            group: number
+            optionsType: LayerTypeEnum
+            val: string
+        },
+        toPop = true
+    ): boolean {
+        let existed = false
+        // 若传入的当前 surge type 不为 pro surge
+        if (tempLayerType.optionsType !== LayerTypeEnum.RASTER_PRO_SURGE_LAYER) {
+            // 判断当前的 checkedLayers 中是否存在当前的 实际概率增水场 type
+            const index = this.checkedLayers.findIndex((temp) => {
+                return temp === tempLayerType.optionsType
+            })
+            if (index >= 0) {
+                // 若存在，根据 toPop 判断是否需要剔除
+                existed = true
+                if (toPop) {
+                    this.checkedLayers.splice(index, 1)
+                }
+            }
+        }
+        return existed
+    }
+
     // 插入layers ，若已经存在则删除
     insertLayers(tempLayerType: { group: number; layerType: LayerTypeEnum; val: string }): void {
         const index = this._getTargetLayerInLayersIndex(tempLayerType)
@@ -569,7 +606,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
             }
         })
 
-        this.setLayers(convertedLayers)
+        // this.setLayers(convertedLayers)
         this.checkedLayers = convertedLayers
         return convertedLayers
     }
