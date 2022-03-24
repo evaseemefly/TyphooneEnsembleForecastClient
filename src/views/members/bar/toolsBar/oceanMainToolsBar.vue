@@ -455,7 +455,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
             // --
             // this.checkedLayers.push(newLayer.optionsType)
             // TODO:[-] 22-03-23 此处需要加入判断 概率增水场是否在当前的layers中
-            this._checkProSurgeRaster(newLayer)
+            this._checkProSurgeLayerInLayersItem(newLayer)
 
             this.insertLayers({
                 group: newLayer.group,
@@ -466,6 +466,30 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
             // 若当前选择的是未选择 option ，则去掉所有的概率增水场图层
             this._removeProSurgeLayers()
         }
+    }
+
+    // 传入概率增水场 layer ，并判断当前 this.layersItem 中是否存在pro layer，若 toPop =true则删掉并插入
+    _checkProSurgeLayerInLayersItem(
+        tempLayerType: {
+            group: number
+            optionsType: LayerTypeEnum
+            val: string
+        },
+        toPop = true
+    ): boolean {
+        const that = this
+        const sameGroupIndexs: number[] = []
+        this.layersItem.forEach((val, index) => {
+            if (val.group === tempLayerType.group) {
+                sameGroupIndexs.push(index)
+            }
+        })
+        if (toPop) {
+            sameGroupIndexs.forEach((index) => {
+                that.layersItem.splice(index, 1)
+            })
+        }
+        return sameGroupIndexs.length > 0
     }
 
     // 判断 layer 是否存在当前 layers 中
@@ -887,6 +911,16 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         }
     }
 
+    // TODO:[-] 22-03-24
+    get computedLayersItem(): LayerTypeEnum[] {
+        const layers: LayerTypeEnum[] = []
+        this.layersItem.forEach((element) => {
+            layers.push(element.layerType)
+        })
+        // this.setLayers(layers)
+        return layers
+    }
+
     // TODO:[-] 22-03-24 重构 onClick 逻辑
     onClick(item: {
         isExpanded: boolean
@@ -941,11 +975,14 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         }
 
         // step3:
-        this.layersItem.push({
-            group: item.group ? item.group : -1,
-            layerType: item.layerType,
-            val: item.val
-        })
+        if (item.checked) {
+            this.layersItem.push({
+                group: item.group ? item.group : -1,
+                layerType: item.layerType,
+                val: item.val
+            })
+        }
+
         // step4:
         if (item.layerType === LayerTypeEnum.RASTER_PRO_SURGE_LAYER) {
             item.showOptions = !item.showOptions
