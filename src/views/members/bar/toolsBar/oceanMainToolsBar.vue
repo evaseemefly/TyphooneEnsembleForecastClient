@@ -186,7 +186,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     hasOptions: true,
                     toolType: ToolTypeEnum.LAYER,
                     layerType: LayerTypeEnum.RASTER_PRO_SURGE_LAYER,
-                    val: '逐时风暴增水',
+                    val: '概率风暴增水',
                     checked: false,
                     showOptions: false,
                     group: 1,
@@ -261,7 +261,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
                     isChildren: true,
                     toolType: ToolTypeEnum.LAYER,
                     layerType: LayerTypeEnum.STATION_ICON_LAYER,
-                    val: '',
+                    val: '海洋站',
                     checked: false,
                     group: 3,
                     isTitleShow: false
@@ -700,7 +700,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
     @Mutation(SET_IS_INIT_LAYERS, { namespace: 'map' }) setInitLayers
 
     // 点击展开节点或将节点设置为选中状态，并根据toolType判断是否为 ToolTypeEnum.LAYER ，若为 layer 则添加至 layers
-    onClick(item: {
+    onClickBak(item: {
         isExpanded: boolean
         toolType: ToolTypeEnum
         layerType: LayerTypeEnum
@@ -887,6 +887,70 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         }
     }
 
+    // TODO:[-] 22-03-24 重构 onClick 逻辑
+    onClick(item: {
+        isExpanded: boolean
+        toolType: ToolTypeEnum
+        layerType: LayerTypeEnum
+        id: number
+        // 只有 isChildren 才有 pid
+        pid?: number
+        val: string
+        isChildren: boolean
+        optionsType?: ToolBarOptionsEnum
+        // 是否为勾选状态
+        checked?: boolean
+        // 是否为单选按钮
+        isRadio?: boolean
+        showOptions?: boolean
+        group?: number
+    }): void {
+        /*
+            step1: 修改当前 item.checked
+            step2: 判断 this.layersItem 去掉同 group 的item
+                   注意: 此处还需要修改当前 converToolsBar 的checked的状态
+            step3: 将当前 item push this.layersItem
+            step4: 判断传入的 layerType 是否为特殊 layertype
+        */
+        // step1:
+        item.checked = !item.checked
+        // step2-1:
+        const spliceIndexs: number[] = []
+
+        this.layersItem.forEach((val, index) => {
+            if (val.group === item.group) {
+                spliceIndexs.push(index)
+            }
+        })
+        spliceIndexs.forEach((index) => {
+            this.layersItem.splice(index, 1)
+        })
+        // step2-2:
+        if (item.checked) {
+            const spliceIds: number[] = []
+            const convertLayersIndex: number[] = []
+            this.converToolsBar.forEach((val, index) => {
+                if (val.group === item.group && val.layerType != item.layerType) {
+                    spliceIds.push(val.id)
+                    convertLayersIndex.push(index)
+                }
+            })
+            convertLayersIndex.forEach((index) => {
+                this.converToolsBar[index].checked = false
+            })
+        }
+
+        // step3:
+        this.layersItem.push({
+            group: item.group ? item.group : -1,
+            layerType: item.layerType,
+            val: item.val
+        })
+        // step4:
+        if (item.layerType === LayerTypeEnum.RASTER_PRO_SURGE_LAYER) {
+            item.showOptions = !item.showOptions
+        }
+    }
     showOptions(): void {
         this.isShowOpts = !this.isShowOpts
         this.setShowOptsForm(this.isShowOpts)
