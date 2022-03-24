@@ -456,6 +456,12 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
             // this.checkedLayers.push(newLayer.optionsType)
             // TODO:[-] 22-03-23 此处需要加入判断 概率增水场是否在当前的layers中
             this._checkProSurgeLayerInLayersItem(newLayer)
+            // 此处还需要去掉 convertlayer 中的同group的checked=false
+            this.converToolsBar.map((temp) => {
+                if (temp.group === newLayer.group) {
+                    temp.checked = false
+                }
+            })
 
             this.insertLayers({
                 group: newLayer.group,
@@ -546,27 +552,30 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
 
     // + 22-01-10 判断当前 layer 在 this.layersItem 中是否存在相同 group 的layer
     // 若存在则返回 index
-    _getTargetLayerExistSameGroup(tempLayer: {
+    _getSameGroupLayer(tempLayer: {
         group: number
         layerType: LayerTypeEnum
         val: string
     }): number {
         let isExisted = false
         let index = -1
-        const indexStation = this.layersItem.findIndex((temp) => {
-            return (
-                temp.layerType === LayerTypeEnum.STATION_ICON_LAYER ||
-                temp.layerType === LayerTypeEnum.STATION_ICON_FIELD_LAYER ||
-                temp.layerType === LayerTypeEnum.STATION_ICON_MAX_LAYER
-            )
+        // const indexStation = this.layersItem.findIndex((temp) => {
+        //     return (
+        //         temp.layerType === LayerTypeEnum.STATION_ICON_LAYER ||
+        //         temp.layerType === LayerTypeEnum.STATION_ICON_FIELD_LAYER ||
+        //         temp.layerType === LayerTypeEnum.STATION_ICON_MAX_LAYER
+        //     )
+        // })
+        // if (indexStation > 0) {
+        //     index = indexStation
+        // } else {
+        //     index = this.layersItem.findIndex((temp) => {
+        //         return temp.group === tempLayer.group
+        //     })
+        // }
+        index = this.layersItem.findIndex((temp) => {
+            return temp.group === tempLayer.group
         })
-        if (indexStation > 0) {
-            index = indexStation
-        } else {
-            index = this.layersItem.findIndex((temp) => {
-                return temp.group === tempLayer.group
-            })
-        }
 
         if (index >= 0) {
             isExisted = true
@@ -575,8 +584,8 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
     }
 
     /*
-        + 22-03-22 
-        判断当前 checkedLayers 中是否已经存在了 pro surge 
+        + 22-03-22
+        判断当前 checkedLayers 中是否已经存在了 pro surge
 
     */
     _checkProSurgeRaster(
@@ -641,7 +650,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
     // 插入layers ，若已经存在则删除
     insertLayers(tempLayerType: { group: number; layerType: LayerTypeEnum; val: string }): void {
         const index = this._getTargetLayerInLayersIndex(tempLayerType)
-        const indexSameGroup = this._getTargetLayerExistSameGroup(tempLayerType)
+        const indexSameGroup = this._getSameGroupLayer(tempLayerType)
         if (index >= 0) {
             this._removeLayerByIndex(indexSameGroup)
         }
@@ -914,10 +923,40 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
     // TODO:[-] 22-03-24
     get computedLayersItem(): LayerTypeEnum[] {
         const layers: LayerTypeEnum[] = []
+
+        // step1: 获取非 station 的layer
         this.layersItem.forEach((element) => {
-            layers.push(element.layerType)
+            if (element.layerType != LayerTypeEnum.STATION_ICON_LAYER) {
+                layers.push(element.layerType)
+            }
         })
-        // this.setLayers(layers)
+        // step2-1: 找到 station_icon_layer 的 index
+        const stationLayerIndex =
+            this.layersItem.findIndex((temp) => {
+                return temp.layerType === LayerTypeEnum.STATION_ICON_LAYER
+            }) >= 0
+                ? this.layersItem.findIndex((temp) => {
+                      return temp.layerType === LayerTypeEnum.STATION_ICON_LAYER
+                  })
+                : -1
+        // step2-2: 根据当前 layers 中选中的栅格图层类型向layers中加入对应的 station layer 枚举
+        if (stationLayerIndex >= 0) {
+            let stationLayerEnum = LayerTypeEnum.STATION_ICON_STATIC_LAYER
+            if (
+                this.layersItem.findIndex((temp) => {
+                    return temp.layerType === LayerTypeEnum.RASTER_HOURLY_SURGE_LAYER
+                }) >= 0
+            ) {
+                stationLayerEnum = LayerTypeEnum.STATION_ICON_FIELD_LAYER
+            } else if (
+                this.layersItem.findIndex((temp) => {
+                    return temp.layerType === LayerTypeEnum.RASTER_MAX_SURGE_LAYER
+                }) >= 0
+            ) {
+                stationLayerEnum = LayerTypeEnum.STATION_ICON_MAX_LAYER
+            }
+            layers.push(stationLayerEnum)
+        }
         return layers
     }
 
