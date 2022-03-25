@@ -426,17 +426,6 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         }
     }
 
-    setProSurgeOptions(
-        item: { group: number; layerType: LayerTypeEnum; val: string },
-        tempOptions: any
-    ): void {
-        console.info(`监听到item发生变化:${item}`)
-        // console.info(`监听到tempOptions发生变化:${tempOptions}`)
-        if (item.layerType) {
-            this.proSurgeLayerItem = item
-        }
-    }
-
     @Watch('proSurgeLayerItem')
     onProSurgeLayer(
         newLayer: { group: number; optionsType: LayerTypeEnum; val: string },
@@ -658,7 +647,6 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         if (indexSameGroup >= 0) {
             // this.removeLayers(tempLayerType)
             this._removeLayerByIndex(indexSameGroup)
-        } else {
         }
         this.layersItem.push(tempLayerType)
         this.checkedLayers.push(tempLayerType.layerType)
@@ -685,17 +673,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
     // 从当前 layers 中删除指定layers
     removeLayers(tempLayerType: { group: number; layerType: LayerTypeEnum; val: string }): void {
         const index = this._getTargetLayerInLayersIndex(tempLayerType)
-        // if (index >= 0) {
-        //     this.layersItem.splice(index, 1)
-        // }
         this._removeLayerByIndex(index)
-        // if (this.layers.indexOf(tempLayerType) > 0) {
-        //     // 若已经存在则删除
-        //     const index = this.layers.findIndex((temp) => temp === tempLayerType)
-        //     if (index != -1) {
-        //         this.layers.splice(index, 1)
-        //     }
-        // }
     }
 
     // 从 this.layersItem 中删除 index 下标的 layers
@@ -732,7 +710,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
 
     @Mutation(SET_IS_INIT_LAYERS, { namespace: 'map' }) setInitLayers
 
-    // 点击展开节点或将节点设置为选中状态，并根据toolType判断是否为 ToolTypeEnum.LAYER ，若为 layer 则添加至 layers
+    // 已经废弃！点击展开节点或将节点设置为选中状态，并根据toolType判断是否为 ToolTypeEnum.LAYER ，若为 layer 则添加至 layers
     onClickBak(item: {
         isExpanded: boolean
         toolType: ToolTypeEnum
@@ -920,7 +898,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         }
     }
 
-    // TODO:[-] 22-03-24
+    //  22-03-24 layersItem 计算属性
     get computedLayersItem(): LayerTypeEnum[] {
         const layers: LayerTypeEnum[] = []
 
@@ -960,6 +938,11 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         return layers
     }
 
+    @Watch('computedLayersItem')
+    onComputedLayersItem(layers: LayerTypeEnum[]): void {
+        this.setLayers(layers)
+    }
+
     // TODO:[-] 22-03-24 重构 onClick 逻辑
     onClick(item: {
         isExpanded: boolean
@@ -987,7 +970,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         */
         // step1:
         item.checked = !item.checked
-        // step2-1:
+        // step2-1: 从 this.layersItem 中去掉同 group 的 item
         const spliceIndexs: number[] = []
 
         this.layersItem.forEach((val, index) => {
@@ -998,7 +981,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         spliceIndexs.forEach((index) => {
             this.layersItem.splice(index, 1)
         })
-        // step2-2:
+        // step2-2: 修改同 group 的其他 layertype 的 checked为未选中状态
         if (item.checked) {
             const spliceIds: number[] = []
             const convertLayersIndex: number[] = []
@@ -1013,7 +996,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
             })
         }
 
-        // step3:
+        // step3: 将当前的 item push 至 this.layersItem
         if (item.checked) {
             this.layersItem.push({
                 group: item.group ? item.group : -1,
@@ -1022,7 +1005,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
             })
         }
 
-        // step4:
+        // step4: 若房钱选择的是特殊 layer( 概率增水场，则展开 概率增水场的options)
         if (item.layerType === LayerTypeEnum.RASTER_PRO_SURGE_LAYER) {
             item.showOptions = !item.showOptions
         }
@@ -1037,7 +1020,6 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
     @Watch('getIsInitLayers')
     onIsInitLayers(isInit: boolean): void {
         if (isInit) {
-            // this.layers = [LayerTypeEnum.GROUP_PATH_LAYER]
             this.layersItem = [DEFAULT_LAYER_ITEM]
             this.setInitLayers(false)
         }
