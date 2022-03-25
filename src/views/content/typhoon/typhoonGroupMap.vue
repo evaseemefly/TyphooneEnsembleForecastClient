@@ -1181,7 +1181,7 @@ export default class TyGroupMap extends mixins(
         ) => Promise<AxiosResponse<any>> = null
         switch (stationType) {
             // 静态潮位站
-            case LayerTypeEnum.STATION_ICON_LAYER:
+            case LayerTypeEnum.STATION_ICON_STATIC_LAYER:
                 this.$message(`加载台风:${that.stationSurgeIconOptions.tyCode}的海洋站静态位置`)
                 getStationFunc = getStaticStationList
                 break
@@ -2104,7 +2104,7 @@ export default class TyGroupMap extends mixins(
             this.loadCurrentStationList(val.layerType).then(() => {
                 if (val.layerType === LayerTypeEnum.STATION_ICON_FIELD_LAYER) {
                     that.loadStationIconsByZoom(that.zoomLevel, that.currentStationSurgeList)
-                } else if (val.layerType === LayerTypeEnum.STATION_ICON_LAYER) {
+                } else if (val.layerType === LayerTypeEnum.STATION_ICON_STATIC_LAYER) {
                     that.loadStationIconsByZoom(5, that.currentStationSurgeList)
                 } else if (val.layerType === LayerTypeEnum.STATION_ICON_MAX_LAYER) {
                     that.loadStationIconsByZoom(that.zoomLevel, that.currentStationSurgeList)
@@ -2547,7 +2547,7 @@ export default class TyGroupMap extends mixins(
                     tempTyGroupOptions.isShow = true
                     this.tyGroupOptions = tempTyGroupOptions
                     break
-                case LayerTypeEnum.STATION_ICON_LAYER:
+                case LayerTypeEnum.STATION_ICON_STATIC_LAYER:
                     // LayerTypeEnum.STATION_ICON_FIELD_LAYER |
                     // LayerTypeEnum.STATION_ICON_MAX_LAYER:
                     this.existLayers.push(tempLayerType)
