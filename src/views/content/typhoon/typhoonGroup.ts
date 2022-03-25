@@ -146,6 +146,23 @@ class TyGroupPathLine {
     }
 
     /**
+     * 根据折线的最大与最小值获取当前差值后的线段宽度
+     *
+     * @private
+     * @param {number} max
+     * @param {number} min
+     * @param {number} index
+     * @return {*}  {number}
+     * @memberof TyGroupPathLine
+     */
+    private getPolylineWeight(max: number, min: number, index: number, count: number): number {
+        let weight = 0.1
+        weight = (max - min) / count
+        weight = weight * index
+        return weight
+    }
+
+    /**
      * 将当前 this.tyGroupPathLines 的路径折线添加至 map
      *
      * @protected
@@ -158,6 +175,7 @@ class TyGroupPathLine {
         options: { lineWeight: number; opacity: number } = { lineWeight: 1.7, opacity: 0.2 }
     ): void {
         let indexTyGroup = 0
+        const count: number = this.tyGroupPathLines.length
         this.tyGroupPathLines.map((temp) => {
             indexTyGroup++
             const polygonPoint: L.LatLng[] = []
@@ -196,7 +214,8 @@ class TyGroupPathLine {
                 color: polyColor,
                 opacity: options.opacity,
                 fillOpacity: 0.2,
-                weight: options.lineWeight
+                // weight: options.lineWeight
+                weight: this.getPolylineWeight(2, 0.1, indexTyGroup, count)
             })
             // TODO:[*] 22-02-09 尝试在每个节点加入 cirle
             // polygonPoint.map((temp) => {
