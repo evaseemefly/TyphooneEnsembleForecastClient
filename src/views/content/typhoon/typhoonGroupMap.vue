@@ -13,7 +13,7 @@
                 id="ceshimap"
             >
                 <!-- @ready="initMap()" -->
-                <l-tile-layer :url="url"></l-tile-layer>
+                <l-tile-layer :url="url" :attribution="attribution"></l-tile-layer>
                 <!-- <l-tile-layer :tile-layer-class="getMapBoxLayerClass" /> -->
                 <!-- <l-tile-layer :url="coverageUrl"></l-tile-layer> -->
                 <!-- 加载 发布的岸线服务 -->
@@ -378,7 +378,8 @@ import {
     SET_SCALE_RANGE,
     GET_BASE_MAP_KEY, // + 21-08-23 监听切换地图的 baseMapKey
     SET_MAP_NOW,
-    GET_TY_GROUP_PATH_LATERS_OPTS // +22-03-13 台风集合预报路径配置项
+    GET_TY_GROUP_PATH_LATERS_OPTS, // +22-03-13 台风集合预报路径配置项
+    SET_SHOW_STATION_ICON
 } from '@/store/types'
 import {
     DEFAULT_LAYER_ID,
@@ -2093,6 +2094,7 @@ export default class TyGroupMap extends mixins(
         const that = this
         const mymap: any = this.$refs.basemap['mapObject']
         // if(val)
+        this.setShowStationIcon(val.isShow)
         if (this.checkStationSurgeOptions(val)) {
             // 加载对应时刻的 潮位站数据
             // this.$notify({
@@ -2101,6 +2103,7 @@ export default class TyGroupMap extends mixins(
             //     type: 'success'
             // })
             // this.$message({message:'加载'})
+
             this.loadCurrentStationList(val.layerType).then(() => {
                 if (val.layerType === LayerTypeEnum.STATION_ICON_FIELD_LAYER) {
                     that.loadStationIconsByZoom(that.zoomLevel, that.currentStationSurgeList)
@@ -2227,6 +2230,8 @@ export default class TyGroupMap extends mixins(
     @Mutation(SET_IS_INIT_LAYERS, { namespace: 'map' }) setInitLayers
 
     @Mutation(SET_MAP_NOW, { namespace: 'map' }) setMapNow
+
+    @Mutation(SET_SHOW_STATION_ICON, { namespace: 'station' }) setShowStationIcon
 
     @Watch('tyProSurgeOptions', { immediate: true, deep: true })
     onTyProSurgeOptions(val: ITySurgeLayerOptions): void {
@@ -2657,6 +2662,12 @@ export default class TyGroupMap extends mixins(
     get getStationOptions(): { stationCode: string; stationName: string } {
         const { stationCode, stationName } = this
         return { stationCode, stationName }
+    }
+
+    // + 22-03-28 compute 计算属性—— 获取是否显示海洋站的标识
+    get isStationSurgeShow(): boolean {
+        // this.setShowStationIcon(this.stationSurgeIconOptions.isShow)
+        return this.stationSurgeIconOptions.isShow
     }
 
     @Watch('getStationOptions')

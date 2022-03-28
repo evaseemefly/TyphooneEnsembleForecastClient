@@ -10,6 +10,7 @@ import Case from './modules/case'
 import geo from './modules/geo'
 import typhoon from './modules/typhoon'
 import opts from './modules/opts'
+import station from './modules/station'
 
 Vue.use(Vuex)
 
@@ -29,7 +30,8 @@ export default new Vuex.Store({
         case: Case,
         geo: geo,
         typhoon: typhoon,
-        opts: opts
+        opts: opts,
+        station: station
         // oilStore
     },
     // TODO:[*] 19-11-08 此部分先注释掉

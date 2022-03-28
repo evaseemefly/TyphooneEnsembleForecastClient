@@ -75,5 +75,7 @@ class WMSMixin extends Vue {
     // url = `https://api.mapbox.com/styles/evaseemefly1/ckpq8ftgx0zhn17r0vidbxbwr/{z}/{x}/{y}.png?access_token=${this.mapBoxToken}`
     url =
         'https://map.geoq.cn/arcgis/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/{z}/{y}/{x}'
+    attribution =
+        'powered by Ocean Flow © 2022 <a href="https://github.com/evaseemefly">evaseemefly & nmefc</a> '
 }
 export { WMSMixin }
