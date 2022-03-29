@@ -13,3 +13,4 @@ const basePort = '8084'
 // const basePort = '8082'
 export const baseUrl = `${baseHost}:${basePort}`
 export const hostGeo = 'http://128.5.10.21:8084/geoserver/'
+export const hostGeoCors = 'http://128.5.10.21:18081/geoserver/'

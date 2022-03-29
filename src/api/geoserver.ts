@@ -3,12 +3,12 @@
 */
 
 import axios from 'axios'
-import { hostGeo, host } from './common'
+import { hostGeo, host, hostGeoCors } from './common'
 import authHeader from './auth-header'
 import { DEFAULT_COVERAGE_AREA, DEFAULT_COVERAGE_TYPE } from '@/const/common'
 // 后端的请求地址及端口
 // export const host = host
-axios.defaults.withCredentials = true
+axios.defaults.withCredentials = false
 axios.defaults.headers = {}
 
 import { SelectTypeEnum } from '../enum/select'
@@ -56,6 +56,24 @@ const loadPolyGeoJson = (layerName: string, current: Date) => {
     })
 }
 
+const loadSurgeForecastAreaGeoJson = () => {
+    const url = `${hostGeo}nmefc_common/ows?`
+    return axios.get(url, {
+        headers: authHeader(),
+        params: {
+            service: 'WFS',
+            version: '1.0.0',
+            request: 'GetFeature',
+            // typeNames: 'nmefc_common%3Asurge_area_south_polygon', // TODO:[-] 21-03-19 注意此参数需要与 gisserver 中的 feature_type 中的 queryset 的model 名称相同
+            typeName: 'nmefc_common:surge_area_south_polygon',
+            maxFeatures: '50',
+            // layerName: 'nmefc_common:surge_area_south_polygon',
+            outputFormat: 'application/json'
+            // srsName: crs
+        }
+    })
+}
+
 /**
  * 获取指定 海浪等值线的 不同值数组
  *
@@ -74,4 +92,9 @@ const loadWaveContourDistinctList = (current: Date) => {
     })
 }
 
-export { loadGridGeoJson, loadPolyGeoJson, loadWaveContourDistinctList }
+export {
+    loadGridGeoJson,
+    loadPolyGeoJson,
+    loadWaveContourDistinctList,
+    loadSurgeForecastAreaGeoJson
+}
