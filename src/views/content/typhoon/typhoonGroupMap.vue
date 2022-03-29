@@ -42,7 +42,7 @@
                     :zIndex="worldLineWMS.options.zindex"
                 ></l-wms-tile-layer>
                 <!-- TODO:[-] 22-03-29 新加入的风暴潮的预报区域-南海区-多边形 -->
-                <l-wms-tile-layer
+                <!-- <l-wms-tile-layer
                     :baseUrl="surgeForecastAreaSouthWMS.url"
                     :layers="surgeForecastAreaSouthWMS.options.layer"
                     :format="surgeForecastAreaSouthWMS.options.format"
@@ -50,9 +50,13 @@
                     :zIndex="surgeForecastAreaSouthWMS.options.zindex"
                     :opacity="0.8"
                     @mouseover="forecastAreaHover()"
-                ></l-wms-tile-layer>
+                ></l-wms-tile-layer> -->
+                <l-geo-json
+                    :geojson="surgeForecastAreaPolygonGeoJson"
+                    :options="surgeForecastAreaPolygonOpts"
+                ></l-geo-json>
                 <!-- TODO:[-] 22-03-08 加入的风暴潮预报的三个区域的多边形区域 -->
-                <l-polyline
+                <!-- <l-polyline
                     v-for="temp in getPolyLines"
                     :key="temp.id"
                     :lat-lngs="temp.latlngs"
@@ -61,8 +65,7 @@
                     :stroke="temp.style.stroke"
                     :opacity="temp.style.opacity"
                 >
-                </l-polyline>
-                <!-- <l-marker :lat-lng="makerLatlng"></l-marker> -->
+                </l-polyline> -->
                 <l-circle :lat-lng="makerLatlng"></l-circle>
             </l-map>
             <!-- TODO:[-] 20-07-20 新加入的 main bar 替换之前的 time bar -->
@@ -212,7 +215,8 @@ import {
     LPolyline,
     LCircle,
     LIcon,
-    LWMSTileLayer
+    LWMSTileLayer,
+    LGeoJson
     // LeafletHeatmap
 } from 'vue2-leaflet'
 
@@ -432,6 +436,7 @@ const DEFAULT_SCATTER_PAGE_COUNT = 1000
         'l-circle': LCircle,
         'l-icon': LIcon,
         'l-wms-tile-layer': LWMSTileLayer,
+        'l-geo-json': LGeoJson,
         TimeBar,
         RightDetailBar,
         RightOilBar,
@@ -794,7 +799,8 @@ export default class TyGroupMap extends mixins(
         const mymap = this.$refs.basemap.mapObject
         this._initOptionsField()
         // TODO:[-] 22-03-29 尝试加载surge预报区域的geojson
-        this.loadSurgeForecastAreaWFS(mymap)
+        // this.loadSurgeForecastAreaWFS(mymap)
+        this.createSurgeForecastAreaByWFS()
     }
 
     _initOptionsField(): void {
@@ -2706,6 +2712,9 @@ export default class TyGroupMap extends mixins(
 // #mybasemap {
 //     height: 1%;
 // }
+.test {
+    color: #1abc9cb4;
+}
 
 #rescue_map {
     /* height: 100%; */

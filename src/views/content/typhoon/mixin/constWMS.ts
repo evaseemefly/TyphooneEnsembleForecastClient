@@ -5,6 +5,23 @@ import { WMSOptionsMidModel, WMSMidModel } from '@/middle_model/geo'
 import { baseUrl } from '@/api/common'
 import { loadSurgeForecastAreaGeoJson } from '@/api/geoserver'
 
+function onEachFeature(feature, layer) {
+    const v = this
+    layer.on('mouseover', function(e) {
+        e.target.setStyle({
+            color: '#1abc9cb4',
+            opacity: 0.8
+            // fillColor: '#34495e'
+        })
+    })
+    layer.on('mouseout', function(e) {
+        e.target.setStyle({
+            color: '#1abc9c07'
+            // fillColor: '#16a085'
+        })
+    })
+}
+
 /**
  * + 21-01-27 作为 mixin 的 wms常量
  *
@@ -76,7 +93,7 @@ class WMSMixin extends Vue {
     // TODO:[-] 20-08-26 使用本地 nginx 映射的文件系统
     // http://localhost:8080/content/localhost/images/map/tdt-8level/5/31/11.png
     // url = 'http://localhost:82/images/map/tdt-8level/{z}/{x}/{y}.png'
-    // TODO:[-] 21-06-10 尝试引入 mapbox
+    // TODO:[-] 21-06-10 尝试引入 mapbox=
     mapBoxToken =
         'pk.eyJ1IjoiZXZhc2VlbWVmbHkxIiwiYSI6ImNrcHE4OHJsejBobnoyb3BhOTkwb3MzbGwifQ.5ThyBJrIccBpeVi9pUdJnw'
 
@@ -86,6 +103,19 @@ class WMSMixin extends Vue {
     attribution =
         'powered by Ocean Flow © 2022 <a href="https://github.com/evaseemefly">evaseemefly & nmefc</a> '
 
+    surgeForecastAreaPolygon = null
+    surgeForecastAreaPolygonOpts = {
+        onEachFeature: onEachFeature.bind(this),
+        style: {
+            weight: 2,
+            opacity: 0.4,
+            color: '#1abc9c07',
+            // color: '#16a085',
+            dashArray: '3',
+            fillOpacity: 0.7
+        }
+    }
+    surgeForecastAreaPolygonGeoJson: L.GeoJSON = null
     forecastAreaHover(): void {
         console.log('监听到当前wmsTileLayer hovered')
     }
@@ -101,12 +131,17 @@ class WMSMixin extends Vue {
                         color: '#16a085',
                         dashArray: '3',
                         fillOpacity: 0.7
-                    }
+                    },
+                    onEachFeature: this.onEachFeature
                 })
                 const layer: L.Layer = geosjon.addTo(map)
                 return layer
             }
         })
+    }
+    async createSurgeForecastAreaByWFS(): Promise<void> {
+        const res = await loadSurgeForecastAreaGeoJson()
+        this.surgeForecastAreaPolygonGeoJson = res.data
     }
     getStyle(): {
         fillColor: any
@@ -135,6 +170,27 @@ geometry: {type: "MultiPolygon", coordinates: Array(1)}
             dashArray: '3',
             fillOpacity: 0.7
         }
+    }
+
+    onEachFeature(geojson: L.GeoJSON, feature: any, layer: L.Layer): void {
+        function highlightFeature(e) {
+            const layer = e.target
+
+            layer.setStyle({
+                weight: 5,
+                color: '#666',
+                dashArray: '',
+                fillOpacity: 0.7
+            })
+
+            if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+                layer.bringToFront()
+            }
+        }
+        function resetHighlight(e) {
+            geojson.resetStyle(e.target)
+        }
+        layer.on({ mouseover: highlightFeature, mouseout: resetHighlight })
     }
 }
 export { WMSMixin }
