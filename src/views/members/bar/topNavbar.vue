@@ -43,16 +43,15 @@
             <div class="logo"><img src="../../../assets/nmefclog.png" /></div>
             <div class="title">
                 <h2>台风风暴潮集合预报系统</h2>
-                <!-- <h4>power by <img src="/static/icons/oceanflow.svg" /></h4> -->
-                <h4>
+
+                <!-- 22-03-28 去掉 ocean flow 的副标题 -->
+                <!-- <h4>
                     <span>powered by</span>
                     <h3>Ocean Flow</h3>
-                </h4>
-
-                <!-- <h4>国家海洋环境预报中心</h4> -->
+                </h4> -->
             </div>
         </div>
-        <!-- <div class="line"></div> -->
+        ß
     </div>
 </template>
 <script lang="ts">
