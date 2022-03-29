@@ -41,6 +41,16 @@
                     :transparent="worldLineWMS.options.transparent"
                     :zIndex="worldLineWMS.options.zindex"
                 ></l-wms-tile-layer>
+                <!-- TODO:[-] 22-03-29 新加入的风暴潮的预报区域-南海区-多边形 -->
+                <l-wms-tile-layer
+                    :baseUrl="surgeForecastAreaSouthWMS.url"
+                    :layers="surgeForecastAreaSouthWMS.options.layer"
+                    :format="surgeForecastAreaSouthWMS.options.format"
+                    :transparent="surgeForecastAreaSouthWMS.options.transparent"
+                    :zIndex="surgeForecastAreaSouthWMS.options.zindex"
+                    :opacity="0.8"
+                    @mouseover="forecastAreaHover()"
+                ></l-wms-tile-layer>
                 <!-- TODO:[-] 22-03-08 加入的风暴潮预报的三个区域的多边形区域 -->
                 <l-polyline
                     v-for="temp in getPolyLines"
@@ -781,7 +791,10 @@ export default class TyGroupMap extends mixins(
         //     this.finishDate = new Date(Math.max(...res))
         //     this.startDate = new Date(Math.min(...res))
         // })
+        const mymap = this.$refs.basemap.mapObject
         this._initOptionsField()
+        // TODO:[-] 22-03-29 尝试加载surge预报区域的geojson
+        this.loadSurgeForecastAreaWFS(mymap)
     }
 
     _initOptionsField(): void {
