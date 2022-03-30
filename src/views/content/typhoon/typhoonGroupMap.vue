@@ -55,6 +55,14 @@
                     :geojson="surgeForecastAreaPolygonGeoJson"
                     :options="surgeForecastAreaPolygonOpts"
                 ></l-geo-json>
+                <l-geo-json
+                    :geojson="surgeForecastAreaEastPolygonGeoJson"
+                    :options="surgeForecastAreaPolygonOpts"
+                ></l-geo-json>
+                <l-geo-json
+                    :geojson="surgeForecastAreaSouthPolygonGeoJson"
+                    :options="surgeForecastAreaPolygonOpts"
+                ></l-geo-json>
                 <!-- TODO:[-] 22-03-08 加入的风暴潮预报的三个区域的多边形区域 -->
                 <!-- <l-polyline
                     v-for="temp in getPolyLines"

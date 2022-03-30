@@ -1,7 +1,8 @@
 import * as L from 'leaflet'
-import { Component, Vue } from 'vue-property-decorator'
+import { Component, Vue, Watch } from 'vue-property-decorator'
 // 20-08-11 wms 相关的中间 model
 import { WMSOptionsMidModel, WMSMidModel } from '@/middle_model/geo'
+import { AreaEnum } from '@/enum/area'
 import { baseUrl } from '@/api/common'
 import { loadSurgeForecastAreaGeoJson } from '@/api/geoserver'
 
@@ -115,7 +116,10 @@ class WMSMixin extends Vue {
             fillOpacity: 0.7
         }
     }
+    surgeForecastArea: AreaEnum = AreaEnum.SOUTHCHINASEA
     surgeForecastAreaPolygonGeoJson: L.GeoJSON = null
+    surgeForecastAreaEastPolygonGeoJson: L.GeoJSON = null
+    surgeForecastAreaSouthPolygonGeoJson: L.GeoJSON = null
     forecastAreaHover(): void {
         console.log('监听到当前wmsTileLayer hovered')
     }
@@ -140,8 +144,46 @@ class WMSMixin extends Vue {
         })
     }
     async createSurgeForecastAreaByWFS(): Promise<void> {
-        const res = await loadSurgeForecastAreaGeoJson()
+        const areaStr: string = this.getForeacastAreaStamp(AreaEnum.BOHAISEA)
+        const res = await loadSurgeForecastAreaGeoJson('nmefc_common', areaStr)
+        const resEast = await loadSurgeForecastAreaGeoJson(
+            'nmefc_common',
+            this.getForeacastAreaStamp(AreaEnum.EASTCHINASEA)
+        )
+        const resSouth = await loadSurgeForecastAreaGeoJson(
+            'nmefc_common',
+            this.getForeacastAreaStamp(AreaEnum.SOUTHCHINASEA)
+        )
         this.surgeForecastAreaPolygonGeoJson = res.data
+        this.surgeForecastAreaEastPolygonGeoJson = resEast.data
+        this.surgeForecastAreaSouthPolygonGeoJson = resSouth.data
+    }
+
+    @Watch('surgeForecastArea')
+    onSurgeForecastArea(val: AreaEnum): void {
+        // this.createSurgeForecastAreaByWFS(val)
+    }
+    /**
+     *TODO:[-] 22-03-30 根据传入的预报区域获取不同的字符串戳
+     *
+     * @param {AreaEnum} area 传入预报区域枚举
+     * @return {*}  {string} eg: surge_area_north_polygon
+     * @memberof WMSMixin
+     */
+    getForeacastAreaStamp(area: AreaEnum): string {
+        let areaStr = ''
+        switch (true) {
+            case area === AreaEnum.BOHAISEA:
+                areaStr = 'surge_area_north_polygon'
+                break
+            case area === AreaEnum.EASTCHINASEA:
+                areaStr = 'surge_area_east_polygon'
+                break
+            case area === AreaEnum.SOUTHCHINASEA:
+                areaStr = 'surge_area_south_polygon'
+                break
+        }
+        return areaStr
     }
     getStyle(): {
         fillColor: any

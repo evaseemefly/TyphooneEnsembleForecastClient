@@ -231,19 +231,30 @@ export default class CreateCaseForm extends Vue {
         // { forecastDt: new Date(2020, 8, 19, 5), lon: 112.3, lat: 22.8, bp: 992 },
         // { forecastDt: new Date(2020, 8, 19, 11), lon: 111.2, lat: 23.7, bp: 998 }
         // 以下台风为 狮子山
-        { forecastDt: new Date(2020, 10, 7, 5), lon: 113.3, lat: 16, bp: 1002 },
-        { forecastDt: new Date(2020, 10, 7, 11), lon: 111.5, lat: 16.4, bp: 995 },
-        { forecastDt: new Date(2020, 10, 7, 17), lon: 111.4, lat: 17.1, bp: 995 },
-        { forecastDt: new Date(2020, 10, 7, 23), lon: 111.3, lat: 17.4, bp: 995 },
-        { forecastDt: new Date(2020, 10, 8, 5), lon: 111.3, lat: 17.5, bp: 992 },
-        { forecastDt: new Date(2020, 10, 8, 11), lon: 110.9, lat: 17.9, bp: 995 },
-        { forecastDt: new Date(2020, 10, 8, 17), lon: 110.8, lat: 18.8, bp: 992 },
-        { forecastDt: new Date(2020, 10, 8, 23), lon: 110.5, lat: 19.3, bp: 990 },
-        { forecastDt: new Date(2020, 10, 9, 5), lon: 109.8, lat: 19.3, bp: 990 },
-        { forecastDt: new Date(2020, 10, 9, 11), lon: 110.1, lat: 19.7, bp: 990 },
-        { forecastDt: new Date(2020, 10, 9, 17), lon: 110, lat: 20, bp: 990 },
-        { forecastDt: new Date(2020, 10, 9, 23), lon: 109.3, lat: 20.1, bp: 990 },
-        { forecastDt: new Date(2020, 10, 10, 5), lon: 108.7, lat: 20.5, bp: 990 }
+        // { forecastDt: new Date(2020, 10, 7, 5), lon: 113.3, lat: 16, bp: 1002 },
+        // { forecastDt: new Date(2020, 10, 7, 11), lon: 111.5, lat: 16.4, bp: 995 },
+        // { forecastDt: new Date(2020, 10, 7, 17), lon: 111.4, lat: 17.1, bp: 995 },
+        // { forecastDt: new Date(2020, 10, 7, 23), lon: 111.3, lat: 17.4, bp: 995 },
+        // { forecastDt: new Date(2020, 10, 8, 5), lon: 111.3, lat: 17.5, bp: 992 },
+        // { forecastDt: new Date(2020, 10, 8, 11), lon: 110.9, lat: 17.9, bp: 995 },
+        // { forecastDt: new Date(2020, 10, 8, 17), lon: 110.8, lat: 18.8, bp: 992 },
+        // { forecastDt: new Date(2020, 10, 8, 23), lon: 110.5, lat: 19.3, bp: 990 },
+        // { forecastDt: new Date(2020, 10, 9, 5), lon: 109.8, lat: 19.3, bp: 990 },
+        // { forecastDt: new Date(2020, 10, 9, 11), lon: 110.1, lat: 19.7, bp: 990 },
+        // { forecastDt: new Date(2020, 10, 9, 17), lon: 110, lat: 20, bp: 990 },
+        // { forecastDt: new Date(2020, 10, 9, 23), lon: 109.3, lat: 20.1, bp: 990 },
+        // { forecastDt: new Date(2020, 10, 10, 5), lon: 108.7, lat: 20.5, bp: 990 }
+        // 以下为 1409 威马逊
+        { forecastDt: new Date(2020, 7, 17, 8), lon: 115.8, lat: 16.4, bp: 960 },
+        { forecastDt: new Date(2020, 7, 17, 14), lon: 115, lat: 16.8, bp: 950 },
+        { forecastDt: new Date(2020, 7, 17, 20), lon: 114.3, lat: 17.5, bp: 930 },
+        { forecastDt: new Date(2020, 7, 18, 2), lon: 113.4, lat: 18.5, bp: 920 },
+        { forecastDt: new Date(2020, 7, 18, 8), lon: 112.3, lat: 19.1, bp: 900 },
+        { forecastDt: new Date(2020, 7, 18, 14), lon: 111.3, lat: 19.9, bp: 888 },
+        { forecastDt: new Date(2020, 7, 18, 20), lon: 110.3, lat: 20.3, bp: 910 },
+        { forecastDt: new Date(2020, 7, 19, 2), lon: 109.4, lat: 21, bp: 935 },
+        { forecastDt: new Date(2020, 7, 19, 8), lon: 108.3, lat: 21.7, bp: 945 },
+        { forecastDt: new Date(2020, 7, 19, 14), lon: 107.3, lat: 22.1, bp: 970 }
     ]
     forecastAreaList = [
         {

@@ -56,7 +56,7 @@ const loadPolyGeoJson = (layerName: string, current: Date) => {
     })
 }
 
-const loadSurgeForecastAreaGeoJson = () => {
+const loadSurgeForecastAreaGeoJson = (area: string, layerName: string) => {
     const url = `${hostGeo}nmefc_common/ows?`
     return axios.get(url, {
         headers: authHeader(),
@@ -65,7 +65,7 @@ const loadSurgeForecastAreaGeoJson = () => {
             version: '1.0.0',
             request: 'GetFeature',
             // typeNames: 'nmefc_common%3Asurge_area_south_polygon', // TODO:[-] 21-03-19 注意此参数需要与 gisserver 中的 feature_type 中的 queryset 的model 名称相同
-            typeName: 'nmefc_common:surge_area_south_polygon',
+            typeName: `${area}:${layerName}`,
             maxFeatures: '50',
             // layerName: 'nmefc_common:surge_area_south_polygon',
             outputFormat: 'application/json'
