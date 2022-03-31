@@ -40,7 +40,16 @@
             </el-menu> -->
         </div>
         <div class="top-logo">
-            <div class="logo"><img src="../../../assets/nmefclog.png" /></div>
+            <div class="logos">
+                <div class="logo">
+                    <img src="../../../assets/nmefclog.png" />
+                </div>
+                <div class="logo loop">
+                    <img src="/static/icons/ocean_flow_icon.svg" />
+                    <div class="flash"></div>
+                </div>
+            </div>
+
             <div class="title">
                 <h2>台风风暴潮集合预报系统</h2>
 
@@ -111,6 +120,9 @@ export default class TopNavbar extends Vue {
         // background: red;
         display: flex;
         color: white;
+        .logos {
+            display: flex;
+        }
         .logo {
             margin-left: 10px;
             margin-right: 10px;
@@ -178,5 +190,41 @@ export default class TopNavbar extends Vue {
             }
         }
     }
+}
+.loop {
+    position: relative;
+    img {
+        position: absolute;
+        left: 0px;
+    }
+}
+.flash {
+    width: 48px;
+    height: 48px;
+    position: absolute;
+    // color: red;
+    // background: red;
+    border-radius: 50%;
+    animation: light 2.5s linear;
+    -webkit-animation: light 2.5s linear;
+    animation-iteration-count: infinite;
+    -webkit-animation-iteration-count: infinite;
+}
+@keyframes light {
+    0% {
+        box-shadow: 0px 0px 4px #00968798;
+    }
+    50% {
+        box-shadow: 0px 0px 16px #00968798;
+    }
+    100% {
+        box-shadow: 0px 0px 4px #00968798;
+    }
+    // from {
+    //     box-shadow: 0px 0px 4px #00968798;
+    // }
+    // to {
+    //     box-shadow: 0px 0px 16px #00968798;
+    // }
 }
 </style>
