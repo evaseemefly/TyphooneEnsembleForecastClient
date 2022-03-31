@@ -51,7 +51,6 @@
                 </h4> -->
             </div>
         </div>
-        ß
     </div>
 </template>
 <script lang="ts">
@@ -129,6 +128,7 @@ export default class TopNavbar extends Vue {
             display: flex;
             flex-direction: column;
             align-content: baseline;
+            justify-content: center; // 22-03-31 标题纵向居中
             h2 {
                 font-family: Arial, Helvetica, sans-serif;
                 text-shadow: 2px 2px 10px #000;

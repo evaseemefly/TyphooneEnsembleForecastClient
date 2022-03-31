@@ -41,7 +41,7 @@
                     :transparent="worldLineWMS.options.transparent"
                     :zIndex="worldLineWMS.options.zindex"
                 ></l-wms-tile-layer>
-                <!-- TODO:[-] 22-03-29 新加入的风暴潮的预报区域-南海区-多边形 -->
+                <!-- TODO:[-] 22-03-29 新加入的风暴潮的预报区域-三个区-多边形 -->
                 <!-- <l-wms-tile-layer
                     :baseUrl="surgeForecastAreaSouthWMS.url"
                     :layers="surgeForecastAreaSouthWMS.options.layer"
@@ -52,7 +52,7 @@
                     @mouseover="forecastAreaHover()"
                 ></l-wms-tile-layer> -->
                 <l-geo-json
-                    :geojson="surgeForecastAreaPolygonGeoJson"
+                    :geojson="surgeForecastAreaNorthPolygonGeoJson"
                     :options="surgeForecastAreaPolygonOpts"
                 ></l-geo-json>
                 <l-geo-json

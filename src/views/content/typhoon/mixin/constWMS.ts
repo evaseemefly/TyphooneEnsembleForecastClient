@@ -31,10 +31,6 @@ function onEachFeature(feature, layer) {
  */
 @Component
 class WMSMixin extends Vue {
-    // baseHost = 'http://128.5.10.21'
-    // baseHost = 'http://localhost'
-    // basePort = '8084'
-    // baseUrl = `${this.baseHost}:${this.basePort}`
     baseUrl = baseUrl
     // mixin definition here
     landWMS: WMSMidModel = new WMSMidModel(
@@ -49,24 +45,6 @@ class WMSMixin extends Vue {
         `${this.baseUrl}/geoserver/nmefc_current/wms?`,
         new WMSOptionsMidModel('nmefc_current:southsea_land')
     )
-    // 20-07-29 新加入的东中海的区域
-    ecsLineWMS: WMSMidModel = {
-        url: `${this.baseUrl}/geoserver/nmefc_current/wms?`,
-        options: new WMSOptionsMidModel('nmefc_current:ecs_shp')
-    }
-
-    ecsLineWMSUrl = `${this.baseUrl}/geoserver/nmefc_current/wms?`
-
-    ecsLineWMSOptions = {
-        layers: 'nmefc_current:ecs_shp', //需要加载的图层
-        format: 'image/png', //返回的数据格式
-        transparent: true
-    }
-
-    windWMS: WMSMidModel = {
-        url: `${this.baseUrl}/geoserver//wms?TIME=2020-06-18T10:00:00.000Z`,
-        options: new WMSOptionsMidModel('nmefc_wind:nmefc_wrf_2020061800')
-    }
 
     // TODO:[-] 20-07-31 新加入的台湾区域的land 多边形 现改为 china
     landTwPoygonsWMS: WMSMidModel = new WMSMidModel(
@@ -78,12 +56,6 @@ class WMSMixin extends Vue {
     worldLineWMS: WMSMidModel = new WMSMidModel(
         `${this.baseUrl}/geoserver/nmefc_common/wms?`,
         new WMSOptionsMidModel('nmefc_common:world_map_line', 1500)
-    )
-
-    // TODO:[-] 21-03-05 新加入的测试西北太剪切过的网格
-    ewtDiffPoygonsWMS: WMSMidModel = new WMSMidModel(
-        `${this.baseUrl}/geoserver/SearchRescue/wms?`,
-        new WMSOptionsMidModel('SearchRescue:020Grid_TEST_EWT_DIFF', 1500)
     )
 
     // TODO:[-] 22-03-29 风暴潮南海区预报范围多边形
@@ -101,6 +73,7 @@ class WMSMixin extends Vue {
     // url = `https://api.mapbox.com/styles/evaseemefly1/ckpq8ftgx0zhn17r0vidbxbwr/{z}/{x}/{y}.png?access_token=${this.mapBoxToken}`
     url =
         'https://map.geoq.cn/arcgis/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/{z}/{y}/{x}'
+    // leaflet 右下角的文字显示
     attribution =
         'powered by Ocean Flow © 2022 <a href="https://github.com/evaseemefly">evaseemefly & nmefc</a> '
 
@@ -117,12 +90,11 @@ class WMSMixin extends Vue {
         }
     }
     surgeForecastArea: AreaEnum = AreaEnum.SOUTHCHINASEA
-    surgeForecastAreaPolygonGeoJson: L.GeoJSON = null
+    // 三个海区的多边形 geojson
+    surgeForecastAreaNorthPolygonGeoJson: L.GeoJSON = null
     surgeForecastAreaEastPolygonGeoJson: L.GeoJSON = null
     surgeForecastAreaSouthPolygonGeoJson: L.GeoJSON = null
-    forecastAreaHover(): void {
-        console.log('监听到当前wmsTileLayer hovered')
-    }
+    // 暂时不用
     loadSurgeForecastAreaWFS(map: L.Map): void {
         const that = this
         loadSurgeForecastAreaGeoJson().then((res) => {
@@ -143,6 +115,7 @@ class WMSMixin extends Vue {
             }
         })
     }
+    // 创建 三个海区的 的geojson多边形数据(wfs)
     async createSurgeForecastAreaByWFS(): Promise<void> {
         const areaStr: string = this.getForeacastAreaStamp(AreaEnum.BOHAISEA)
         const res = await loadSurgeForecastAreaGeoJson('nmefc_common', areaStr)
@@ -154,14 +127,9 @@ class WMSMixin extends Vue {
             'nmefc_common',
             this.getForeacastAreaStamp(AreaEnum.SOUTHCHINASEA)
         )
-        this.surgeForecastAreaPolygonGeoJson = res.data
+        this.surgeForecastAreaNorthPolygonGeoJson = res.data
         this.surgeForecastAreaEastPolygonGeoJson = resEast.data
         this.surgeForecastAreaSouthPolygonGeoJson = resSouth.data
-    }
-
-    @Watch('surgeForecastArea')
-    onSurgeForecastArea(val: AreaEnum): void {
-        // this.createSurgeForecastAreaByWFS(val)
     }
     /**
      *TODO:[-] 22-03-30 根据传入的预报区域获取不同的字符串戳
