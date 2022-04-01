@@ -11,7 +11,8 @@ function onEachFeature(feature, layer) {
     layer.on('mouseover', function(e) {
         e.target.setStyle({
             color: '#1abc9cb4',
-            opacity: 0.8
+            opacity: 0.8,
+            fill: false // 默认不再填充区域内的颜色
             // fillColor: '#34495e'
         })
     })
