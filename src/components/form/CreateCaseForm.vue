@@ -179,7 +179,7 @@ import { getTargetTyCase, spiderTargetTyPathList } from '@/api/tyhoon'
 // STORE 常量
 import { GET_CREATE_FORM } from '@/store/types'
 // vuex -> types
-import { SET_GEO_COVERAGEID } from '@/store/types'
+import { SET_GEO_COVERAGEID, SET_TYPHOON_PATH_LIST } from '@/store/types'
 import { AreaEnum } from '@/enum/area'
 @Component({
     directives: {
@@ -451,6 +451,7 @@ export default class CreateCaseForm extends Vue {
                         })
                     })
                     // console.log(res.data)
+                    this.setTyphoonPathList(this.customerTyCMAList)
                 }
             }
         )
@@ -520,6 +521,9 @@ export default class CreateCaseForm extends Vue {
     }
 
     @Mutation(SET_GEO_COVERAGEID, { namespace: 'geo' }) selectCoverageId
+
+    // + 22-04-07 设置当前台风路径
+    @Mutation(SET_TYPHOON_PATH_LIST, { namespace: 'typhoon' }) setTyphoonPathList
 
     // 在 customerTyCMAList 后面追加数组中的最后一个对象
     addCustomerTyCMA(): void {

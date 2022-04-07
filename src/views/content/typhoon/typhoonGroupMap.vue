@@ -394,6 +394,8 @@ import {
     GET_TYPHOON_ID,
     // + 21-07-28
     GET_TYPHOON_TIMESTAMP,
+    // + 22-04-07 获取当前爬取到的台风路径
+    GET_TYPHOON_PATH_LIST,
     // + 21-08-19 color scale相关
     GET_SCALE_KEY,
     SET_SCALE_KEY,
@@ -512,6 +514,14 @@ export default class TyGroupMap extends mixins(
         latlngs: [],
         color: 'yellow'
     }
+    // TODO:[-] 22-04-07 爬取到的台风路径
+    spiderTyphoonPathList: {
+        forecastDt: Date
+        lat: number
+        lon: number
+        bp: number
+        // radius: number
+    }[] = []
 
     // 20-08-09 + 当前选中的coverageInfos
     // coverageInfoList: { coverageArea: number; coverageType: number }[] = []
@@ -2465,6 +2475,35 @@ export default class TyGroupMap extends mixins(
     @Watch('getTyTimeStamp')
     onTyTimeStamp(val: string): void {
         this.tyTimeStamp = val
+    }
+
+    // TODO:-] 22-04-07 store -> 爬取到的台风路径
+    @Getter(GET_TYPHOON_PATH_LIST, { namespace: 'typhoon' }) getSpiderTyphoonPathList
+
+    @Watch('getSpiderTyphoonPathList')
+    onGetSpiderTyPathList(
+        val: {
+            forecastDt: Date
+            lat: number
+            lon: number
+            bp: number
+            // radius: number
+        }[]
+    ): void {
+        this.spiderTyphoonPathList = val
+    }
+
+    @Watch('spiderTyphoonPathList', { immediate: true, deep: true })
+    onSpiderTyPathList(
+        val: {
+            forecastDt: Date
+            lat: number
+            lon: number
+            bp: number
+            // radius: number
+        }[]
+    ): void {
+        // 添加至地图中
     }
 
     // + 21-07-28 监听 tyCode
