@@ -286,7 +286,8 @@ import {
     TyGroupPathLine,
     TyGroupCenterPathLine,
     TyphoonPolygon,
-    TyphoonCircle
+    TyphoonCircle,
+    TyCMAPathLine
 } from './typhoonGroup'
 // 各类 DTO
 import { CustomerMarker, CustomerGisFormMarker } from './marker'
@@ -520,6 +521,7 @@ export default class TyGroupMap extends mixins(
         lat: number
         lon: number
         bp: number
+        isForecast: boolean
         // radius: number
     }[] = []
 
@@ -2487,6 +2489,7 @@ export default class TyGroupMap extends mixins(
             lat: number
             lon: number
             bp: number
+            isForecast: boolean
             // radius: number
         }[]
     ): void {
@@ -2500,10 +2503,13 @@ export default class TyGroupMap extends mixins(
             lat: number
             lon: number
             bp: number
+            isForecast: boolean
             // radius: number
         }[]
     ): void {
+        const mymap: any = this.$refs.basemap['mapObject']
         // 添加至地图中
+        new TyCMAPathLine(mymap, val).add2Map()
     }
 
     // + 21-07-28 监听 tyCode

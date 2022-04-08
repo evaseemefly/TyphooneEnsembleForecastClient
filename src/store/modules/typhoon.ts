@@ -14,7 +14,7 @@ export interface ITyphoon {
     tyCode?: string
     tyId: number
     tyTimeStamp: string
-    tyPathList: { forecastDt: Date; lat: number; lon: number; bp: number }[] // 台风路径
+    tyPathList: { forecastDt: Date; lat: number; lon: number; bp: number; isForecast: boolean }[] // 台风路径
 }
 
 const state: ITyphoon = {
@@ -36,7 +36,7 @@ const getters = {
     },
     [GET_TYPHOON_PATH_LIST](
         state: ITyphoon
-    ): { forecastDt: Date; lat: number; lon: number; bp: number }[] {
+    ): { forecastDt: Date; lat: number; lon: number; bp: number; isForecast: boolean }[] {
         return state.tyPathList
     }
 }
@@ -53,7 +53,7 @@ const mutations = {
     },
     [SET_TYPHOON_PATH_LIST](
         state: ITyphoon,
-        pathList: { forecastDt: Date; lat: number; lon: number; bp: number }[]
+        pathList: { forecastDt: Date; lat: number; lon: number; bp: number; isForecast: boolean }[]
     ): void {
         state.tyPathList = pathList
     },

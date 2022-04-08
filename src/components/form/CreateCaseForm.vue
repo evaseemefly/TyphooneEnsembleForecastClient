@@ -205,6 +205,7 @@ export default class CreateCaseForm extends Vue {
         lat: number
         lon: number
         bp: number
+        isForecast: boolean
         // radius: number
     }[] = [
         // { forecastDt: new Date(2020, 8, 18, 5), lon: 116, lat: 20.5, bp: 995 },
@@ -447,7 +448,8 @@ export default class CreateCaseForm extends Vue {
                             forecastDt: temp.forecastDt,
                             lat: temp.lat,
                             lon: temp.lon,
-                            bp: temp.bp
+                            bp: temp.bp,
+                            isForecast: temp.isForecast
                         })
                     })
                     // console.log(res.data)
