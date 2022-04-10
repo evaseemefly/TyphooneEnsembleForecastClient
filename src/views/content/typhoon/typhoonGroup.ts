@@ -1135,10 +1135,10 @@ class TyCMAPathLine {
         this.myMap = mymap
     }
 
-    add2Map(): void {
+    add2Map(): L.LayerGroup<any> {
         const tyPointsList = this.initCenterPulsingIcon()
         const tyPolyline = this.initLineLayer()
-        new L.LayerGroup([...tyPointsList, tyPolyline]).addTo(this.myMap)
+        return new L.LayerGroup([...tyPointsList, tyPolyline]).addTo(this.myMap)
     }
 
     protected initCenterPulsingIcon(): L.Marker[] {

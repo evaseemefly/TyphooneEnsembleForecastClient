@@ -2509,7 +2509,10 @@ export default class TyGroupMap extends mixins(
     ): void {
         const mymap: any = this.$refs.basemap['mapObject']
         // 添加至地图中
-        new TyCMAPathLine(mymap, val).add2Map()
+        const cmaPathLine = new TyCMAPathLine(mymap, val)
+        const cmaPathLineLayer = cmaPathLine.add2Map()
+        console.log(cmaPathLineLayer)
+        console.log(cmaPathLineLayer._leaflet_id)
     }
 
     // + 21-07-28 监听 tyCode
