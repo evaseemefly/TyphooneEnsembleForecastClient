@@ -10,6 +10,7 @@ import * as pointInPolygon from 'point-in-polygon' // 判断点是否在多边�
 import { IconTypeEnum } from '@/enum/common'
 import { DEFAULT_COLOR } from '@/const/common'
 import { RADIUSUNIT } from '@/const/typhoon'
+import { CanvasMarkerLayer } from '@/common/canvasMakerLayer'
 import { DEFAULTTYCODE, DEFAULTTIMESTAMP } from '@/const/typhoon'
 import { ScaleColor, TyGroupPathScaleColor } from '@/common/scaleColor'
 import { getTargetTyGroupDistDate, getTargetTyGroupDateRange } from '@/api/tyhoon'
@@ -1144,6 +1145,24 @@ class TyCMAPathLine {
         )
     }
 
+    add2MapByCanvas(): L.LayerGroup<any> {
+        const tyPointsList = this.initCenterPulsingIcon()
+        const tyPolylineRealdata = this.initLineRealdataLayer()
+        const tyPolylineForecast = this.initLineForecastLayer()
+        const canvasMarkerLayer = new CanvasMarkerLayer().addTo(this.myMap)
+        canvasMarkerLayer.addLayers(tyPointsList)
+        return new L.LayerGroup([tyPolylineRealdata, tyPolylineForecast]).addTo(this.myMap)
+    }
+
+    getlastTyLatlng(): L.LatLng | null {
+        if (this.tyPathList.length > 0) {
+            const lastTy = this.tyPathList[this.tyPathList.length - 1]
+            return new L.LatLng(lastTy.lat, lastTy.lon)
+        } else {
+            return null
+        }
+    }
+
     protected initCenterPulsingIcon(): L.Marker[] {
         const tyPointsList: L.Marker[] = []
         this.tyPathList.forEach((tempPath) => {
@@ -1164,8 +1183,8 @@ class TyCMAPathLine {
             })
             // TODO:[-] 22-03-17 修改之前的台风中心路径由脉冲mark改为台风标准图片marker，切记需要加入 customData!!
             const tyCustomMarker = L.marker([tempPath.lat, tempPath.lon], {
-                icon: tyCustomIcon,
-                customData: typhoonStatus
+                icon: tyCustomIcon
+                // customData: typhoonStatus
             })
             tyPointsList.push(tyCustomMarker)
         })

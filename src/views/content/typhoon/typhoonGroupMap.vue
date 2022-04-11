@@ -2516,6 +2516,10 @@ export default class TyGroupMap extends mixins(
         // 添加至地图中
         const cmaPathLine = new TyCMAPathLine(mymap, val)
         const cmaPathLineLayer = cmaPathLine.add2Map()
+        const lastTyLatlng = cmaPathLine.getlastTyLatlng()
+        if (lastTyLatlng) {
+            this.center = [lastTyLatlng.lat, lastTyLatlng.lng]
+        }
         this.spiderTyPathLineLayerId = cmaPathLineLayer._leaflet_id
     }
 
