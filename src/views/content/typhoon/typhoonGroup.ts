@@ -27,6 +27,14 @@ export interface ITyGroupPathOptions {
     timestamp: string
 }
 
+export interface ITyPath {
+    forecastDt: Date
+    lat: number
+    lon: number
+    bp: number
+    isForecast: boolean
+}
+
 class TyGroupPath {
     defaultOptions: ITyGroupPathOptions = {
         tyCode: DEFAULTTYCODE,
@@ -1112,6 +1120,97 @@ class TyphoonCircle {
         // }).setDirection(dir, 180)
     }
 }
+
+/**
+ * + 22-04-08
+ * 台风路径
+ *
+ * @class TyphoonPathIcon
+ */
+class TyCMAPathLine {
+    public tyPathList: ITyPath[] = []
+    protected myMap: L.Map
+    constructor(mymap: L.Map, tyPathList: ITyPath[]) {
+        this.tyPathList = tyPathList
+        this.myMap = mymap
+    }
+
+    add2Map(): L.LayerGroup<any> {
+        const tyPointsList = this.initCenterPulsingIcon()
+        const tyPolylineRealdata = this.initLineRealdataLayer()
+        const tyPolylineForecast = this.initLineForecastLayer()
+        return new L.LayerGroup([...tyPointsList, tyPolylineRealdata, tyPolylineForecast]).addTo(
+            this.myMap
+        )
+    }
+
+    protected initCenterPulsingIcon(): L.Marker[] {
+        const tyPointsList: L.Marker[] = []
+        this.tyPathList.forEach((tempPath) => {
+            const typhoonStatus = new TyphoonCircleStatus(
+                0,
+                tempPath.bp,
+                tempPath.forecastDt,
+                tempPath.lat,
+                tempPath.lon
+            )
+            // TODO:[-] 22-03-15 修改为 台风img marker
+            const tyCustomIcon = L.icon({
+                iconUrl: '/static/icons/ty_icon_blue.svg',
+                iconSize: [40, 40], // size of the icon
+                // shadowSize: [50, 64], // size of the shadow
+                iconAnchor: [20, 20], // point of the icon which will
+                className: 'my-leaflet-custom-icon'
+            })
+            // TODO:[-] 22-03-17 修改之前的台风中心路径由脉冲mark改为台风标准图片marker，切记需要加入 customData!!
+            const tyCustomMarker = L.marker([tempPath.lat, tempPath.lon], {
+                icon: tyCustomIcon,
+                customData: typhoonStatus
+            })
+            tyPointsList.push(tyCustomMarker)
+        })
+        return tyPointsList
+    }
+    /**
+     * 实时台风路径
+     *
+     * @protected
+     * @return {*}  {L.Polyline}
+     * @memberof TyCMAPathLine
+     */
+    protected initLineRealdataLayer(): L.Polyline {
+        const latLngs: L.LatLng[] = []
+        this.tyPathList.forEach((temp) => {
+            if (!temp.isForecast) {
+                latLngs.push(new L.LatLng(temp.lat, temp.lon))
+            }
+        })
+        return new L.Polyline(latLngs, { color: '#e74c3c' })
+    }
+
+    /**
+     * 预报台风风路径
+     *
+     * @protected
+     * @return {*}  {L.Polyline}
+     * @memberof TyCMAPathLine
+     */
+    protected initLineForecastLayer(): L.Polyline {
+        const latLngs: L.LatLng[] = []
+
+        const forecastTyIndex: number = this.tyPathList.findIndex((temp) => {
+            return temp.isForecast
+        })
+        const lastRealTy = this.tyPathList[forecastTyIndex - 1]
+        latLngs.push(new L.LatLng(lastRealTy.lat, lastRealTy.lon))
+        this.tyPathList.forEach((temp) => {
+            if (temp.isForecast) {
+                latLngs.push(new L.LatLng(temp.lat, temp.lon))
+            }
+        })
+        return new L.Polyline(latLngs, { color: '#2980b9', dashArray: '5,10' })
+    }
+}
 /**
  * 台风最后的半径圆多边形
  *
@@ -1389,5 +1488,6 @@ export {
     TyphoonPolygon,
     TyphoonOutLinePolygon,
     TyphoonCircle,
-    TyphoonLastSemiCirclePolygon
+    TyphoonLastSemiCirclePolygon,
+    TyCMAPathLine
 }

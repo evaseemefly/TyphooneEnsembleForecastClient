@@ -3,26 +3,6 @@
         <div class="base-card">
             <div class="base-card-title"><h4>台风信息</h4></div>
             <div class="base-card-content">
-                <!-- <div class="base-card-row"> -->
-                <!-- <el-select v-model="value" placeholder="请选择">
-                        <el-option
-                            v-for="item in options"
-                            :key="item.value"
-                            :label="item.label"
-                            :value="item.value"
-                        >
-                        </el-option>
-                    </el-select> -->
-                <!-- <el-select v-model="tyCode" clearable placeholder="请选择">
-                        <el-option
-                            v-for="item in tyCodeOptions"
-                            :key="item.value"
-                            :label="item.label"
-                            :value="item.value"
-                        >
-                        </el-option>
-                    </el-select> -->
-                <!-- </div> -->
                 <div class="base-card-row tiled" id="ty_form_create-title">
                     <p>台风编号</p>
                     <el-input v-model="tyCode" value="number" placeholder="台风编号"></el-input>
@@ -32,6 +12,9 @@
                         inactive-text="中央台"
                     >
                     </el-switch>
+                    <button type="button" class="el-button el-button--primary" @click="spiderTy">
+                        爬取
+                    </button>
                 </div>
                 <el-collapse-transition>
                     <div class="base-card-row" id="ty_form_create_info" v-show="isCustomerTy">
@@ -192,11 +175,11 @@ import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 import { Getter, Mutation, State, namespace } from 'vuex-class'
 import { StationDrag } from '@/directives/drag'
 import { createTyCase } from '@/api/task'
-import { getTargetTyCase } from '@/api/tyhoon'
+import { getTargetTyCase, spiderTargetTyPathList } from '@/api/tyhoon'
 // STORE 常量
 import { GET_CREATE_FORM } from '@/store/types'
 // vuex -> types
-import { SET_GEO_COVERAGEID } from '@/store/types'
+import { SET_GEO_COVERAGEID, SET_TYPHOON_PATH_LIST } from '@/store/types'
 import { AreaEnum } from '@/enum/area'
 @Component({
     directives: {
@@ -222,6 +205,7 @@ export default class CreateCaseForm extends Vue {
         lat: number
         lon: number
         bp: number
+        isForecast: boolean
         // radius: number
     }[] = [
         // { forecastDt: new Date(2020, 8, 18, 5), lon: 116, lat: 20.5, bp: 995 },
@@ -245,16 +229,16 @@ export default class CreateCaseForm extends Vue {
         // { forecastDt: new Date(2020, 10, 9, 23), lon: 109.3, lat: 20.1, bp: 990 },
         // { forecastDt: new Date(2020, 10, 10, 5), lon: 108.7, lat: 20.5, bp: 990 }
         // 以下为 1409 威马逊
-        { forecastDt: new Date(2020, 7, 17, 8), lon: 115.8, lat: 16.4, bp: 960 },
-        { forecastDt: new Date(2020, 7, 17, 14), lon: 115, lat: 16.8, bp: 950 },
-        { forecastDt: new Date(2020, 7, 17, 20), lon: 114.3, lat: 17.5, bp: 930 },
-        { forecastDt: new Date(2020, 7, 18, 2), lon: 113.4, lat: 18.5, bp: 920 },
-        { forecastDt: new Date(2020, 7, 18, 8), lon: 112.3, lat: 19.1, bp: 900 },
-        { forecastDt: new Date(2020, 7, 18, 14), lon: 111.3, lat: 19.9, bp: 888 },
-        { forecastDt: new Date(2020, 7, 18, 20), lon: 110.3, lat: 20.3, bp: 910 },
-        { forecastDt: new Date(2020, 7, 19, 2), lon: 109.4, lat: 21, bp: 935 },
-        { forecastDt: new Date(2020, 7, 19, 8), lon: 108.3, lat: 21.7, bp: 945 },
-        { forecastDt: new Date(2020, 7, 19, 14), lon: 107.3, lat: 22.1, bp: 970 }
+        // { forecastDt: new Date(2020, 7, 17, 8), lon: 115.8, lat: 16.4, bp: 960 },
+        // { forecastDt: new Date(2020, 7, 17, 14), lon: 115, lat: 16.8, bp: 950 },
+        // { forecastDt: new Date(2020, 7, 17, 20), lon: 114.3, lat: 17.5, bp: 930 },
+        // { forecastDt: new Date(2020, 7, 18, 2), lon: 113.4, lat: 18.5, bp: 920 },
+        // { forecastDt: new Date(2020, 7, 18, 8), lon: 112.3, lat: 19.1, bp: 900 },
+        // { forecastDt: new Date(2020, 7, 18, 14), lon: 111.3, lat: 19.9, bp: 888 },
+        // { forecastDt: new Date(2020, 7, 18, 20), lon: 110.3, lat: 20.3, bp: 910 },
+        // { forecastDt: new Date(2020, 7, 19, 2), lon: 109.4, lat: 21, bp: 935 },
+        // { forecastDt: new Date(2020, 7, 19, 8), lon: 108.3, lat: 21.7, bp: 945 },
+        // { forecastDt: new Date(2020, 7, 19, 14), lon: 107.3, lat: 22.1, bp: 970 }
     ]
     forecastAreaList = [
         {
@@ -362,6 +346,138 @@ export default class CreateCaseForm extends Vue {
         }
     }
 
+    spiderTy(): void {
+        /*
+            ty_code: "2121"
+            ty_id: 2726099
+            ty_name_ch: "妮亚图"
+            ty_name_en: "NYATOH"
+            ty_path_list: Array(24)
+            0:
+            bp: 998
+            forecast_dt: "2021-11-30T00:00:00Z"
+            forecast_ty_path_list: (8) [
+                0:
+                bp: 990
+                forecast_dt: "2021-11-30T12:00:00Z"
+                lat: 13.2
+                lon: 137.6
+                ts: 1638273600
+                ty_type: "TS"
+                ,...
+            ]
+            lat: 12.6
+            lon: 139.2
+            ts: 1638230400000
+            ty_type: "TS"
+        */
+        //
+        spiderTargetTyPathList(this.tyCode)
+            .then(
+                (res: {
+                    status: number
+                    data: {
+                        ty_code: string
+                        ty_id: number
+                        ty_name_ch: string
+                        ty_name_en: string
+                        ty_path_list: Array<{
+                            lat: number
+                            lon: number
+                            ts: number
+                            ty_type: string
+                            bp: number
+                            forecast_dt: Date
+                            forecast_ty_path_list: Array<{
+                                lat: number
+                                lon: number
+                                ts: number
+                                ty_type: string
+                                bp: number
+                                forecast_dt: Date
+                            }>
+                        }>
+                    }
+                }) => {
+                    if (res.status === 200) {
+                        /*
+                            step-1: 对于 res.data.ty_path_list 根据ts(时间戳)按照从小到大进行排序
+                            step-2: 遍历 res.data.ty_path_list 提取每个时刻的台风实况
+                            step-3: 获取 index=count 的实况中的 forecast_ty_path_list push 至台风路径 list 中
+                        */
+                        // if (
+                        //     !res.data.hasOwnProperty('ty_path_list') &&
+                        //     res.data.ty_path_list.length <= 0
+                        if (
+                            !res.data.hasOwnProperty('ty_path_list') ||
+                            res.data.ty_path_list.length <= 0
+                        ) {
+                            throw new Error(`无法爬取${this.tyCode}的台风路径`)
+                        }
+                        const tyPathList: Array<{
+                            lat: number
+                            lon: number
+                            ts: number
+                            tyType: string
+                            bp: number
+                            forecastDt: Date
+                            isForecast: boolean
+                        }> = []
+                        const tempTyPathList = res.data.ty_path_list.sort((a, b) => {
+                            return a.ts - b.ts
+                        })
+                        tempTyPathList.forEach((temp) => {
+                            tyPathList.push({
+                                lat: temp.lat,
+                                lon: temp.lon,
+                                ts: temp.ts,
+                                tyType: temp.ty_type,
+                                bp: temp.bp,
+                                forecastDt: temp.forecast_dt,
+                                isForecast: false
+                            })
+                        })
+                        tempTyPathList[tempTyPathList.length - 1].forecast_ty_path_list.forEach(
+                            (temp) => {
+                                tyPathList.push({
+                                    lat: temp.lat,
+                                    lon: temp.lon,
+                                    ts: temp.ts,
+                                    tyType: temp.ty_type,
+                                    bp: temp.bp,
+                                    forecastDt: temp.forecast_dt,
+                                    isForecast: true
+                                })
+                            }
+                        )
+                        console.log(tyPathList)
+                        this.customerTyCMAList = []
+                        tyPathList.forEach((temp) => {
+                            this.customerTyCMAList.push({
+                                forecastDt: temp.forecastDt,
+                                lat: temp.lat,
+                                lon: temp.lon,
+                                bp: temp.bp,
+                                isForecast: temp.isForecast
+                            })
+                        })
+                    }
+                }
+            )
+            .catch((e: Error) => {
+                console.log(e)
+                this.$message.error(e.message)
+                this.customerTyCMAList = []
+            })
+            .finally((_) => {
+                // console.log(res.data)
+                this.setTyphoonPathList(this.customerTyCMAList)
+                if (this.customerTyCMAList.length > 0) {
+                    this.$message(`爬取台风编号:${this.tyCode}成功`)
+                }
+            })
+    }
+
     @Getter(GET_CREATE_FORM, { namespace: 'map' }) getIsShowForm
 
     @Watch('getIsShowForm')
@@ -426,6 +542,9 @@ export default class CreateCaseForm extends Vue {
     }
 
     @Mutation(SET_GEO_COVERAGEID, { namespace: 'geo' }) selectCoverageId
+
+    // + 22-04-07 设置当前台风路径
+    @Mutation(SET_TYPHOON_PATH_LIST, { namespace: 'typhoon' }) setTyphoonPathList
 
     // 在 customerTyCMAList 后面追加数组中的最后一个对象
     addCustomerTyCMA(): void {

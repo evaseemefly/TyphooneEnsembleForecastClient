@@ -286,7 +286,8 @@ import {
     TyGroupPathLine,
     TyGroupCenterPathLine,
     TyphoonPolygon,
-    TyphoonCircle
+    TyphoonCircle,
+    TyCMAPathLine
 } from './typhoonGroup'
 // 各类 DTO
 import { CustomerMarker, CustomerGisFormMarker } from './marker'
@@ -394,6 +395,8 @@ import {
     GET_TYPHOON_ID,
     // + 21-07-28
     GET_TYPHOON_TIMESTAMP,
+    // + 22-04-07 获取当前爬取到的台风路径
+    GET_TYPHOON_PATH_LIST,
     // + 21-08-19 color scale相关
     GET_SCALE_KEY,
     SET_SCALE_KEY,
@@ -485,7 +488,7 @@ export default class TyGroupMap extends mixins(
     // TODO:[-] 20-11-09 新加入的 map 相关的一些基础静态配置
     mapOptions: {} = {
         preferCanvas: true,
-        minZoom: 6,
+        minZoom: 5,
         // 可缩放的最大 level
         maxZoom: 11,
         // 目前已经使用了 canvas 渲染
@@ -512,6 +515,17 @@ export default class TyGroupMap extends mixins(
         latlngs: [],
         color: 'yellow'
     }
+    // TODO:[-] 22-04-07 爬取到的台风路径
+    spiderTyphoonPathList: {
+        forecastDt: Date
+        lat: number
+        lon: number
+        bp: number
+        isForecast: boolean
+        // radius: number
+    }[] = []
+
+    spiderTyPathLineLayerId: number = DEFAULT_LAYER_ID
 
     // 20-08-09 + 当前选中的coverageInfos
     // coverageInfoList: { coverageArea: number; coverageType: number }[] = []
@@ -2465,6 +2479,44 @@ export default class TyGroupMap extends mixins(
     @Watch('getTyTimeStamp')
     onTyTimeStamp(val: string): void {
         this.tyTimeStamp = val
+    }
+
+    // TODO:-] 22-04-07 store -> 爬取到的台风路径
+    @Getter(GET_TYPHOON_PATH_LIST, { namespace: 'typhoon' }) getSpiderTyphoonPathList
+
+    @Watch('getSpiderTyphoonPathList')
+    onGetSpiderTyPathList(
+        val: {
+            forecastDt: Date
+            lat: number
+            lon: number
+            bp: number
+            isForecast: boolean
+            // radius: number
+        }[]
+    ): void {
+        this.spiderTyphoonPathList = val
+    }
+
+    @Watch('spiderTyphoonPathList', { immediate: true, deep: true })
+    onSpiderTyPathList(
+        val: {
+            forecastDt: Date
+            lat: number
+            lon: number
+            bp: number
+            isForecast: boolean
+            // radius: number
+        }[]
+    ): void {
+        const mymap: any = this.$refs.basemap['mapObject']
+        if (this.spiderTyPathLineLayerId !== DEFAULT_LAYER_ID) {
+            this.clearLayerById(this.spiderTyPathLineLayerId)
+        }
+        // 添加至地图中
+        const cmaPathLine = new TyCMAPathLine(mymap, val)
+        const cmaPathLineLayer = cmaPathLine.add2Map()
+        this.spiderTyPathLineLayerId = cmaPathLineLayer._leaflet_id
     }
 
     // + 21-07-28 监听 tyCode
