@@ -30,11 +30,11 @@
 
                         <div
                             class="base-card-row tiled mini"
-                            v-for="item in customerTyCMAList"
+                            v-for="(item, index) in customerTyCMAList"
                             :key="item.key"
                         >
                             <i class="el-icon-circle-plus" @click="addCustomerTyCMA"></i>
-                            <i class="el-icon-delete" @click="deleteCustomerTyCMA"></i>
+                            <i class="el-icon-delete" @click="deleteCustomerTyCMA(index, item)"></i>
                             <el-date-picker
                                 v-model="item.forecastDt"
                                 align="right"
@@ -554,9 +554,21 @@ export default class CreateCaseForm extends Vue {
     }
 
     // 在 customerTyCMAList 中取出最后一组对象
-    deleteCustomerTyCMA(): void {
-        const popCMA = this.customerTyCMAList.pop()
-        console.log(popCMA)
+    deleteCustomerTyCMA(
+        index: number,
+        item: {
+            forecastDt: Date
+            lat: number
+            lon: number
+            bp: number
+            isForecast: boolean
+            // radius: number
+        }
+    ): void {
+        // console.log(`index:${index},item:${item}`)
+        this.customerTyCMAList.splice(index, 1)
+        // const popCMA = this.customerTyCMAList.pop()
+        // console.log(popCMA)
     }
 }
 </script>
