@@ -181,6 +181,36 @@ import { GET_CREATE_FORM } from '@/store/types'
 // vuex -> types
 import { SET_GEO_COVERAGEID, SET_TYPHOON_PATH_LIST } from '@/store/types'
 import { AreaEnum } from '@/enum/area'
+
+const checkCustomerTyList = (
+    tyList: {
+        forecastDt: Date
+        lat: number
+        lon: number
+        bp: number
+        isForecast: boolean
+        // radius: number
+    }[]
+): boolean => {
+    let isOk = false
+    // 升序排列
+    const sortedTyList = tyList.sort((a, b) => {
+        return b.forecastDt.getTime() - a.forecastDt.getTime() > 0
+    })
+    if (sortedTyList.length > 0) {
+        const diffMs =
+            sortedTyList[sortedTyList.length - 1].forecastDt.getTime() -
+            sortedTyList[0].forecastDt.getTime()
+
+        const diffHours = diffMs / (1000 * 60 * 60)
+        if (diffHours <= 24 * 5) {
+            isOk = true
+        }
+    }
+
+    return isOk
+}
+
 @Component({
     directives: {
         // drag: Draggable
@@ -208,12 +238,6 @@ export default class CreateCaseForm extends Vue {
         isForecast: boolean
         // radius: number
     }[] = [
-        // { forecastDt: new Date(2020, 8, 18, 5), lon: 116, lat: 20.5, bp: 995 },
-        // { forecastDt: new Date(2020, 8, 18, 11), lon: 115.1, lat: 21.1, bp: 980 },
-        // { forecastDt: new Date(2020, 8, 18, 17), lon: 114, lat: 21.4, bp: 970 },
-        // { forecastDt: new Date(2020, 8, 18, 23), lon: 113.2, lat: 22.1, bp: 970 },
-        // { forecastDt: new Date(2020, 8, 19, 5), lon: 112.3, lat: 22.8, bp: 992 },
-        // { forecastDt: new Date(2020, 8, 19, 11), lon: 111.2, lat: 23.7, bp: 998 }
         // 以下台风为 狮子山
         // { forecastDt: new Date(2020, 10, 7, 5), lon: 113.3, lat: 16, bp: 1002 },
         // { forecastDt: new Date(2020, 10, 7, 11), lon: 111.5, lat: 16.4, bp: 995 },
@@ -394,7 +418,7 @@ export default class CreateCaseForm extends Vue {
                                 ts: number
                                 ty_type: string
                                 bp: number
-                                forecast_dt: Date
+                                forecast_dt: string
                             }>
                         }>
                     }
@@ -433,7 +457,7 @@ export default class CreateCaseForm extends Vue {
                                 ts: temp.ts,
                                 tyType: temp.ty_type,
                                 bp: temp.bp,
-                                forecastDt: temp.forecast_dt,
+                                forecastDt: new Date(temp.forecast_dt),
                                 isForecast: false
                             })
                         })
@@ -445,7 +469,7 @@ export default class CreateCaseForm extends Vue {
                                     ts: temp.ts,
                                     tyType: temp.ty_type,
                                     bp: temp.bp,
-                                    forecastDt: temp.forecast_dt,
+                                    forecastDt: new Date(temp.forecast_dt),
                                     isForecast: true
                                 })
                             }
@@ -500,6 +524,10 @@ export default class CreateCaseForm extends Vue {
             max_wind_radius_diff: this.maxWindRadiusDiff,
             members_num: this.membersNum,
             deviation_radius_list: this.deviationRadiusNumberList
+        }
+        if (!checkCustomerTyList(this.customerTyCMAList)) {
+            this.$confirm('提交的起止时间间隔需要在120小时内')
+            return
         }
         this.$confirm('请确认是否要提交计算作业, 是否继续?', '提示', {
             confirmButtonText: '确定',
