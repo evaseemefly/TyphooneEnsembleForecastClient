@@ -2492,6 +2492,7 @@ export default class TyGroupMap extends mixins(
             lon: number
             bp: number
             isForecast: boolean
+            tyType: string
             // radius: number
         }[]
     ): void {
@@ -2506,6 +2507,7 @@ export default class TyGroupMap extends mixins(
             lon: number
             bp: number
             isForecast: boolean
+            tyType: string
             // radius: number
         }[]
     ): void {

@@ -248,6 +248,7 @@ export default class CreateCaseForm extends Vue {
         lon: number
         bp: number
         isForecast: boolean
+        tyType: string
         // radius: number
     }[] = [
         // 以下台风为 狮子山
@@ -490,7 +491,8 @@ export default class CreateCaseForm extends Vue {
                                 lat: temp.lat,
                                 lon: temp.lon,
                                 bp: temp.bp,
-                                isForecast: temp.isForecast
+                                isForecast: temp.isForecast,
+                                tyType: temp.tyType
                             })
                         })
                     }
@@ -670,21 +672,8 @@ export default class CreateCaseForm extends Vue {
     }
 
     // 在 customerTyCMAList 中取出最后一组对象
-    deleteCustomerTyCMA(
-        index: number,
-        item: {
-            forecastDt: Date
-            lat: number
-            lon: number
-            bp: number
-            isForecast: boolean
-            // radius: number
-        }
-    ): void {
-        // console.log(`index:${index},item:${item}`)
+    deleteCustomerTyCMA(index: number): void {
         this.customerTyCMAList.splice(index, 1)
-        // const popCMA = this.customerTyCMAList.pop()
-        // console.log(popCMA)
     }
 }
 </script>

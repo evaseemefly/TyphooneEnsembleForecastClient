@@ -3,7 +3,9 @@ import * as L from 'leaflet'
 import '@geoman-io/leaflet-geoman-free'
 import 'leaflet-semicircle' // 绘制半圆
 import * as pointInPolygon from 'point-in-polygon' // 判断点是否在多边形中 - https://github.com/substack/point-in-polygon
-
+// TODO:[-] 22-04-13 加入多颜色线段
+import leafletPolycolor from 'leaflet-polycolor'
+leafletPolycolor(L)
 /*
 + 21-05-18 关于 tyGroupPath 相关的class
 */
@@ -12,7 +14,7 @@ import { DEFAULT_COLOR } from '@/const/common'
 import { RADIUSUNIT } from '@/const/typhoon'
 import { CanvasMarkerLayer } from '@/common/canvasMakerLayer'
 import { DEFAULTTYCODE, DEFAULTTIMESTAMP } from '@/const/typhoon'
-import { ScaleColor, TyGroupPathScaleColor } from '@/common/scaleColor'
+import { ScaleColor, TyGroupPathScaleColor, getTyPathLineColor } from '@/common/scaleColor'
 import { getTargetTyGroupDistDate, getTargetTyGroupDateRange } from '@/api/tyhoon'
 import { IconTyphoonCirlePulsing, IconTyphoonCustom } from '@/views/members/icon/pulsingIcon'
 // mid models
@@ -34,6 +36,7 @@ export interface ITyPath {
     lon: number
     bp: number
     isForecast: boolean
+    tyType: string
 }
 
 class TyGroupPath {
@@ -1151,7 +1154,7 @@ class TyCMAPathLine {
         const tyPolylineForecast = this.initLineForecastLayer()
         const canvasMarkerLayer = new CanvasMarkerLayer().addTo(this.myMap)
         canvasMarkerLayer.addLayers(tyPointsList)
-        return new L.LayerGroup([tyPolylineRealdata, tyPolylineForecast]).addTo(this.myMap)
+        return new L.LayerGroup([...tyPolylineRealdata, tyPolylineForecast]).addTo(this.myMap)
     }
 
     getlastTyLatlng(): L.LatLng | null {
@@ -1197,14 +1200,48 @@ class TyCMAPathLine {
      * @return {*}  {L.Polyline}
      * @memberof TyCMAPathLine
      */
-    protected initLineRealdataLayer(): L.Polyline {
+    protected initLineRealdataLayer(): any {
         const latLngs: L.LatLng[] = []
         this.tyPathList.forEach((temp) => {
             if (!temp.isForecast) {
                 latLngs.push(new L.LatLng(temp.lat, temp.lon))
             }
         })
-        return new L.Polyline(latLngs, { color: '#e74c3c' })
+        // 对于实况需要加入一个循环判断
+
+        //方式1: 此种方式不行
+        // const tyTypes: string[] = ['TS', 'STS', 'TY', 'STY', 'SuperTY']
+        // const polylines: L.Polyline[] = []
+        // tyTypes.forEach((tempTyType) => {
+        //     const tempTyTypePathList = this.tyPathList.filter((tempTyPath) => {
+        //         return tempTyPath.tyType === tempTyType
+        //     })
+        //     const tempLatlng: L.LatLng[] = []
+        //     tempTyTypePathList.map((temp) => tempLatlng.push(new L.LatLng(temp.lat, temp.lon)))
+        //     const tempTyPolyline = new L.Polyline(tempLatlng, {
+        //         color: getTyPathLineColor(tempTyType)
+        //     })
+        //     polylines.push(tempTyPolyline)
+        // })
+        // ---
+        // 方法2:
+        /*
+            实现思路
+            step1: 获取不同的台风等级的所在位置index，以及对应的颜色
+        */
+        const tyTypes: string[] = ['TS', 'STS', 'TY', 'STY', 'SuperTY']
+        const polylines: L.Polyline[] = []
+        const latlngs: number[][] = []
+        const colorScales: string[] = []
+        this.tyPathList.forEach((temp) => {
+            latlngs.push([temp.lat, temp.lon])
+            colorScales.push(getTyPathLineColor(temp.tyType))
+        })
+        const polyLine = L.polycolor(latlngs, {
+            colors: colorScales,
+            weight: 5
+        })
+        return polyLine
     }
 
     /**
