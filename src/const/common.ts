@@ -51,7 +51,7 @@ const DEFAULT_COVERAGE_AREA = -1
 const DEFAULT_COVERAGE_TYPE = -1
 
 /** map 的缩放默认等级 @type {*} */
-const DEFAULT_ZOOM_LEVEL = 8
+const DEFAULT_ZOOM_LEVEL = 6
 
 export {
     DEFAULT_SELECT_KEY,

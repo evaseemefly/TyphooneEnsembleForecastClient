@@ -1008,6 +1008,8 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         // step4: 若房钱选择的是特殊 layer( 概率增水场，则展开 概率增水场的options)
         if (item.layerType === LayerTypeEnum.RASTER_PRO_SURGE_LAYER) {
             item.showOptions = !item.showOptions
+        } else if (item.toolType === ToolTypeEnum.OPTIONS) {
+            this.showOptions()
         }
     }
     showOptions(): void {

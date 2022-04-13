@@ -1,21 +1,25 @@
 <template>
-    <div id="station-level-legend">
-        <font>{{ legendTitle }}</font>
-        <div class="card-list-bar">
-            <div
-                class="card-info "
-                :key="icon.key"
-                :class="[icon.styleCls]"
-                v-for="icon in iconList"
-            >
-                <i :class="icon.iconCls">{{ icon.name }}</i>
+    <transition name="legend-fade">
+        <div id="station-level-legend" v-show="getShowStationIcon">
+            <font>{{ legendTitle }}</font>
+            <div class="card-list-bar">
+                <div
+                    class="card-info "
+                    :key="icon.key"
+                    :class="[icon.styleCls]"
+                    v-for="icon in iconList"
+                >
+                    <i :class="icon.iconCls">{{ icon.name }}</i>
+                </div>
             </div>
         </div>
-    </div>
+    </transition>
 </template>
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
+import { Getter, Mutation, State, namespace } from 'vuex-class'
 // + 22-02-17 海洋站潮位颜色对应关系图例
+import { GET_SHOW_STATION_ICON } from '@/store/types'
 
 @Component({})
 export default class StationSurgeLevelLegeng extends Vue {
@@ -43,6 +47,8 @@ export default class StationSurgeLevelLegeng extends Vue {
     get computedTest() {
         return null
     }
+
+    @Getter(GET_SHOW_STATION_ICON, { namespace: 'station' }) getShowStationIcon
 }
 </script>
 <style scoped lang="less">
@@ -63,5 +69,15 @@ export default class StationSurgeLevelLegeng extends Vue {
         margin-left: 15px;
     }
     @legend();
+}
+// 加入过度动画效果
+.legend-fade-enter-active,
+.legend-fade-leave-active {
+    transition: all 1s;
+}
+.legend-fade-enter, .legend-fade-leave-to
+/* .list-leave-active for below version 2.1.8 */ {
+    opacity: 0;
+    transform: translateX(30px);
 }
 </style>

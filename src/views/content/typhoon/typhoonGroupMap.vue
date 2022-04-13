@@ -13,7 +13,7 @@
                 id="ceshimap"
             >
                 <!-- @ready="initMap()" -->
-                <l-tile-layer :url="url"></l-tile-layer>
+                <l-tile-layer :url="url" :attribution="attribution"></l-tile-layer>
                 <!-- <l-tile-layer :tile-layer-class="getMapBoxLayerClass" /> -->
                 <!-- <l-tile-layer :url="coverageUrl"></l-tile-layer> -->
                 <!-- 加载 发布的岸线服务 -->
@@ -41,8 +41,30 @@
                     :transparent="worldLineWMS.options.transparent"
                     :zIndex="worldLineWMS.options.zindex"
                 ></l-wms-tile-layer>
+                <!-- TODO:[-] 22-03-29 新加入的风暴潮的预报区域-三个区-多边形 -->
+                <!-- <l-wms-tile-layer
+                    :baseUrl="surgeForecastAreaSouthWMS.url"
+                    :layers="surgeForecastAreaSouthWMS.options.layer"
+                    :format="surgeForecastAreaSouthWMS.options.format"
+                    :transparent="surgeForecastAreaSouthWMS.options.transparent"
+                    :zIndex="surgeForecastAreaSouthWMS.options.zindex"
+                    :opacity="0.8"
+                    @mouseover="forecastAreaHover()"
+                ></l-wms-tile-layer> -->
+                <l-geo-json
+                    :geojson="surgeForecastAreaNorthPolygonGeoJson"
+                    :options="surgeForecastAreaPolygonOpts"
+                ></l-geo-json>
+                <l-geo-json
+                    :geojson="surgeForecastAreaEastPolygonGeoJson"
+                    :options="surgeForecastAreaPolygonOpts"
+                ></l-geo-json>
+                <l-geo-json
+                    :geojson="surgeForecastAreaSouthPolygonGeoJson"
+                    :options="surgeForecastAreaPolygonOpts"
+                ></l-geo-json>
                 <!-- TODO:[-] 22-03-08 加入的风暴潮预报的三个区域的多边形区域 -->
-                <l-polyline
+                <!-- <l-polyline
                     v-for="temp in getPolyLines"
                     :key="temp.id"
                     :lat-lngs="temp.latlngs"
@@ -51,8 +73,7 @@
                     :stroke="temp.style.stroke"
                     :opacity="temp.style.opacity"
                 >
-                </l-polyline>
-                <!-- <l-marker :lat-lng="makerLatlng"></l-marker> -->
+                </l-polyline> -->
                 <l-circle :lat-lng="makerLatlng"></l-circle>
             </l-map>
             <!-- TODO:[-] 20-07-20 新加入的 main bar 替换之前的 time bar -->
@@ -202,7 +223,8 @@ import {
     LPolyline,
     LCircle,
     LIcon,
-    LWMSTileLayer
+    LWMSTileLayer,
+    LGeoJson
     // LeafletHeatmap
 } from 'vue2-leaflet'
 
@@ -264,7 +286,8 @@ import {
     TyGroupPathLine,
     TyGroupCenterPathLine,
     TyphoonPolygon,
-    TyphoonCircle
+    TyphoonCircle,
+    TyCMAPathLine
 } from './typhoonGroup'
 // 各类 DTO
 import { CustomerMarker, CustomerGisFormMarker } from './marker'
@@ -372,13 +395,16 @@ import {
     GET_TYPHOON_ID,
     // + 21-07-28
     GET_TYPHOON_TIMESTAMP,
+    // + 22-04-07 获取当前爬取到的台风路径
+    GET_TYPHOON_PATH_LIST,
     // + 21-08-19 color scale相关
     GET_SCALE_KEY,
     SET_SCALE_KEY,
     SET_SCALE_RANGE,
     GET_BASE_MAP_KEY, // + 21-08-23 监听切换地图的 baseMapKey
     SET_MAP_NOW,
-    GET_TY_GROUP_PATH_LATERS_OPTS // +22-03-13 台风集合预报路径配置项
+    GET_TY_GROUP_PATH_LATERS_OPTS, // +22-03-13 台风集合预报路径配置项
+    SET_SHOW_STATION_ICON
 } from '@/store/types'
 import {
     DEFAULT_LAYER_ID,
@@ -421,6 +447,7 @@ const DEFAULT_SCATTER_PAGE_COUNT = 1000
         'l-circle': LCircle,
         'l-icon': LIcon,
         'l-wms-tile-layer': LWMSTileLayer,
+        'l-geo-json': LGeoJson,
         TimeBar,
         RightDetailBar,
         RightOilBar,
@@ -461,7 +488,7 @@ export default class TyGroupMap extends mixins(
     // TODO:[-] 20-11-09 新加入的 map 相关的一些基础静态配置
     mapOptions: {} = {
         preferCanvas: true,
-        minZoom: 6,
+        minZoom: 5,
         // 可缩放的最大 level
         maxZoom: 11,
         // 目前已经使用了 canvas 渲染
@@ -488,6 +515,17 @@ export default class TyGroupMap extends mixins(
         latlngs: [],
         color: 'yellow'
     }
+    // TODO:[-] 22-04-07 爬取到的台风路径
+    spiderTyphoonPathList: {
+        forecastDt: Date
+        lat: number
+        lon: number
+        bp: number
+        isForecast: boolean
+        // radius: number
+    }[] = []
+
+    spiderTyPathLineLayerId: number = DEFAULT_LAYER_ID
 
     // 20-08-09 + 当前选中的coverageInfos
     // coverageInfoList: { coverageArea: number; coverageType: number }[] = []
@@ -780,7 +818,11 @@ export default class TyGroupMap extends mixins(
         //     this.finishDate = new Date(Math.max(...res))
         //     this.startDate = new Date(Math.min(...res))
         // })
+        const mymap = this.$refs.basemap.mapObject
         this._initOptionsField()
+        // TODO:[-] 22-03-29 尝试加载surge预报区域的geojson
+        // this.loadSurgeForecastAreaWFS(mymap)
+        this.createSurgeForecastAreaByWFS()
     }
 
     _initOptionsField(): void {
@@ -2093,6 +2135,7 @@ export default class TyGroupMap extends mixins(
         const that = this
         const mymap: any = this.$refs.basemap['mapObject']
         // if(val)
+        this.setShowStationIcon(val.isShow)
         if (this.checkStationSurgeOptions(val)) {
             // 加载对应时刻的 潮位站数据
             // this.$notify({
@@ -2101,6 +2144,7 @@ export default class TyGroupMap extends mixins(
             //     type: 'success'
             // })
             // this.$message({message:'加载'})
+
             this.loadCurrentStationList(val.layerType).then(() => {
                 if (val.layerType === LayerTypeEnum.STATION_ICON_FIELD_LAYER) {
                     that.loadStationIconsByZoom(that.zoomLevel, that.currentStationSurgeList)
@@ -2227,6 +2271,8 @@ export default class TyGroupMap extends mixins(
     @Mutation(SET_IS_INIT_LAYERS, { namespace: 'map' }) setInitLayers
 
     @Mutation(SET_MAP_NOW, { namespace: 'map' }) setMapNow
+
+    @Mutation(SET_SHOW_STATION_ICON, { namespace: 'station' }) setShowStationIcon
 
     @Watch('tyProSurgeOptions', { immediate: true, deep: true })
     onTyProSurgeOptions(val: ITySurgeLayerOptions): void {
@@ -2433,6 +2479,48 @@ export default class TyGroupMap extends mixins(
     @Watch('getTyTimeStamp')
     onTyTimeStamp(val: string): void {
         this.tyTimeStamp = val
+    }
+
+    // TODO:-] 22-04-07 store -> 爬取到的台风路径
+    @Getter(GET_TYPHOON_PATH_LIST, { namespace: 'typhoon' }) getSpiderTyphoonPathList
+
+    @Watch('getSpiderTyphoonPathList')
+    onGetSpiderTyPathList(
+        val: {
+            forecastDt: Date
+            lat: number
+            lon: number
+            bp: number
+            isForecast: boolean
+            // radius: number
+        }[]
+    ): void {
+        this.spiderTyphoonPathList = val
+    }
+
+    @Watch('spiderTyphoonPathList', { immediate: true, deep: true })
+    onSpiderTyPathList(
+        val: {
+            forecastDt: Date
+            lat: number
+            lon: number
+            bp: number
+            isForecast: boolean
+            // radius: number
+        }[]
+    ): void {
+        const mymap: any = this.$refs.basemap['mapObject']
+        if (this.spiderTyPathLineLayerId !== DEFAULT_LAYER_ID) {
+            this.clearLayerById(this.spiderTyPathLineLayerId)
+        }
+        // 添加至地图中
+        const cmaPathLine = new TyCMAPathLine(mymap, val)
+        const cmaPathLineLayer = cmaPathLine.add2Map()
+        const lastTyLatlng = cmaPathLine.getlastTyLatlng()
+        if (lastTyLatlng) {
+            this.center = [lastTyLatlng.lat, lastTyLatlng.lng]
+        }
+        this.spiderTyPathLineLayerId = cmaPathLineLayer._leaflet_id
     }
 
     // + 21-07-28 监听 tyCode
@@ -2659,6 +2747,12 @@ export default class TyGroupMap extends mixins(
         return { stationCode, stationName }
     }
 
+    // + 22-03-28 compute 计算属性—— 获取是否显示海洋站的标识
+    get isStationSurgeShow(): boolean {
+        // this.setShowStationIcon(this.stationSurgeIconOptions.isShow)
+        return this.stationSurgeIconOptions.isShow
+    }
+
     @Watch('getStationOptions')
     onStationOptions(val: { stationCode: string; stationName: string }): void {
         this.$message(`加载台站:${val.stationName}`)
@@ -2682,6 +2776,9 @@ export default class TyGroupMap extends mixins(
 // #mybasemap {
 //     height: 1%;
 // }
+.test {
+    color: #1abc9cb4;
+}
 
 #rescue_map {
     /* height: 100%; */

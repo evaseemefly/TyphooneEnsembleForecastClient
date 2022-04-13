@@ -10,6 +10,7 @@ import * as pointInPolygon from 'point-in-polygon' // 判断点是否在多边�
 import { IconTypeEnum } from '@/enum/common'
 import { DEFAULT_COLOR } from '@/const/common'
 import { RADIUSUNIT } from '@/const/typhoon'
+import { CanvasMarkerLayer } from '@/common/canvasMakerLayer'
 import { DEFAULTTYCODE, DEFAULTTIMESTAMP } from '@/const/typhoon'
 import { ScaleColor, TyGroupPathScaleColor } from '@/common/scaleColor'
 import { getTargetTyGroupDistDate, getTargetTyGroupDateRange } from '@/api/tyhoon'
@@ -25,6 +26,14 @@ import { getTaskStateVal } from '@/enum/task'
 export interface ITyGroupPathOptions {
     tyCode: string
     timestamp: string
+}
+
+export interface ITyPath {
+    forecastDt: Date
+    lat: number
+    lon: number
+    bp: number
+    isForecast: boolean
 }
 
 class TyGroupPath {
@@ -146,6 +155,23 @@ class TyGroupPathLine {
     }
 
     /**
+     * 根据折线的最大与最小值获取当前差值后的线段宽度
+     *
+     * @private
+     * @param {number} max
+     * @param {number} min
+     * @param {number} index
+     * @return {*}  {number}
+     * @memberof TyGroupPathLine
+     */
+    private getPolylineWeight(max: number, min: number, index: number, count: number): number {
+        let weight = 0.1
+        weight = (max - min) / count
+        weight = weight * index
+        return weight
+    }
+
+    /**
      * 将当前 this.tyGroupPathLines 的路径折线添加至 map
      *
      * @protected
@@ -158,6 +184,7 @@ class TyGroupPathLine {
         options: { lineWeight: number; opacity: number } = { lineWeight: 1.7, opacity: 0.2 }
     ): void {
         let indexTyGroup = 0
+        const count: number = this.tyGroupPathLines.length
         this.tyGroupPathLines.map((temp) => {
             indexTyGroup++
             const polygonPoint: L.LatLng[] = []
@@ -196,7 +223,8 @@ class TyGroupPathLine {
                 color: polyColor,
                 opacity: options.opacity,
                 fillOpacity: 0.2,
-                weight: options.lineWeight
+                // weight: options.lineWeight
+                weight: this.getPolylineWeight(2, 0.1, indexTyGroup, count)
             })
             // TODO:[*] 22-02-09 尝试在每个节点加入 cirle
             // polygonPoint.map((temp) => {
@@ -1093,6 +1121,115 @@ class TyphoonCircle {
         // }).setDirection(dir, 180)
     }
 }
+
+/**
+ * + 22-04-08
+ * 台风路径
+ *
+ * @class TyphoonPathIcon
+ */
+class TyCMAPathLine {
+    public tyPathList: ITyPath[] = []
+    protected myMap: L.Map
+    constructor(mymap: L.Map, tyPathList: ITyPath[]) {
+        this.tyPathList = tyPathList
+        this.myMap = mymap
+    }
+
+    add2Map(): L.LayerGroup<any> {
+        const tyPointsList = this.initCenterPulsingIcon()
+        const tyPolylineRealdata = this.initLineRealdataLayer()
+        const tyPolylineForecast = this.initLineForecastLayer()
+        return new L.LayerGroup([...tyPointsList, tyPolylineRealdata, tyPolylineForecast]).addTo(
+            this.myMap
+        )
+    }
+
+    add2MapByCanvas(): L.LayerGroup<any> {
+        const tyPointsList = this.initCenterPulsingIcon()
+        const tyPolylineRealdata = this.initLineRealdataLayer()
+        const tyPolylineForecast = this.initLineForecastLayer()
+        const canvasMarkerLayer = new CanvasMarkerLayer().addTo(this.myMap)
+        canvasMarkerLayer.addLayers(tyPointsList)
+        return new L.LayerGroup([tyPolylineRealdata, tyPolylineForecast]).addTo(this.myMap)
+    }
+
+    getlastTyLatlng(): L.LatLng | null {
+        if (this.tyPathList.length > 0) {
+            const lastTy = this.tyPathList[this.tyPathList.length - 1]
+            return new L.LatLng(lastTy.lat, lastTy.lon)
+        } else {
+            return null
+        }
+    }
+
+    protected initCenterPulsingIcon(): L.Marker[] {
+        const tyPointsList: L.Marker[] = []
+        this.tyPathList.forEach((tempPath) => {
+            const typhoonStatus = new TyphoonCircleStatus(
+                0,
+                tempPath.bp,
+                tempPath.forecastDt,
+                tempPath.lat,
+                tempPath.lon
+            )
+            // TODO:[-] 22-03-15 修改为 台风img marker
+            const tyCustomIcon = L.icon({
+                iconUrl: '/static/icons/ty_icon_blue.svg',
+                iconSize: [40, 40], // size of the icon
+                // shadowSize: [50, 64], // size of the shadow
+                iconAnchor: [20, 20], // point of the icon which will
+                className: 'my-leaflet-custom-icon'
+            })
+            // TODO:[-] 22-03-17 修改之前的台风中心路径由脉冲mark改为台风标准图片marker，切记需要加入 customData!!
+            const tyCustomMarker = L.marker([tempPath.lat, tempPath.lon], {
+                icon: tyCustomIcon
+                // customData: typhoonStatus
+            })
+            tyPointsList.push(tyCustomMarker)
+        })
+        return tyPointsList
+    }
+    /**
+     * 实时台风路径
+     *
+     * @protected
+     * @return {*}  {L.Polyline}
+     * @memberof TyCMAPathLine
+     */
+    protected initLineRealdataLayer(): L.Polyline {
+        const latLngs: L.LatLng[] = []
+        this.tyPathList.forEach((temp) => {
+            if (!temp.isForecast) {
+                latLngs.push(new L.LatLng(temp.lat, temp.lon))
+            }
+        })
+        return new L.Polyline(latLngs, { color: '#e74c3c' })
+    }
+
+    /**
+     * 预报台风风路径
+     *
+     * @protected
+     * @return {*}  {L.Polyline}
+     * @memberof TyCMAPathLine
+     */
+    protected initLineForecastLayer(): L.Polyline {
+        const latLngs: L.LatLng[] = []
+
+        const forecastTyIndex: number = this.tyPathList.findIndex((temp) => {
+            return temp.isForecast
+        })
+        const lastRealTy = this.tyPathList[forecastTyIndex - 1]
+        latLngs.push(new L.LatLng(lastRealTy.lat, lastRealTy.lon))
+        this.tyPathList.forEach((temp) => {
+            if (temp.isForecast) {
+                latLngs.push(new L.LatLng(temp.lat, temp.lon))
+            }
+        })
+        return new L.Polyline(latLngs, { color: '#2980b9', dashArray: '5,10' })
+    }
+}
 /**
  * 台风最后的半径圆多边形
  *
@@ -1370,5 +1507,6 @@ export {
     TyphoonPolygon,
     TyphoonOutLinePolygon,
     TyphoonCircle,
-    TyphoonLastSemiCirclePolygon
+    TyphoonLastSemiCirclePolygon,
+    TyCMAPathLine
 }

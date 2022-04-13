@@ -13,6 +13,8 @@ export enum AlertTideEnum {
     RED = 5004
 }
 
+export enum SurgeForecastAreaEnum {}
+
 const getStatueVal = (x: AlertTideEnum, index: number): string => {
     return getEnumVal<AlertTideEnum>(x, index)
 }
