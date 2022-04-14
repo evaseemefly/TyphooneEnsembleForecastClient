@@ -4,6 +4,7 @@ import '@geoman-io/leaflet-geoman-free'
 import 'leaflet-semicircle' // 绘制半圆
 import * as pointInPolygon from 'point-in-polygon' // 判断点是否在多边形中 - https://github.com/substack/point-in-polygon
 // TODO:[-] 22-04-13 加入多颜色线段
+// https://github.com/Oliv/leaflet-polycolor
 import leafletPolycolor from 'leaflet-polycolor'
 leafletPolycolor(L)
 /*
@@ -1240,6 +1241,9 @@ class TyCMAPathLine {
                 colorScales.push(getTyPathLineColor(temp.tyType))
             }
         })
+        // 此处使用 leaflet-polycolor 实现折线的多颜色(线性过度)
+        // latlngs 每个折点的坐标数组;
+        // colorScales 每个折点的起止颜色数组
         const polyLine = L.polycolor(latlngs, {
             colors: colorScales,
             weight: 5

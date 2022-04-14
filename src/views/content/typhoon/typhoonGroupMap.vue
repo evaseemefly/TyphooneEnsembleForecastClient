@@ -578,6 +578,7 @@ export default class TyGroupMap extends mixins(
     layerControl: any = null
     // TODO:[-] + 21-08-05 新加入的全局唯一的 栅格layer
     uniqueRasterLayer: L.Layer = null
+    uniqueRasterLayerId = -1
     // TODO:[*] 20-07-27 记录当前 add layers to map 时的 layers种类数组
     existLayers: LayerTypeEnum[] = []
     // TODO:[-] 20-06-20 加入的是否分页的标识符
@@ -2246,7 +2247,9 @@ export default class TyGroupMap extends mixins(
                 tyCode: val.tyCode,
                 tyTimestamp: val.tyTimeStamp,
                 forecastDt: this.forecastDt,
-                scaleList: scaleList
+                scaleList: scaleList,
+                customMin: 0, // 自定义下限为0
+                customMax: 2 // TODO:[-] 22-04-14 加入的自定义上限为2
             })
             // const surgeRasterLayer = new SurgeRasterTifLayer({
             //     tyCode: val.tyCode,
@@ -2258,10 +2261,13 @@ export default class TyGroupMap extends mixins(
             surgeRasterLayer.add2map(mymap, that.$message).then((layer) => {
                 // console.log(surgeRasterLayer)
                 this.setScaleRange(surgeRasterLayer.scaleRange || [])
-                this.uniqueRasterLayer = layer
+                // TODO:[*] 22-04-14 将返回 layer 修改为 layerId，需要测试
+                // this.uniqueRasterLayer = layer
+                this.uniqueRasterLayerId = layer
             })
         } else {
-            clearRasterFromMap(mymap, this.uniqueRasterLayer)
+            // clearRasterFromMap(mymap, this.uniqueRasterLayer)
+            this.clearLayerById(this.uniqueRasterLayerId)
         }
     }
 

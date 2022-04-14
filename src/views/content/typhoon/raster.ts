@@ -326,6 +326,8 @@ class SurgeRasterGeoLayer {
          * @memberof SurgeRasterGeoLayer
          */
         scaleList: string[] | string
+        customMin?: number
+        customMax?: number
     } = {
         rasterLayer: new L.Layer(),
 
@@ -396,6 +398,8 @@ class SurgeRasterGeoLayer {
         tyTimestamp?: string
         forecastDt?: Date
         scaleList: string[] | string
+        customMin?: number
+        customMax?: number
     }) {
         this.options = { ...this.options, ...options }
     }
@@ -403,7 +407,8 @@ class SurgeRasterGeoLayer {
     public async add2map(
         map: L.Map,
         errorCallBackFun: (opt: { message: string; type: string }) => void
-    ): Promise<L.Layer> {
+    ): Promise<number> {
+        let layerId = -1
         let addedLayer: L.Layer = null
         // TODO:[-] 20-11-04 暂时注释掉，调取远程的文件会出现错误
         // const urlGeoTifUrl = tifResp.data
@@ -435,8 +440,9 @@ class SurgeRasterGeoLayer {
         // at Function.fromSource (e2c99254-e67c-4422-be5d-01e0b254a36b:10)
 
         const georasterResponse = await parseGeoraster(arrayBuffer)
-        const min = georasterResponse.mins[0]
-        const max = georasterResponse.maxs[0]
+        // TODO:[-] 22-04-14 加入 栅格的范围是否由 options.custom 定义
+        const min = this.options.customMin ? this.options.customMin : georasterResponse.mins[0]
+        const max = this.options.customMax ? this.options.customMax : georasterResponse.maxs[0]
         const range = georasterResponse.ranges[0]
         // const scale = chroma.scale('Viridis')
         // TODO:[*] 21-08-19 error: chroma 错误
@@ -469,6 +475,7 @@ class SurgeRasterGeoLayer {
             resolution: 256
         })
         addedLayer = layer.addTo(map)
+        layerId = addedLayer._leaflet_id
         // TODO:[*] 21-08-19 ERROR:TypeError
         // Uncaught (in promise) TypeError: Cannot set property rasterLayer of #<SurgeRasterGeoLayer> which has only a getter
         // this.rasterLayer 设置了 get 访问器，未设置 set 访问器，加入解决问题
@@ -481,7 +488,7 @@ class SurgeRasterGeoLayer {
             //     DictEnum.COVERAGE_TYPE_CURRENT
             // )
             if (tifResp.status == 200) {
-                return addedLayer
+                return layerId
             }
         } catch (error) {
             errorCallBackFun({
@@ -489,7 +496,7 @@ class SurgeRasterGeoLayer {
                 type: 'error'
             })
         }
-        return addedLayer
+        return layerId
     }
 
     /**
