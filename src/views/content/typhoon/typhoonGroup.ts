@@ -23,6 +23,7 @@ import {
     TyphoonForecastRealDataMidModel
 } from '@/middle_model/typhoon'
 import { TyphoonCircleStatus } from '@/common/circleStatus'
+import { getTyIconUrlByType } from '@/common/icon'
 import moment from 'moment'
 import { getTaskStateVal } from '@/enum/task'
 export interface ITyGroupPathOptions {
@@ -1178,7 +1179,7 @@ class TyCMAPathLine {
             )
             // TODO:[-] 22-03-15 修改为 台风img marker
             const tyCustomIcon = L.icon({
-                iconUrl: '/static/icons/ty_icon_blue.svg',
+                iconUrl: getTyIconUrlByType(tempPath.tyType),
                 iconSize: [40, 40], // size of the icon
                 // shadowSize: [50, 64], // size of the shadow
                 iconAnchor: [20, 20], // point of the icon which will
@@ -1234,8 +1235,10 @@ class TyCMAPathLine {
         const latlngs: number[][] = []
         const colorScales: string[] = []
         this.tyPathList.forEach((temp) => {
-            latlngs.push([temp.lat, temp.lon])
-            colorScales.push(getTyPathLineColor(temp.tyType))
+            if (!temp.isForecast) {
+                latlngs.push([temp.lat, temp.lon])
+                colorScales.push(getTyPathLineColor(temp.tyType))
+            }
         })
         const polyLine = L.polycolor(latlngs, {
             colors: colorScales,
@@ -1257,13 +1260,16 @@ class TyCMAPathLine {
         const forecastTyIndex: number = this.tyPathList.findIndex((temp) => {
             return temp.isForecast
         })
-        const lastRealTy = this.tyPathList[forecastTyIndex - 1]
-        latLngs.push(new L.LatLng(lastRealTy.lat, lastRealTy.lon))
-        this.tyPathList.forEach((temp) => {
-            if (temp.isForecast) {
-                latLngs.push(new L.LatLng(temp.lat, temp.lon))
-            }
-        })
+        if (forecastTyIndex >= 0) {
+            const lastRealTy = this.tyPathList[forecastTyIndex - 1]
+            latLngs.push(new L.LatLng(lastRealTy.lat, lastRealTy.lon))
+            this.tyPathList.forEach((temp) => {
+                if (temp.isForecast) {
+                    latLngs.push(new L.LatLng(temp.lat, temp.lon))
+                }
+            })
+        }
+
         return new L.Polyline(latLngs, { color: '#2980b9', dashArray: '5,10' })
     }
 }

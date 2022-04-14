@@ -45,7 +45,7 @@
                     <img src="../../../assets/nmefclog.png" />
                 </div>
                 <div class="logo loop">
-                    <img src="/static/icons/ocean_flow_icon.svg" />
+                    <img src="/static/icons/ocean_flow/ocean_flow_icon.svg" />
                     <div class="flash"></div>
                 </div>
             </div>

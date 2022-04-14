@@ -17,6 +17,7 @@ class TyphoonForecastRealDataMidModel {
     lon: number
     realdataBp: number
     galeRadius: number
+    tyType: string
 
     constructor(
         tyId: number,
@@ -27,6 +28,7 @@ class TyphoonForecastRealDataMidModel {
         lon: number,
         bp: number,
         galeRadius: number
+        // tyType: string
     ) {
         this.tyId = tyId
         this.gpId = gpId
@@ -36,6 +38,7 @@ class TyphoonForecastRealDataMidModel {
         this.lon = lon
         this.realdataBp = bp
         this.galeRadius = galeRadius
+        // this.tyType = tyType
     }
 
     toHtml(): string {
