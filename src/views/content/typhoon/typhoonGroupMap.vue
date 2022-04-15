@@ -2234,7 +2234,6 @@ export default class TyGroupMap extends mixins(
     @Watch('tyMaxSurgeOptions', { immediate: true, deep: true })
     onTyMaxSurgeOptions(val: ITySurgeLayerOptions): void {
         const that = this
-        // console.log(`监听到tyMaxSurgeOptions:tyCode:${val.tyCode},tyTS:${val.tyTimeStamp}发生变化`)
         const mymap: any = this.$refs.basemap['mapObject']
         // const scaleList: string[] | string = getColorScale('my-colour').scaleColorList
         const scaleList: string[] | string = val.scaleList
@@ -2249,14 +2248,10 @@ export default class TyGroupMap extends mixins(
                 forecastDt: this.forecastDt,
                 scaleList: scaleList,
                 customMin: 0, // 自定义下限为0
-                customMax: 2 // TODO:[-] 22-04-14 加入的自定义上限为2
+                customMax: 2, // TODO:[-] 22-04-14 加入的自定义上限为2
+                customCoefficient: 0.8,
+                customCoeffMax: 1
             })
-            // const surgeRasterLayer = new SurgeRasterTifLayer({
-            //     tyCode: val.tyCode,
-            //     tyTimestamp: val.tyTimeStamp,
-            //     forecastDt: this.forecastDt,
-            //     scaleList: scaleList
-            // })
 
             surgeRasterLayer.add2map(mymap, that.$message).then((layer) => {
                 // console.log(surgeRasterLayer)

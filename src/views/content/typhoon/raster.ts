@@ -27,6 +27,7 @@ import ScalarField from '@/plugins/Canvaslayer/ScalarField'
 import 'georaster'
 // 以下方式引入不成功
 // import * as georaster from 'georaster'
+// https://github.com/GeoTIFF/georaster-layer-for-leaflet
 import 'georaster-layer-for-leaflet'
 // TODO:[*] 21-08-16 尝试使用geotiff.js
 // import * as GeoTIFF from 'geotiff'
@@ -328,6 +329,8 @@ class SurgeRasterGeoLayer {
         scaleList: string[] | string
         customMin?: number
         customMax?: number
+        customCoefficient?: number
+        customCoeffMax?: number
     } = {
         rasterLayer: new L.Layer(),
 
@@ -400,6 +403,8 @@ class SurgeRasterGeoLayer {
         scaleList: string[] | string
         customMin?: number
         customMax?: number
+        customCoefficient?: number
+        customCoeffMax?: number
     }) {
         this.options = { ...this.options, ...options }
     }
@@ -410,6 +415,7 @@ class SurgeRasterGeoLayer {
     ): Promise<number> {
         let layerId = -1
         let addedLayer: L.Layer = null
+        const that = this
         // TODO:[-] 20-11-04 暂时注释掉，调取远程的文件会出现错误
         // const urlGeoTifUrl = tifResp.data
 
@@ -441,14 +447,29 @@ class SurgeRasterGeoLayer {
 
         const georasterResponse = await parseGeoraster(arrayBuffer)
         // TODO:[-] 22-04-14 加入 栅格的范围是否由 options.custom 定义
-        const min = this.options.customMin ? this.options.customMin : georasterResponse.mins[0]
-        const max = this.options.customMax ? this.options.customMax : georasterResponse.maxs[0]
-        const range = georasterResponse.ranges[0]
+        const min: number = this.options.customMin
+            ? this.options.customMin
+            : georasterResponse.mins[0]
+        // TODO:[-] 22-04-15 若增水大于1m，则整个场*0.8，所以对于max*0.8
+        const rasterMax = georasterResponse.maxs[0]
+        const max = rasterMax
+        // - 22-04-15 此处注释掉
+        // if (this.options.customCoeffMax && rasterMax > this.options.customCoeffMax) {
+        //     max =
+        //         this.options.customCoefficient && this.options.customCoeffMax
+        //             ? this.options.customCoefficient * rasterMax
+        //             : georasterResponse.maxs[0]
+        // }
+        // TODO:[-] 22-04-15 此处修改为 range 为色标要求的范围
+        // const range = georasterResponse.ranges[0]
+        const range: number = max - min
         // const scale = chroma.scale('Viridis')
         // TODO:[*] 21-08-19 error: chroma 错误
         // chroma.js?6149:180 Uncaught (in promise) Error: unknown format: #ee4620,#ee462f,#ed4633,#ef6b6d,#f3a4a5,#f9dcdd,#dcdcfe
+        // TODO:[-] 22-04-15 手动设置色标
         const scale = chroma.scale([...this.options.scaleList])
-        this.scaleRange = [min, max]
+        this.scaleRange = [min, max * this.options.customCoefficient]
+        // scale.domain(this.scaleRange)
 
         // TODO:[*] 21-02-10 此处当加载全球风场的geotiff时，y不在实际范围内，需要手动处理
         georasterResponse.ymax = georasterResponse.ymax
@@ -459,16 +480,29 @@ class SurgeRasterGeoLayer {
             opacity: 0.6,
             pixelValuesToColorFn: function(pixelValues) {
                 const pixelValue = pixelValues[0] // there's just one band in this raster
+                // TODO:[-] 22-04-15 此处加入对于极值大于1.0米的增水将像素值乘以一个系数0.8
+                // if (that.options.customCoeffMax && rasterMax > this.options.customCoeffMax) {
+                //     pixelValue = pixelValue * this.options.customCoefficient
+                // }
 
                 // if there's zero wind, don't return a color
                 // TODO:[-] 22-01-20 由于最大增水场可能会出现 pixelValue 为 0 的情况，所以需要剔除掉===0的判断
                 // if (pixelValue === 0 || Number.isNaN(pixelValue)) return null
-                if (Number.isNaN(pixelValue)) return null
-
-                // scale to 0 - 1 used by chroma
+                // 注意此处有出现 该值超过1的情况
                 const scaledPixelValue = (pixelValue - min) / range
 
-                const color = scale(scaledPixelValue).hex()
+                if (Number.isNaN(pixelValue)) return null
+                let color = ''
+                if (
+                    that.options.customCoeffMax &&
+                    that.options.customCoefficient &&
+                    rasterMax > that.options.customCoeffMax
+                ) {
+                    color = scale(scaledPixelValue * (1 / that.options.customCoefficient)).hex()
+                    // color = scale(scaledPixelValue).hex()
+                } else {
+                    color = scale(scaledPixelValue).hex()
+                }
 
                 return color
             },

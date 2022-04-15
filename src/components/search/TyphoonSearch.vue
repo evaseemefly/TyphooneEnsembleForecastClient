@@ -87,7 +87,7 @@ export default class TyphoonSearch extends Vue {
     /*
         此窗口主要用来显示台风的搜索form
     */
-    years: number[] = [2022, 2021, 2020, 2019]
+    years: number[] = [2022, 2021, 2020, 2019, 2014]
     selectedYear: number = DEFAULT_NUMBER
     typhoonList: { code: string }[] = []
     tyGroupCaseList: {
