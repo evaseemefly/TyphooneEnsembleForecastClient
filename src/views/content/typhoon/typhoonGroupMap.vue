@@ -597,6 +597,8 @@ export default class TyGroupMap extends mixins(
     // TODO:[-] + 21-05-31 中间路径的 cirleLayers 集合
     tyGroupCenterCirleLayers: L.Layer[] = []
     tyOutlineGroupLayers: L.LayerGroup = null
+    //
+    tyOutlineGroupLayersId: number = DEFAULT_LAYER_ID
     // + 21-05-12 台风集合预报路径的概率半径集合 24: 60, 48:100,72:120,96:150,120:180
     tyGroupProPathCircles: { lat: number; lon: number; radius: number }[] = []
     currentStationSurgeList: StationSurgeMiModel[] = []
@@ -610,8 +612,9 @@ export default class TyGroupMap extends mixins(
 
     // TODO:[-] 21-10-08 当前的台风集合折线
     currentGroupPathPolyLine: L.Polyline = null
-    // TODO:[-] 21-10-08 当前的台风集合预报路径 折线集合 group layer
+    // 21-10-08 当前的台风集合预报路径 折线集合 group layer
     currentGroupPathPolyLineLayerGroup: L.LayerGroup = null
+    currentGroupPathPolyLineGroupLayersId: number = DEFAULT_LAYER_ID
     // - 21-10-19 台风中间路径的脉冲 layer
     currentGroupPathPulsingLayerGroup: L.LayerGroup = null
     currentCenterGroupPathPolyLineLayerGroup: L.LayerGroup = null
@@ -940,9 +943,9 @@ export default class TyGroupMap extends mixins(
 
     // + 22-03-04 清除当前台风的外侧包络layers
     clearTyOutlineGroupLayer(): void {
-        if (this.tyOutlineGroupLayers != null) {
+        if (this.tyOutlineGroupLayersId != DEFAULT_LAYER_ID) {
             const mymap: L.Map = this.$refs.basemap['mapObject']
-            mymap.removeLayer(this.tyOutlineGroupLayers)
+            mymap.removeLayer
         }
     }
 
@@ -959,9 +962,12 @@ export default class TyGroupMap extends mixins(
     // + 22-03-07 清除当前路径的台风集合路径外沿集合layers
     clearTyGroupOutlineGroupLayer(): void {
         const mymap: L.Map = this.$refs.basemap['mapObject']
-        if (this.tyOutlineGroupLayers) {
-            mymap.removeLayer(this.tyOutlineGroupLayers)
-            this.tyOutlineGroupLayers = null
+        // TODO:[*] 22-04-18 将 removerLayer => clearLayerById
+        if (this.tyOutlineGroupLayersId !== DEFAULT_LAYER_ID) {
+            // mymap.removeLayer(this.tyOutlineGroupLayers)
+            // this.tyOutlineGroupLayers = null
+            this.clearLayerById(this.tyOutlineGroupLayersId)
+            this.tyOutlineGroupLayersId = DEFAULT_LAYER_ID
         }
     }
 
@@ -1479,7 +1485,9 @@ export default class TyGroupMap extends mixins(
             this.currentGroupPathPulsingLayerGroup &&
             this.currentCenterGroupPathPolyLineLayerGroup
         ) {
-            this.clearGroupLayer(this.currentGroupPathPolyLineLayerGroup)
+            // TODO:[*] 22-04-18 将 removerLayer => clearLayerById
+            // this.clearGroupLayer(this.currentGroupPathPolyLineLayerGroup)
+            this.clearLayerById(this.currentGroupPathPolyLineLayerGroupId)
             this.clearGroupLayer(this.currentCenterGroupPathPolyLineLayerGroup)
             this.clearGroupLayer(this.currentGroupPathPulsingLayerGroup)
             this.clearTyOutlineGroupLayer()
@@ -1708,10 +1716,13 @@ export default class TyGroupMap extends mixins(
         // TODO:[*] 22-03-02 此处会造成绘制多边形错误
         // + 22-03-13 加入了根据配置是否加载 台风集合路径外包络多边形图层
         if (isShowOutlinePolyLayer) {
+            // TODO:[*] 22-04-18 将之前的 removeLayer 改为 removeLayerById;
             const tyPolygon = new TyphoonPolygon(that.tyGroupLineList, mymap)
-            this.tyOutlineGroupLayers = tyPolygon.generateCircle()
+            // this.tyOutlineGroupLayers = tyPolygon.generateCircle()
+            this.tyOutlineGroupLayersId = tyPolygon.generateCircle()._leaflet_id
             // const tyOutLineGroupLayer = tyPolygon.generateCircle(outlines)
             this.currentGroupPathPolyLineLayerGroup = tempTyGroupPolyLineLayerGroup
+            this.currentGroupPathPolyLineGroupLayersId = tempTyGroupPolyLineLayerGroup._leaflet_id
         }
     }
 
@@ -2029,16 +2040,6 @@ export default class TyGroupMap extends mixins(
             this.currentGaleRadius = undefined
         }
         mymap.removeLayer(this.currentTyPulsingMarker)
-    }
-
-    // 根据 leaflet_id -> map.removce(layer)
-    clearLayerById(id: number): void {
-        const mymap: L.Map = this.$refs.basemap['mapObject']
-        mymap.eachLayer((layer: L.Layer) => {
-            if (layer._leaflet_id === id) {
-                mymap.removeLayer(layer)
-            }
-        })
     }
 
     // TODO:[*] 19-11-08 使用vuex-clas的方式监听oil 的两个select

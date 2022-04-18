@@ -5,4 +5,5 @@ import { mapMutations } from 'vuex'
 // @Mutation(SET_MAP_LAYERS, { namespace: 'map' }) setLayers
 // ...mapMutations([SET_MAP_LAYERS])
 const INIT_LAYERS = (): void => {}
+
 export { INIT_LAYERS }

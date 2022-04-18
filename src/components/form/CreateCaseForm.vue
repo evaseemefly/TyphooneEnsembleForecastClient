@@ -12,21 +12,59 @@
                         inactive-text="中央台"
                     >
                     </el-switch>
-                    <button type="button" class="el-button el-button--primary" @click="spiderTy">
-                        爬取
-                    </button>
+                    <el-tooltip
+                        class="item"
+                        effect="dark"
+                        content="将从中央气象台台风网爬取对应台风路径"
+                        placement="bottom"
+                    >
+                        <button type="top" class="el-button el-button--primary" @click="spiderTy">
+                            爬取<i class="fas fa-cloud-download-alt"></i>
+                        </button>
+                    </el-tooltip>
                 </div>
                 <div class="base-card-row tiled row-flex-end">
-                    <button
-                        type="button"
-                        class="el-button el-button--primary"
-                        @click="standardizing(true)"
+                    <el-tooltip
+                        class="item"
+                        effect="dark"
+                        content="清除当前台风路径信息"
+                        placement="bottom"
                     >
-                        标准化
-                    </button>
-                    <button type="button" class="el-button el-button--primary" @click="spiderTy">
-                        检查
-                    </button>
+                        <el-button
+                            type="danger"
+                            icon="el-icon-delete"
+                            circle
+                            @click="clearTyPathList"
+                        ></el-button>
+                    </el-tooltip>
+                    <el-tooltip
+                        class="item"
+                        effect="dark"
+                        content="将台风路径统一为间隔6小时"
+                        placement="bottom"
+                    >
+                        <button
+                            type="button"
+                            class="el-button el-button--primary"
+                            @click="standardizing(true)"
+                        >
+                            标准化<i class="fas fa-eraser"></i>
+                        </button>
+                    </el-tooltip>
+                    <el-tooltip
+                        class="item"
+                        effect="dark"
+                        content="检查数据是否正常"
+                        placement="bottom"
+                    >
+                        <button
+                            type="button"
+                            class="el-button el-button--primary"
+                            @click="spiderTy"
+                        >
+                            检查<i class="fas fa-spell-check"></i>
+                        </button>
+                    </el-tooltip>
                 </div>
                 <el-collapse-transition>
                     <div class="base-card-row" id="ty_form_create_info" v-show="isCustomerTy">
@@ -376,6 +414,12 @@ export default class CreateCaseForm extends Vue {
                 }
             }
         }
+    }
+
+    // 清除台风路径及台风编号信息
+    clearTyPathList(): void {
+        this.customerTyCMAList = []
+        this.tyCode = ''
     }
 
     // 爬取台风
