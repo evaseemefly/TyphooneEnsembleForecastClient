@@ -32,6 +32,7 @@
                 }}</span>
             </div> -->
             <!-- 方式3: -->
+
             <div
                 class="color-bar"
                 v-for="(tempScale, index) in colorScales"
@@ -45,6 +46,7 @@
                     tempRange
                 }}</span>
             </div>
+
             <!-- 方式2: 可行 -->
             <!-- <div
                 class="color-bar"
@@ -127,6 +129,8 @@ export default class ColorBar extends Vue {
         // backgroundImage: 'linear-gradient(to right, red , yellow);' // 无效
         // background: this.createBackgroundString()
     }
+
+    toolTip = '对于大于1.0m的增水会色标进行原值*0.8'
 
     mounted(): void {
         this.setSelectedScale(0)

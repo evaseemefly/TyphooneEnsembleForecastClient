@@ -393,8 +393,25 @@ class SurgeRasterGeoLayer {
     get scaleList(): any {
         return this.options.scaleList
     }
-
+    /**
+     * 色标的范围(乘以了系数=this.rasterMax * this.options.customCoefficient)
+     *
+     * @type {number[]}
+     * @memberof SurgeRasterGeoLayer
+     */
     scaleRange: number[] = []
+    /**
+     * raster的实际最大值
+     *
+     * @memberof SurgeRasterGeoLayer
+     */
+    rasterMax = 0
+    /**
+     * raster的实际最小值
+     *
+     * @memberof SurgeRasterGeoLayer
+     */
+    rasterMin = 0
 
     constructor(options?: {
         tyCode?: string
@@ -452,6 +469,8 @@ class SurgeRasterGeoLayer {
             : georasterResponse.mins[0]
         // TODO:[-] 22-04-15 若增水大于1m，则整个场*0.8，所以对于max*0.8
         const rasterMax = georasterResponse.maxs[0]
+        this.rasterMax = rasterMax
+        this.rasterMin = min
         const max = rasterMax
         // - 22-04-15 此处注释掉
         // if (this.options.customCoeffMax && rasterMax > this.options.customCoeffMax) {
