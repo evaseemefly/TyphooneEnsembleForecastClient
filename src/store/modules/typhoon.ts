@@ -6,7 +6,9 @@ import {
     SET_TYPHOON_TIMESTAMP,
     GET_TYPHOON_TIMESTAMP,
     SET_TYPHOON_PATH_LIST,
-    GET_TYPHOON_PATH_LIST
+    GET_TYPHOON_PATH_LIST,
+    SET_SHOW_TYPHOON_LEGEND_ICON,
+    GET_SHOW_TYPHOON_LEGEND_ICON
 } from './../types'
 import { DEFAULT_TYPHOON_ID } from '@/const/common'
 import { DEFAULTTIMESTAMP, DEFAULTTYCODE } from '@/const/typhoon'
@@ -22,13 +24,15 @@ export interface ITyphoon {
         isForecast: boolean
         tyType: string
     }[] // 台风路径
+    isShowTyLegend: boolean
 }
 
 const state: ITyphoon = {
     tyCode: DEFAULTTYCODE,
     tyId: DEFAULT_TYPHOON_ID,
     tyTimeStamp: DEFAULTTIMESTAMP,
-    tyPathList: []
+    tyPathList: [],
+    isShowTyLegend: false
 }
 
 const getters = {
@@ -52,6 +56,9 @@ const getters = {
         tyType: string
     }[] {
         return state.tyPathList
+    },
+    [GET_SHOW_TYPHOON_LEGEND_ICON](state: ITyphoon): boolean {
+        return state.isShowTyLegend
     }
 }
 
@@ -80,6 +87,9 @@ const mutations = {
     },
     [GET_TYPHOON_ID](state: ITyphoon): number | undefined {
         return state.tyId
+    },
+    [SET_SHOW_TYPHOON_LEGEND_ICON](state: ITyphoon, val: boolean): void {
+        state.isShowTyLegend = val
     }
 }
 

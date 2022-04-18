@@ -404,7 +404,8 @@ import {
     GET_BASE_MAP_KEY, // + 21-08-23 监听切换地图的 baseMapKey
     SET_MAP_NOW,
     GET_TY_GROUP_PATH_LATERS_OPTS, // +22-03-13 台风集合预报路径配置项
-    SET_SHOW_STATION_ICON
+    SET_SHOW_STATION_ICON,
+    SET_SHOW_TYPHOON_LEGEND_ICON
 } from '@/store/types'
 import {
     DEFAULT_LAYER_ID,
@@ -2275,6 +2276,8 @@ export default class TyGroupMap extends mixins(
 
     @Mutation(SET_SHOW_STATION_ICON, { namespace: 'station' }) setShowStationIcon
 
+    @Mutation(SET_SHOW_TYPHOON_LEGEND_ICON, { namespace: 'typhoon' }) setShowTyLegend
+
     @Watch('tyProSurgeOptions', { immediate: true, deep: true })
     onTyProSurgeOptions(val: ITySurgeLayerOptions): void {
         const that = this
@@ -2522,6 +2525,11 @@ export default class TyGroupMap extends mixins(
         const lastTyLatlng = cmaPathLine.getlastTyLatlng()
         if (lastTyLatlng) {
             this.center = [lastTyLatlng.lat, lastTyLatlng.lng]
+        }
+        if (val.length !== 0) {
+            this.setShowTyLegend(true)
+        } else if (val.length === 0) {
+            this.setShowTyLegend(false)
         }
         this.spiderTyPathLineLayerId = cmaPathLineLayer._leaflet_id
     }

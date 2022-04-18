@@ -32,20 +32,27 @@
                 }}</span>
             </div> -->
             <!-- 方式3: -->
-
-            <div
-                class="color-bar"
+            <el-tooltip
                 v-for="(tempScale, index) in colorScales"
+                class="item"
+                effect="dark"
+                content="对于大于1.0m的增水会色标进行原值*0.8"
+                placement="top-start"
                 :key="tempScale.key"
-                :style="getCustomerStyleObj(tempScale)"
-                @click="setSelectedScale(index)"
-                v-show="showScale(index)"
             >
-                <span>单位: m</span>
-                <span v-for="tempRange in tempScale.scale.range" :key="tempRange.id">{{
-                    tempRange
-                }}</span>
-            </div>
+                <div
+                    class="color-bar"
+                    :key="tempScale.key"
+                    :style="getCustomerStyleObj(tempScale)"
+                    @click="setSelectedScale(index)"
+                    v-show="showScale(index)"
+                >
+                    <span>单位: m</span>
+                    <span v-for="tempRange in tempScale.scale.range" :key="tempRange.id">{{
+                        tempRange
+                    }}</span>
+                </div>
+            </el-tooltip>
 
             <!-- 方式2: 可行 -->
             <!-- <div
@@ -246,6 +253,7 @@ export default class ColorBar extends Vue {
         margin-left: 8px;
         width: 15px;
         color: white;
+        text-shadow: 0 0 4px black;
     }
 }
 .color-bar-test {
