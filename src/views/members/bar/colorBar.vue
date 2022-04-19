@@ -43,14 +43,17 @@
                 <div
                     class="color-bar"
                     :key="tempScale.key"
-                    :style="getCustomerStyleObj(tempScale)"
                     @click="setSelectedScale(index)"
                     v-show="showScale(index)"
                 >
-                    <span>单位: m</span>
-                    <span v-for="tempRange in tempScale.scale.range" :key="tempRange.id">{{
-                        tempRange
-                    }}</span>
+                    <div class="color-bar-title" :style="getBackgroundColorFirstStr(tempScale)">
+                        <span>单位:m</span>
+                    </div>
+                    <div class="color-bar-content" :style="getCustomerStyleObj(tempScale)">
+                        <span v-for="tempRange in tempScale.scale.range" :key="tempRange.id">{{
+                            tempRange
+                        }}</span>
+                    </div>
                 </div>
             </el-tooltip>
 
@@ -167,6 +170,19 @@ export default class ColorBar extends Vue {
         styleObj.backgroundImage = colorLinearStr
         return styleObj
     }
+    getBackgroundColorFirstStr(tempScale: { key: string; scale: IScale }): string {
+        // eg: #ee4620,#ee462f,#ed4633,#ef6b6d,#f3a4a5,#f9dcdd,#dcdcfe,
+        let colorStr = ''
+        if (tempScale.scale !== undefined && tempScale.scale.scaleColorList !== undefined) {
+            if (Array.isArray(tempScale.scale.scaleColorList)) {
+                if (tempScale.scale.scaleColorList.length > 0) {
+                    colorStr = `background:${tempScale.scale.scaleColorList[0]}`
+                }
+            }
+        }
+
+        return colorStr
+    }
     getBackgroundColorStr(tempScale: { key: string; scale: IScale }): string {
         // eg: #ee4620,#ee462f,#ed4633,#ef6b6d,#f3a4a5,#f9dcdd,#dcdcfe,
         let colorStr = ''
@@ -246,12 +262,21 @@ export default class ColorBar extends Vue {
     margin-bottom: 5px;
 }
 .color-bar {
+    display: flex;
     width: 300px;
     border-radius: 0.4em;
     box-shadow: 0 0 4px 0 black;
+    // 加入边角弧度并仿制内部填色溢出
+    border-radius: 0.4em;
+    overflow: hidden;
+    .color-bar-content {
+        display: flex;
+        justify-content: space-around;
+        width: 100%;
+    }
     span {
         margin-left: 8px;
-        width: 15px;
+        width: 24px;
         color: white;
         text-shadow: 0 0 4px black;
     }

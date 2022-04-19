@@ -579,7 +579,7 @@ export default class TyGroupMap extends mixins(
     layerControl: any = null
     // TODO:[-] + 21-08-05 新加入的全局唯一的 栅格layer
     uniqueRasterLayer: L.Layer = null
-    uniqueRasterLayerId = -1
+    uniqueRasterLayerId = DEFAULT_LAYER_ID
     // TODO:[*] 20-07-27 记录当前 add layers to map 时的 layers种类数组
     existLayers: LayerTypeEnum[] = []
     // TODO:[-] 20-06-20 加入的是否分页的标识符
@@ -625,10 +625,9 @@ export default class TyGroupMap extends mixins(
     currentGroupPathPolyLineLayerGroupId = DEFAULT_NUMBER
 
     // + 21-05-10 当前的 逐时风暴增水场 layer，每次切换时会替换，且从 map 中清除
+    // TODO:[*] 22-04-19 将layer统一修改为 layerId
     fieldSurgeRasterLayer: L.Layer = null
 
-    // TODO:[-] + 21-08-02 加入的 风暴最大增水场 layer
-    maxSurgeRasterLayer: L.Layer = null
     // + 21-05-14 当前的预报时间
     forecastDt = new Date('2020-09-15T18:00:00Z')
     // + 21-05-14 当前选定的
@@ -975,9 +974,9 @@ export default class TyGroupMap extends mixins(
     clearSurgeHourlyRasterLayer(): void {
         const that = this
         const mymap: L.Map = this.$refs.basemap['mapObject']
-        if (this.fieldSurgeRasterLayer) {
-            mymap.removeLayer(that.fieldSurgeRasterLayer)
-            this.fieldSurgeRasterLayer = null
+        if (this.uniqueRasterLayerId !== DEFAULT_LAYER_ID) {
+            this.clearLayerById(this.uniqueRasterLayerId)
+            this.uniqueRasterLayerId = DEFAULT_LAYER_ID
         }
     }
 
@@ -1488,6 +1487,8 @@ export default class TyGroupMap extends mixins(
             // TODO:[*] 22-04-18 将 removerLayer => clearLayerById
             // this.clearGroupLayer(this.currentGroupPathPolyLineLayerGroup)
             this.clearLayerById(this.currentGroupPathPolyLineLayerGroupId)
+            // 清除台风全部集合路径的折线
+            this.clearLayerById(this.currentGroupPathPolyLineGroupLayersId)
             this.clearGroupLayer(this.currentCenterGroupPathPolyLineLayerGroup)
             this.clearGroupLayer(this.currentGroupPathPulsingLayerGroup)
             this.clearTyOutlineGroupLayer()
@@ -2174,8 +2175,9 @@ export default class TyGroupMap extends mixins(
             // 执行 load wms 服务
             // 点击向后台发送 获取逐时风暴增水场的请求
             // 请求参数包含 ty_code | ty_timestamp | forecast_dt
-            if (this.uniqueRasterLayer) {
-                clearRasterFromMap(mymap, this.uniqueRasterLayer)
+            if (this.uniqueRasterLayerId !== DEFAULT_LAYER_ID) {
+                this.clearLayerById(this.uniqueRasterLayerId)
+                // clearRasterFromMap(mymap, this.uniqueRasterLayer)
             }
             const fieldSurgeGeoLayer = new FieldSurgeGeoLayer({
                 tyCode: val.tyCode,
@@ -2192,14 +2194,18 @@ export default class TyGroupMap extends mixins(
                 center: true,
                 type: 'success'
             })
-            fieldSurgeGeoLayer.add2map(mymap, that.$message).then((res) => {
-                // console.log(res)
-                this.setScaleRange(fieldSurgeGeoLayer.scaleRange || [])
-                that.uniqueRasterLayer = res
-            })
+            fieldSurgeGeoLayer
+                .add2map(mymap, that.$message)
+                .then((res: { _leaflet_id: number }) => {
+                    // console.log(res)
+                    this.setScaleRange(fieldSurgeGeoLayer.scaleRange || [])
+                    that.uniqueRasterLayerId = res._leaflet_id
+                    // that.uniqueRasterLayer = res
+                })
         } else {
             // 若未通过则清除 tyGroup layer
-            clearRasterFromMap(mymap, this.uniqueRasterLayer)
+            this.clearLayerById(this.uniqueRasterLayerId)
+            // clearRasterFromMap(mymap, this.uniqueRasterLayer)
         }
     }
 
@@ -2210,7 +2216,8 @@ export default class TyGroupMap extends mixins(
         // 需要前后两次 isShow 发生了变化才会触发以下操作
         if (val.isShow != oldVal.isShow) {
             if (!val.isShow) {
-                this.clearGroupLayer(this.currentGroupPathPolyLineLayerGroup)
+                // this.clearGroupLayer(this.currentGroupPathPolyLineLayerGroup)
+                this.clearLayerById(this.currentGroupPathPolyLineGroupLayersId)
                 this.clearTyGroupOutlineGroupLayer()
             } else if (val.isShow) {
                 const showMsg = `加载台风:${val.tyCode}集合路径`
