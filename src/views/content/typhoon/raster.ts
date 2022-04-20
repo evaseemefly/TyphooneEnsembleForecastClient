@@ -302,6 +302,8 @@ class RasterGeoLayer implements IRaster {
 /**
  * modfiy + 21-08-19
  * 建议在创建时加入scale，可以直接使用 chroma.scale
+ * - 22-04-20
+ * 该类为 max surge layer 使用
  *
  * @class SurgeRasterGeoLayer
  */
@@ -486,7 +488,16 @@ class SurgeRasterGeoLayer {
         // TODO:[*] 21-08-19 error: chroma 错误
         // chroma.js?6149:180 Uncaught (in promise) Error: unknown format: #ee4620,#ee462f,#ed4633,#ef6b6d,#f3a4a5,#f9dcdd,#dcdcfe
         // TODO:[-] 22-04-15 手动设置色标
-        const scale = chroma.scale([...this.options.scaleList])
+        // TODO:[*] 22-04-20 注意此处需要对scaleList 进行修改加入最后一个色标
+        const scaleList = [...this.options.scaleList]
+        if (
+            that.options.customCoeffMax &&
+            that.options.customCoefficient &&
+            rasterMax > that.options.customCoeffMax
+        ) {
+            scaleList.push(scaleList[scaleList.length - 1])
+        }
+        const scale = chroma.scale(scaleList)
         this.scaleRange = [min, max * this.options.customCoefficient]
         // scale.domain(this.scaleRange)
 
