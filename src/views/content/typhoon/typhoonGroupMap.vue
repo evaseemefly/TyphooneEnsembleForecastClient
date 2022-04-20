@@ -84,7 +84,7 @@
                 :interval="interval"
                 :days="days"
                 :tyCode="tyCode"
-                :timeStampStr="timestampStr"
+                :timeStampStr="tyTimeStamp"
                 :forecastDt="targetDate"
                 :isShowTimeBar="isShowTimeBar"
             ></BottomMainBar>
