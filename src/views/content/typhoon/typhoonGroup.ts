@@ -436,6 +436,7 @@ class TyGroupPathLine {
                对两者填色
         */
         // 取出最外侧的 路径后需要对其排序
+        // TODO:[-] 22-04-21 注意此处多次加载会出现轮廓绘制错误——轮廓多边形排序引起的
         // step1: 描绘最外侧的轮廓，通过多边形
         // const pathOutter1 = this.tyGroupPathLines[0]
         const pathOutter1 = this.tyGroupPathLines.find((temp) => {
@@ -445,7 +446,7 @@ class TyGroupPathLine {
             if (a.lat > b.lat || a.lon > b.lon) {
                 return -1
             } else {
-                return 0
+                return 1
             }
         })
         // const pathOutter2 = this.tyGroupPathLines[1]
@@ -456,7 +457,7 @@ class TyGroupPathLine {
             if (a.lat > b.lat || a.lon > b.lon) {
                 return 1
             } else {
-                return 0
+                return 1
             }
         })
         const lines: L.LatLng[] = []

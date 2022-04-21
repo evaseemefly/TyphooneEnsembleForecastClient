@@ -1231,7 +1231,7 @@ export default class TyGroupMap extends mixins(
         switch (stationType) {
             // 静态潮位站
             case LayerTypeEnum.STATION_ICON_STATIC_LAYER:
-                this.$message(`加载台风:${that.stationSurgeIconOptions.tyCode}的海洋站静态位置`)
+                // this.$message(`加载台风:${that.stationSurgeIconOptions.tyCode}的海洋站静态位置`)
                 getStationFunc = getStaticStationList
                 break
             // 逐时潮位站
@@ -1245,7 +1245,7 @@ export default class TyGroupMap extends mixins(
                 break
             // 极值潮位站
             case LayerTypeEnum.STATION_ICON_MAX_LAYER:
-                this.$message(`加载台风:${that.stationSurgeIconOptions.tyCode}全过程海洋站极值`)
+                // this.$message(`加载台风:${that.stationSurgeIconOptions.tyCode}全过程海洋站极值`)
                 getStationFunc = getAllPathStationMaxSurgeList
                 break
         }
@@ -1720,6 +1720,7 @@ export default class TyGroupMap extends mixins(
             // TODO:[*] 22-04-18 将之前的 removeLayer 改为 removeLayerById;
             const tyPolygon = new TyphoonPolygon(that.tyGroupLineList, mymap)
             // this.tyOutlineGroupLayers = tyPolygon.generateCircle()
+            // TODO:[*] 22-04-21 注意此处每次调用generateCircle均会执行一次排序操作
             this.tyOutlineGroupLayersId = tyPolygon.generateCircle()._leaflet_id
             // const tyOutLineGroupLayer = tyPolygon.generateCircle(outlines)
             this.currentGroupPathPolyLineLayerGroup = tempTyGroupPolyLineLayerGroup
@@ -2142,12 +2143,6 @@ export default class TyGroupMap extends mixins(
         this.setShowStationIcon(val.isShow)
         if (this.checkStationSurgeOptions(val)) {
             // 加载对应时刻的 潮位站数据
-            // this.$notify({
-            //     title: '成功',
-            //     message: `'这是一条成功的提示消息'`,
-            //     type: 'success'
-            // })
-            // this.$message({message:'加载'})
 
             this.loadCurrentStationList(val.layerType).then(() => {
                 if (val.layerType === LayerTypeEnum.STATION_ICON_FIELD_LAYER) {
@@ -2617,7 +2612,8 @@ export default class TyGroupMap extends mixins(
                     [
                         LayerTypeEnum.STATION_ICON_LAYER,
                         LayerTypeEnum.STATION_ICON_FIELD_LAYER,
-                        LayerTypeEnum.STATION_ICON_MAX_LAYER
+                        LayerTypeEnum.STATION_ICON_MAX_LAYER,
+                        LayerTypeEnum.STATION_ICON_STATIC_LAYER // - 22-04-21 注意需要加入静态station的判断
                     ].includes(lastLayer)
                 ) {
                     this.stationSurgeIconOptions.isShow = false
