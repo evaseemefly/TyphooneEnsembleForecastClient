@@ -457,7 +457,7 @@ class TyGroupPathLine {
             if (a.lat > b.lat || a.lon > b.lon) {
                 return 1
             } else {
-                return 1
+                return -1
             }
         })
         const lines: L.LatLng[] = []
