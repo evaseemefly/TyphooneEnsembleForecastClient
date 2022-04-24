@@ -974,10 +974,7 @@ export default class TyGroupMap extends mixins(
     clearSurgeHourlyRasterLayer(): void {
         const that = this
         const mymap: L.Map = this.$refs.basemap['mapObject']
-        if (this.uniqueRasterLayerId !== DEFAULT_LAYER_ID) {
-            this.clearLayerById(this.uniqueRasterLayerId)
-            this.uniqueRasterLayerId = DEFAULT_LAYER_ID
-        }
+        this.clearUniquerRasterLayer()
     }
 
     // clear
@@ -2159,7 +2156,7 @@ export default class TyGroupMap extends mixins(
     }
 
     @Watch('tyFieldOptions', { immediate: true, deep: true })
-    onTyFieldOptions(val: ITySurgeLayerOptions): void {
+    onTyFieldOptions(val: ITySurgeLayerOptions, oldVal: ITySurgeLayerOptions): void {
         const that = this
         const mymap: any = this.$refs.basemap['mapObject']
         // const scaleList: string[] | string = getColorScale('my-colour').scaleColorList
@@ -2170,10 +2167,7 @@ export default class TyGroupMap extends mixins(
             // 执行 load wms 服务
             // 点击向后台发送 获取逐时风暴增水场的请求
             // 请求参数包含 ty_code | ty_timestamp | forecast_dt
-            if (this.uniqueRasterLayerId !== DEFAULT_LAYER_ID) {
-                this.clearLayerById(this.uniqueRasterLayerId)
-                // clearRasterFromMap(mymap, this.uniqueRasterLayer)
-            }
+            this.clearUniquerRasterLayer()
             const fieldSurgeGeoLayer = new FieldSurgeGeoLayer({
                 tyCode: val.tyCode,
                 tyTimestamp: val.tyTimeStamp,
@@ -2197,10 +2191,9 @@ export default class TyGroupMap extends mixins(
                     that.uniqueRasterLayerId = res._leaflet_id
                     // that.uniqueRasterLayer = res
                 })
-        } else {
+        } else if (!val.isShow) {
             // 若未通过则清除 tyGroup layer
-            this.clearLayerById(this.uniqueRasterLayerId)
-            // clearRasterFromMap(mymap, this.uniqueRasterLayer)
+            this.clearUniquerRasterLayer()
         }
     }
 
@@ -2235,16 +2228,23 @@ export default class TyGroupMap extends mixins(
         }
     }
 
-    @Watch('tyMaxSurgeOptions', { immediate: true, deep: true })
-    onTyMaxSurgeOptions(val: ITySurgeLayerOptions): void {
+    // - 22-04-24 此处加入了一个 计算属性，这样可以监听到 old 与 new 的差别变化，不然由于是引用类型，无法监听到 new 与 old 的差异
+    get getTyMaxSurgeOpts(): ITySurgeLayerOptions {
+        return { ...this.tyMaxSurgeOptions }
+    }
+
+    @Watch('getTyMaxSurgeOpts', { immediate: true, deep: true })
+    onTyMaxSurgeOptions(val: ITySurgeLayerOptions, oldVal: ITySurgeLayerOptions): void {
         const that = this
         const mymap: any = this.$refs.basemap['mapObject']
         // const scaleList: string[] | string = getColorScale('my-colour').scaleColorList
         const scaleList: string[] | string = val.scaleList
-        if (val.isShow) {
-            if (this.uniqueRasterLayer) {
-                clearRasterFromMap(mymap, this.uniqueRasterLayer)
-            }
+        if (val.isShow && val.isShow === true) {
+            // if (this.uniqueRasterLayer) {
+            //     clearRasterFromMap(mymap, this.uniqueRasterLayer)
+            //     clearRas
+            // }
+            this.clearUniquerRasterLayer()
             // TODO:[-] 22-03-21 此处修改为使用新的 canvas 渲染 geotiff raster
             const surgeRasterLayer = new SurgeRasterGeoLayer({
                 tyCode: val.tyCode,
@@ -2257,16 +2257,15 @@ export default class TyGroupMap extends mixins(
                 customCoeffMax: 1
             })
 
-            surgeRasterLayer.add2map(mymap, that.$message).then((layer) => {
+            surgeRasterLayer.add2map(mymap, that.$message).then((layerId) => {
                 // console.log(surgeRasterLayer)
                 this.setScaleRange(surgeRasterLayer.scaleRange || [])
                 // TODO:[*] 22-04-14 将返回 layer 修改为 layerId，需要测试
                 // this.uniqueRasterLayer = layer
-                this.uniqueRasterLayerId = layer
+                this.uniqueRasterLayerId = layerId
             })
-        } else {
-            // clearRasterFromMap(mymap, this.uniqueRasterLayer)
-            this.clearLayerById(this.uniqueRasterLayerId)
+        } else if (!val.isShow) {
+            this.clearUniquerRasterLayer()
         }
     }
 
@@ -2419,6 +2418,14 @@ export default class TyGroupMap extends mixins(
             isOk = true
         }
         return isOk
+    }
+
+    // 清除唯一的栅格图层——以后将所有清除 raster 均调用此方法
+    clearUniquerRasterLayer(): void {
+        if (this.uniqueRasterLayerId !== DEFAULT_LAYER_ID) {
+            this.clearLayerById(this.uniqueRasterLayerId)
+            this.uniqueRasterLayerId = DEFAULT_LAYER_ID
+        }
     }
 
     // + 21-08-16 新加入的检查 stationSurgeIconOptions
