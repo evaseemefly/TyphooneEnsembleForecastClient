@@ -287,7 +287,10 @@ class TyGroupPathLine {
      * @memberof TyGroupPathLine
      */
     protected sortTyGroupLinesList(): void {
+        /** 中间路径 'c', 'f', 's'@type {*} */
         let arr1: TyphoonComplexGroupRealDataMidModel[] = []
+
+        /** 左右路径 'r', 'l' @type {*} */
         let arr2: TyphoonComplexGroupRealDataMidModel[] = []
         // 将 标识符为 : [c,f,s] 提起出来存在 arr1 中
         // 将 标识符为 : [r,l] 提取出来存在 arr2 中
@@ -303,24 +306,24 @@ class TyGroupPathLine {
         arr2 = arr2.sort((a, b) => {
             return a.tyPathMarking - b.tyPathMarking
         })
-        console.log('------')
+        // console.log('------')
         //以下均为测试内容
-        arr2.forEach((temp) => {
-            if ((temp.tyPathType === 'l' || temp.tyPathType === 'r') && temp.tyPathMarking === 0) {
-                const logObj = {}
-                logObj['id'] = temp.gpId
-                logObj['index'] = arr2.findIndex((val) => {
-                    return val.gpId === temp.gpId
-                })
+        // arr2.forEach((temp) => {
+        //     if ((temp.tyPathType === 'l' || temp.tyPathType === 'r') && temp.tyPathMarking === 0) {
+        //         const logObj = {}
+        //         logObj['id'] = temp.gpId
+        //         logObj['index'] = arr2.findIndex((val) => {
+        //             return val.gpId === temp.gpId
+        //         })
 
-                console.log(temp.gpId)
-                console.log(
-                    arr2.findIndex((val) => {
-                        return val.gpId === temp.gpId
-                    })
-                )
-            }
-        })
+        //         console.log(temp.gpId)
+        //         console.log(
+        //             arr2.findIndex((val) => {
+        //                 return val.gpId === temp.gpId
+        //             })
+        //         )
+        //     }
+        // })
         // TODO:[-] 22-03-03 注意 l 与 r 的tyPathMarking =0 的情况都是最外侧的路径，需要提取并排序
         // 单独找到 ty_marking =0 的放到末尾
         // 此处需要注意，由于有不同的气压的变化，所以路径需要剔除 p00,p05,p10,p_05,p_10
@@ -350,7 +353,7 @@ class TyGroupPathLine {
             //     arr2.push(val)
             // }
             if (val.gpId === 9644) {
-                console.log('-')
+                // console.log('-')
             }
             if ((val.tyPathType === 'l' || val.tyPathType === 'r') && val.tyPathMarking === 0) {
                 const indexSpliceObj = arr2New.findIndex((temp) => {
@@ -361,18 +364,18 @@ class TyGroupPathLine {
                 arr2New.push(spliceObj)
             }
         })
-        console.log('sort后')
-        arr2New.forEach((temp) => {
-            if ((temp.tyPathType === 'l' || temp.tyPathType === 'r') && temp.tyPathMarking === 0) {
-                console.log(temp.gpId)
-                console.log(
-                    arr2New.findIndex((val) => {
-                        return val.gpId === temp.gpId
-                    })
-                )
-            }
-        })
-        console.log('-----')
+        // console.log('sort后')
+        // arr2New.forEach((temp) => {
+        //     if ((temp.tyPathType === 'l' || temp.tyPathType === 'r') && temp.tyPathMarking === 0) {
+        //         console.log(temp.gpId)
+        //         console.log(
+        //             arr2New.findIndex((val) => {
+        //                 return val.gpId === temp.gpId
+        //             })
+        //         )
+        //     }
+        // })
+        // console.log('-----')
         // -----
 
         arr1 = arr1.sort((a, b) => {
@@ -388,34 +391,35 @@ class TyGroupPathLine {
         })
         this.tyGroupPathLines = [...arr1, ...arr2New]
         //
-        console.log('合并数组后----')
-        this.tyGroupPathLines.forEach((temp) => {
-            if ((temp.tyPathType === 'l' || temp.tyPathType === 'r') && temp.tyPathMarking === 0) {
-                console.log(temp.gpId)
-                console.log(
-                    arr2New.findIndex((val) => {
-                        return val.gpId === temp.gpId
-                    })
-                )
-            }
-        })
-        console.log('-----')
+        // console.log('合并数组后----')
+        // this.tyGroupPathLines.forEach((temp) => {
+        //     if ((temp.tyPathType === 'l' || temp.tyPathType === 'r') && temp.tyPathMarking === 0) {
+        //         console.log(temp.gpId)
+        //         console.log(
+        //             arr2New.findIndex((val) => {
+        //                 return val.gpId === temp.gpId
+        //             })
+        //         )
+        //     }
+        // })
+        // console.log('-----')
         // TODO:[-] 21-05-13 新加入一个对其倒叙，因为此种方式排序完的数组，中间路径会出现在最前，也就是最先被叠加
+        // TODO:[*] 22-04-25 注意此处，存在一个倒叙操作
         this.tyGroupPathLines = this.tyGroupPathLines.sort((a, b) => {
             return -1
         })
-        console.log('倒叙排列后')
+        // console.log('倒叙排列后')
         this.tyGroupPathLines.forEach((temp) => {
             if ((temp.tyPathType === 'l' || temp.tyPathType === 'r') && temp.tyPathMarking === 0) {
-                console.log(temp.gpId)
-                console.log(
-                    arr2.findIndex((val) => {
-                        return val.gpId === temp.gpId
-                    })
-                )
+                // console.log(temp.gpId)
+                // console.log(
+                //     arr2.findIndex((val) => {
+                //         return val.gpId === temp.gpId
+                //     })
+                // )
             }
         })
-        console.log('-----')
+        // console.log('-----')
     }
 
     addPathOutline2Map(): void {

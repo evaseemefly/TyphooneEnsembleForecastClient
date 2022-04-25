@@ -2155,7 +2155,11 @@ export default class TyGroupMap extends mixins(
         }
     }
 
-    @Watch('tyFieldOptions', { immediate: true, deep: true })
+    get getTyFieldOptions(): ITySurgeLayerOptions {
+        return { ...this.tyFieldOptions }
+    }
+
+    @Watch('getTyFieldOptions', { immediate: true, deep: true })
     onTyFieldOptions(val: ITySurgeLayerOptions, oldVal: ITySurgeLayerOptions): void {
         const that = this
         const mymap: any = this.$refs.basemap['mapObject']
@@ -2191,7 +2195,7 @@ export default class TyGroupMap extends mixins(
                     that.uniqueRasterLayerId = res._leaflet_id
                     // that.uniqueRasterLayer = res
                 })
-        } else if (!val.isShow) {
+        } else if (!val.isShow && oldVal.isShow) {
             // 若未通过则清除 tyGroup layer
             this.clearUniquerRasterLayer()
         }
