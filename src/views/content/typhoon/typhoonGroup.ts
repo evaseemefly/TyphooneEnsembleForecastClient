@@ -428,6 +428,9 @@ class TyGroupPathLine {
 
     /**
      * 获取最外侧台风路径的包络
+     * - 22-04-25 修复了多次加载会出现交点位置错误的bug
+     * 返回轮廓经纬度数组(有序)
+     * 交点在整个经纬度数组的首尾|交点在整个经纬度数组的中间位置
      *
      * @return {*}  {L.LatLng[]}
      * @memberof TyGroupPathLine
@@ -466,12 +469,58 @@ class TyGroupPathLine {
         })
         const lines: L.LatLng[] = []
 
+        // TODO:[-] 22-04-25 此处需要加入一个判断，判断 latlng1 与 latlng2 的首位置的坐标是否一致，若不一致需要倒序
+        // if (latlng1[0].lat != latlng2[0].lat || latlng1[0].lon != latlng2[0].lon) {
+        //     lines.sort((_) => {
+        //         return -1
+        //     })
+        // }
+
+        // latlng2中存在的相同的元素
+        let sameLatlng: TyphoonForecastRealDataMidModel = undefined
+        latlng1.forEach((element) => {
+            const latlngSame = latlng2.find((item) => {
+                return element.lat === item.lat && element.lon === item.lon
+            })
+            if (latlngSame) {
+                sameLatlng = latlngSame
+            }
+        })
+        // latlng1 中交点的index
+        const same1Index: number = latlng1.findIndex((temp) => {
+            return temp.lat === sameLatlng.lat && temp.lon === sameLatlng.lon
+        })
+        // latlng2 中交点的index
+        const same2Index: number = latlng2.findIndex((temp) => {
+            return temp.lat === sameLatlng.lat && temp.lon === sameLatlng.lon
+        })
+        // latlng2 中交点在最后
+        if (same2Index > 0) {
+            // latlng1 交点也在最后，需要对 latlng1 倒序排列
+            if (same1Index > 0) {
+                latlng1.sort((_) => {
+                    return -1
+                })
+            }
+        }
+        // latlng2 中交点在首位
+        else if (same2Index === 0) {
+            // latlng1 中交点也在首位，需要对latlng1 倒序排列
+            if (same1Index === 0) {
+                latlng1.sort((_) => {
+                    return -1
+                })
+            }
+        }
+
+        //----
         latlng1.forEach((temp) => {
             lines.push(new L.LatLng(temp.lat, temp.lon))
         })
         latlng2.forEach((temp) => {
             lines.push(new L.LatLng(temp.lat, temp.lon))
         })
+
         return lines
         // L.polygon(lines, { color: '#76eec6', opacity: 1, fillOpacity: 1 }).addTo(this.myMap)
 
