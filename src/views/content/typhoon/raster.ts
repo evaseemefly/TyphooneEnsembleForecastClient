@@ -740,8 +740,11 @@ class FieldSurgeGeoLayer extends SurgeRasterGeoLayer {
 
             const georasterResponse = await parseGeoraster(arrayBuffer)
             // TODO:[*] 21-05-31 将 风暴潮的范围写成固定值
-            const min = georasterResponse.mins[0]
-            const max = georasterResponse.maxs[0]
+            // TODO:[-] 22-04-26 此处将 max 与 min 修改为整个过程的极值范围
+            const min = maxRange.min
+            const max = maxRange.max
+            // const min = georasterResponse.mins[0]
+            // const max = georasterResponse.maxs[0]
             // const range = georasterResponse.ranges[0]
             // TODO:[*] 21-08-04 此处不使用写死的 range,因为增水实际有可能会是一个负值，所以还是将 min 与 max 设置为 georasterResponse 的 min - max
             // const min = 0
