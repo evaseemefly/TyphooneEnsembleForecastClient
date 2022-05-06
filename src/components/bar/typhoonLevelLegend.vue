@@ -32,11 +32,11 @@ export default class TyphoonLevelLegeng extends Vue {
         isActive: boolean
         styleCls: string
     }> = [
-        { iconCls: '', name: '热带风暴', key: 1, isActive: false, styleCls: 'green' },
-        { iconCls: '', name: '强热带风暴', key: 2, isActive: false, styleCls: 'blue' },
-        { iconCls: '', name: '台风', key: 3, isActive: false, styleCls: 'yellow' },
-        { iconCls: '', name: '强台风', key: 4, isActive: false, styleCls: 'orange' },
-        { iconCls: '', name: '超强台风', key: 5, isActive: false, styleCls: 'red' }
+        { iconCls: '', name: 'ts', key: 1, isActive: false, styleCls: 'green' },
+        { iconCls: '', name: 'sts', key: 2, isActive: false, styleCls: 'blue' },
+        { iconCls: '', name: 'ty', key: 3, isActive: false, styleCls: 'yellow' },
+        { iconCls: '', name: 'sty', key: 4, isActive: false, styleCls: 'orange' },
+        { iconCls: '', name: 'superty', key: 5, isActive: false, styleCls: 'red' }
     ]
     getBaseMapType(area: { code: number }): string {
         if (this.iconList.length > 0) {

@@ -60,6 +60,8 @@ export default class StationChartsView extends Vue {
     forecastSurgeValList: number[] = []
     forecastSurgeMaxList: number[] = []
     forecastSurgeMinList: number[] = []
+    // + 22-05-06 最大值与最小值的差
+    forecastSurgediffList: number[] = []
     forecastAstronomicTideList: number[] = []
     // 22-02-21 注意四色警戒潮位是对应的总潮位值
     alertBlue: number = DEFAULT_ALERT_TIDE
@@ -138,6 +140,7 @@ export default class StationChartsView extends Vue {
                             that.forecastSurgeValList.push(item.surge)
                             that.forecastSurgeMaxList.push(item.surge_max)
                             that.forecastSurgeMinList.push(item.surge_min)
+                            that.forecastSurgediffList.push(item.surge_max - item.surge_min)
                         }
                     )
                 }
@@ -347,298 +350,13 @@ export default class StationChartsView extends Vue {
                         // scale: true
                     }
                 ],
-                // series: [
-                //     {
-                //         name: 'min',
-                //         type: 'line',
-                //         // areaStyle: { color: '#e74c3c' },
-                //         areaStyle: {
-                //             opacity: 0.8,
-                //             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                //                 {
-                //                     offset: 0,
-                //                     color: 'rgba(255, 0, 135)'
-                //                 },
-                //                 {
-                //                     offset: 1,
-                //                     color: 'rgba(135, 0, 157)'
-                //                 }
-                //             ])
-                //             // origin: 'end'
-                //         },
-
-                //         lineStyle: { color: 'rgba(255, 0, 135)' },
-                //         // lineStyle: {
-                //         //     opacity: 0
-                //         // },
-                //         // lineStyle: {
-                //         //     opacity: 0
-                //         // },
-                //         // emphasis: {
-                //         //     focus: 'series'
-                //         // },
-                //         // data: that.forecastSurgeMaxList,
-
-                //         data: that.forecastSurgeMinList,
-                //         showSymbol: false,
-                //         smooth: true,
-                //         stack: 'confidence-band'
-                //         // TODO: 21-08-25 新加入的四色警戒潮位标线
-                //         // markLine: {
-                //         //     data: [{ type: 'average', name: '平均值' }]
-                //         // }
-                //     },
-                //     {
-                //         name: 'max',
-                //         type: 'line',
-                //         // areaStyle: { color: '#f1c40f' },
-                //         // areaStyle: {
-                //         //     opacity: 0.8,
-                //         //     color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                //         //         {
-                //         //             offset: 0,
-                //         //             color: 'rgba(128, 255, 165)'
-                //         //         },
-                //         //         {
-                //         //             offset: 1,
-                //         //             color: 'rgba(1, 191, 236)'
-                //         //         }
-                //         //     ])
-                //         // },
-
-                //         // lineStyle: {
-                //         //     opacity: 0
-                //         // },
-                //         areaStyle: {
-                //             opacity: 0.8,
-                //             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                //                 {
-                //                     offset: 0,
-                //                     color: 'rgba(255, 0, 135)'
-                //                 },
-                //                 {
-                //                     offset: 1,
-                //                     color: 'rgba(135, 0, 157)'
-                //                 }
-                //             ])
-                //             // origin: 'end'
-                //         },
-
-                //         lineStyle: { color: 'rgba(1, 191, 236)' },
-
-                //         // emphasis: {
-                //         //     focus: 'series'
-                //         // },
-                //         data: that.forecastSurgeMaxList,
-                //         // data: that.forecastSurgeMinList.map((val, index) => {
-                //         //     return that.forecastSurgeMaxList[index] - val
-                //         // }),
-                //         // data: that.forecastSurgeMinList.forEach((temp) => {
-                //         //     return -temp
-                //         // }),
-
-                //         // data: that.forecastSurgeMinList.map((val, index) => {
-                //         //     return -(that.forecastSurgeMaxList[index] - val)
-                //         // }),
-                //         showSymbol: false,
-                //         smooth: true
-                //         // stack: 'confidence-band'
-                //     },
-                //     {
-                //         name: '中间预测路径值',
-                //         type: 'line',
-                //         // areaStyle: { color: '#e67e22' },
-                //         // areaStyle: {
-                //         //     opacity: 0.8,
-                //         //     color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                //         //         {
-                //         //             offset: 0,
-                //         //             color: 'rgba(255, 191, 0)'
-                //         //         },
-                //         //         {
-                //         //             offset: 1,
-                //         //             color: 'rgba(224, 62, 76)'
-                //         //         }
-                //         //     ])
-                //         // },
-                //         lineStyle: { color: 'rgba(255, 191, 0)' },
-                //         emphasis: {
-                //             focus: 'series'
-                //         },
-                //         data: that.forecastSurgeValList,
-                //         showSymbol: false,
-                //         smooth: true
-                //     },
-
-                //     {
-                //         name: '天文潮位',
-                //         type: 'line',
-                //         // areaStyle: { color: '#9b59b6' },
-                //         // areaStyle: {
-                //         //     opacity: 0.8,
-                //         //     color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                //         //         {
-                //         //             offset: 0,
-                //         //             color: 'rgba(0, 221, 255)'
-                //         //         },
-                //         //         {
-                //         //             offset: 1,
-                //         //             color: 'rgba(77, 119, 255)'
-                //         //         }
-                //         //     ])
-                //         // },
-                //         lineStyle: { color: 'rgba(0, 221, 255)' },
-                //         emphasis: {
-                //             focus: 'series'
-                //         },
-                //         data: that.forecastAstronomicTideList,
-                //         smooth: true
-                //     },
-                //     // TODO: 21-08-25 新加入的四色警戒潮位标线
-                //     {
-                //         name: '警戒潮位',
-                //         type: 'line',
-                //         markLine: {
-                //             symbol: 'none', // 虚线不显示端点的圆圈及箭头
-                //             itemStyle: {
-                //                 color: 'rgb(19, 184, 196)'
-                //             },
-                //             data: [
-                //                 {
-                //                     name: '蓝色警戒潮位',
-                //                     yAxis: this.isAdditionTide ? this.alertBlue : DEFAULT_ALERT_TIDE
-                //                 }
-                //             ]
-                //         }
-                //     },
-                //     {
-                //         name: '警戒潮位',
-                //         type: 'line',
-                //         markLine: {
-                //             symbol: 'none',
-                //             itemStyle: {
-                //                 color: 'rgb(245, 241, 20)'
-                //             },
-                //             data: [
-                //                 {
-                //                     name: '黄色警戒潮位',
-                //                     yAxis: this.isAdditionTide
-                //                         ? this.alertYellow
-                //                         : DEFAULT_ALERT_TIDE
-                //                 }
-                //             ]
-                //         }
-                //     },
-                //     {
-                //         name: '警戒潮位',
-                //         type: 'line',
-                //         markLine: {
-                //             symbol: 'none',
-                //             itemStyle: {
-                //                 color: 'rgb(235, 134, 19)'
-                //             },
-                //             data: [
-                //                 {
-                //                     name: '橙色警戒潮位',
-                //                     yAxis: this.isAdditionTide
-                //                         ? this.alertOrange
-                //                         : DEFAULT_ALERT_TIDE
-                //                 }
-                //             ]
-                //         }
-                //     },
-                //     {
-                //         name: '警戒潮位',
-                //         type: 'line',
-                //         markLine: {
-                //             symbol: 'none',
-                //             itemStyle: {
-                //                 color: 'rgb(241, 11, 11)',
-                //                 lineStyle: {
-                //                     cap: 'round',
-                //                     type: 'dotted'
-                //                 }
-                //             },
-                //             data: [
-                //                 {
-                //                     name: '红色警戒潮位',
-                //                     yAxis: this.isAdditionTide ? this.alertRed : DEFAULT_ALERT_TIDE
-                //                 }
-                //             ]
-                //         }
-                //     }
-                // ]
                 series: [
                     {
-                        name: '最小值',
+                        name: 'min',
                         type: 'line',
-                        stack: 'Total',
                         // areaStyle: { color: '#e74c3c' },
-                        // areaStyle: {
-                        //     opacity: 0.8,
-                        //     color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                        //         {
-                        //             offset: 0,
-                        //             color: 'rgba(255, 0, 135)'
-                        //         },
-                        //         {
-                        //             offset: 1,
-                        //             color: 'rgba(135, 0, 157)'
-                        //         }
-                        //     ]),
-                        //     opacity: 0.5,
-                        //     origin: 'start'
-                        //     // origin: 'end'
-                        // },
-                        // areaStyle: {
-                        //     opacity: 0.8,
-                        //     color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                        //         {
-                        //             offset: 0,
-                        //             color: 'rgba(255, 0, 135)'
-                        //         },
-                        //         {
-                        //             offset: 1,
-                        //             color: 'rgba(135, 0, 157)'
-                        //         }
-                        //     ]),
-                        //     opacity: 0.5
-                        //     // origin: 'start'
-                        //     // origin: 'end'
-                        // },
-                        lineStyle: { color: 'rgba(255, 0, 135)' },
-                        data: that.forecastSurgeMinList,
-                        showSymbol: false,
-                        smooth: true
-                        // stack: 'confidence-band'
-                    },
-                    {
-                        name: '最大值',
-                        type: 'line',
-                        symbol: 'none',
-                        smooth: true,
-                        stack: 'Total',
-                        // areaStyle: {
-                        //     color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                        //         {
-                        //             offset: 0,
-                        //             color: 'rgba(255, 0, 135)'
-                        //         },
-                        //         {
-                        //             offset: 1,
-                        //             color: 'rgba(135, 0, 157)'
-                        //         }
-                        //     ]),
-                        //     // origin: 'start',
-                        //     opacity: 0.5,
-                        //     origin: 'start'
-                        // },
-                        color: 'blue',
-                        data: that.forecastSurgeMaxList.map((val, index) => {
-                            return val - that.forecastSurgeMinList[index]
-                        }),
                         areaStyle: {
-                            opacity: 0.8,
+                            opacity: 0.5,
                             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
                                 {
                                     offset: 0,
@@ -648,29 +366,34 @@ export default class StationChartsView extends Vue {
                                     offset: 1,
                                     color: 'rgba(135, 0, 157)'
                                 }
-                            ]),
-                            opacity: 0.5
-                            // origin: 'start'
+                            ])
                             // origin: 'end'
-                        }
+                        },
+
+                        lineStyle: { color: 'rgba(255, 0, 135)' },
+
+                        data: that.forecastSurgeMinList,
+                        showSymbol: false,
+                        smooth: true
                     },
                     {
                         name: '中间预测路径值',
                         type: 'line',
-                        lineStyle: { color: 'rgba(255, 191, 0)' },
+                        areaStyle: { color: '#e67e22' },
                         areaStyle: {
                             opacity: 0.8,
                             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
                                 {
                                     offset: 0,
-                                    color: 'rgb(255, 191, 0)'
+                                    color: 'rgba(255, 191, 0)'
                                 },
                                 {
                                     offset: 1,
-                                    color: 'rgb(224, 62, 76)'
+                                    color: 'rgba(224, 62, 76)'
                                 }
                             ])
                         },
+                        lineStyle: { color: 'rgba(255, 191, 0)' },
                         emphasis: {
                             focus: 'series'
                         },
@@ -678,16 +401,140 @@ export default class StationChartsView extends Vue {
                         showSymbol: false,
                         smooth: true
                     },
+                    {
+                        name: 'max',
+                        type: 'line',
+                        areaStyle: {
+                            opacity: 0.5,
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                {
+                                    offset: 0,
+                                    color: 'rgb(55, 162, 255)'
+                                },
+                                {
+                                    offset: 1,
+                                    color: 'rgb(116, 21, 219)'
+                                }
+                            ])
+                        },
+
+                        lineStyle: { color: 'rgba(1, 191, 236)' },
+
+                        // emphasis: {
+                        //     focus: 'series'
+                        // },
+                        data: that.forecastSurgeMaxList,
+                        // data: that.forecastSurgeMinList.map((val, index) => {
+                        //     return that.forecastSurgeMaxList[index] - val
+                        // }),
+                        // data: that.forecastSurgeMinList.forEach((temp) => {
+                        //     return -temp
+                        // }),
+
+                        // data: that.forecastSurgeMinList.map((val, index) => {
+                        //     return -(that.forecastSurgeMaxList[index] - val)
+                        // }),
+                        showSymbol: false,
+                        smooth: true
+                        // stack: 'confidence-band'
+                    },
 
                     {
                         name: '天文潮位',
                         type: 'line',
+                        // areaStyle: { color: '#9b59b6' },
+                        // areaStyle: {
+                        //     opacity: 0.8,
+                        //     color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        //         {
+                        //             offset: 0,
+                        //             color: 'rgba(0, 221, 255)'
+                        //         },
+                        //         {
+                        //             offset: 1,
+                        //             color: 'rgba(77, 119, 255)'
+                        //         }
+                        //     ])
+                        // },
                         lineStyle: { color: 'rgba(0, 221, 255)' },
                         emphasis: {
                             focus: 'series'
                         },
                         data: that.forecastAstronomicTideList,
                         smooth: true
+                    },
+                    // TODO: 21-08-25 新加入的四色警戒潮位标线
+                    {
+                        name: '警戒潮位',
+                        type: 'line',
+                        markLine: {
+                            symbol: 'none', // 虚线不显示端点的圆圈及箭头
+                            itemStyle: {
+                                color: 'rgb(19, 184, 196)'
+                            },
+                            data: [
+                                {
+                                    name: '蓝色警戒潮位',
+                                    yAxis: this.isAdditionTide ? this.alertBlue : DEFAULT_ALERT_TIDE
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        name: '警戒潮位',
+                        type: 'line',
+                        markLine: {
+                            symbol: 'none',
+                            itemStyle: {
+                                color: 'rgb(245, 241, 20)'
+                            },
+                            data: [
+                                {
+                                    name: '黄色警戒潮位',
+                                    yAxis: this.isAdditionTide
+                                        ? this.alertYellow
+                                        : DEFAULT_ALERT_TIDE
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        name: '警戒潮位',
+                        type: 'line',
+                        markLine: {
+                            symbol: 'none',
+                            itemStyle: {
+                                color: 'rgb(235, 134, 19)'
+                            },
+                            data: [
+                                {
+                                    name: '橙色警戒潮位',
+                                    yAxis: this.isAdditionTide
+                                        ? this.alertOrange
+                                        : DEFAULT_ALERT_TIDE
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        name: '警戒潮位',
+                        type: 'line',
+                        markLine: {
+                            symbol: 'none',
+                            itemStyle: {
+                                color: 'rgb(241, 11, 11)',
+                                lineStyle: {
+                                    cap: 'round',
+                                    type: 'dotted'
+                                }
+                            },
+                            data: [
+                                {
+                                    name: '红色警戒潮位',
+                                    yAxis: this.isAdditionTide ? this.alertRed : DEFAULT_ALERT_TIDE
+                                }
+                            ]
+                        }
                     }
                 ]
             }
