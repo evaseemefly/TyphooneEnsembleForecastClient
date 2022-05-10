@@ -317,8 +317,8 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
     ]
 
     // layers: LayerTypeEnum[] = [LayerTypeEnum.GROUP_PATH_LAYER]
-    layers: LayerTypeEnum[] = [LayerTypeEnum.GROUP_PATH_LAYER]
-    layersItem: { group: number; layerType: LayerTypeEnum; val: string }[] = [DEFAULT_LAYER_ITEM]
+    layers: LayerTypeEnum[] = []
+    layersItem: { group: number; layerType: LayerTypeEnum; val: string }[] = []
 
     defaultGroup = 1
 
@@ -1022,7 +1022,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
     @Watch('getIsInitLayers')
     onIsInitLayers(isInit: boolean): void {
         if (isInit) {
-            this.layersItem = [DEFAULT_LAYER_ITEM]
+            this.layersItem = []
             this.setInitLayers(false)
         }
     }

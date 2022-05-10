@@ -617,12 +617,14 @@ export default class TyGroupMap extends mixins(
     currentGroupPathPolyLineGroupLayersId: number = DEFAULT_LAYER_ID
     // - 21-10-19 台风中间路径的脉冲 layer
     currentGroupPathPulsingLayerGroup: L.LayerGroup = null
+    currentCenterPathIconLayerId: number = DEFAULT_LAYER_ID // + 22-05-07 当前台风的中间路径的icon layer id
     currentCenterGroupPathPolyLineLayerGroup: L.LayerGroup = null
+    currentCenterPathLineLayerId: number = DEFAULT_LAYER_ID // + 22-05-07 当前台风的中间路layer id
 
     // 21-10-08 当前的台风集合预报路径 间隔点集合 group layer
     currentGroupPathProPathCirclesGroup: L.LayerGroup = null
 
-    currentGroupPathPolyLineLayerGroupId = DEFAULT_NUMBER
+    currentGroupPathPolyLineLayerGroupId = DEFAULT_LAYER_ID
 
     // + 21-05-10 当前的 逐时风暴增水场 layer，每次切换时会替换，且从 map 中清除
     // TODO:[*] 22-04-19 将layer统一修改为 layerId
@@ -655,7 +657,7 @@ export default class TyGroupMap extends mixins(
         tyCode: this.tyCode,
         timeStamp: this.tyTimeStamp,
         forecastDt: DefaultTyGroupPathOptions.forecastDt,
-        isShow: true,
+        isShow: true, // 是否显示台风轮廓路径图层(只保留中心路径)
         layerType: DefaultTyGroupPathOptions.layerType,
         gpId: DEFAULT_TYPHOON_GROUP_PATH_ID,
         isShowOutlinePolyLayer: false, // 是否显示台风外侧路径多边形图层
@@ -943,8 +945,7 @@ export default class TyGroupMap extends mixins(
     // + 22-03-04 清除当前台风的外侧包络layers
     clearTyOutlineGroupLayer(): void {
         if (this.tyOutlineGroupLayersId != DEFAULT_LAYER_ID) {
-            const mymap: L.Map = this.$refs.basemap['mapObject']
-            mymap.removeLayer
+            this.clearLayerById(this.tyOutlineGroupLayersId)
         }
     }
 
@@ -1620,7 +1621,10 @@ export default class TyGroupMap extends mixins(
                 that.tyGroupLineList = arrTyComplexGroupRealdata
                 // TODO:[*] ! WARNING 21-05-07 此处注意需要动态的获取 tyTimestamp 与 tyCode
                 // 21-10-19 注意此处不再加载中间路径
-                that.loadGroupTyphoonLine(this.tyGroupOptions.isShowOutlinePolyLayer)
+                // that.loadGroupTyphoonLine(
+                //     this.tyGroupOptions.isShowOutlinePolyLayer,
+                //     this.tyGroupOptions.isShow
+                // )
                 that.loadCenterTyphoonPoints()
                 that.addTyGroupProPathCircles()
 
@@ -1631,9 +1635,11 @@ export default class TyGroupMap extends mixins(
 
     // + 21-04-20 将 台风 list add to map
     // + 21-10-19 将获取色标提取到外面来
-    loadGroupTyphoonLine(isShowOutlinePolyLayer = false): void {
+    loadGroupTyphoonLine(isShowOutlinePolyLayer = false, isShowGroupPathLayer = false): void {
         const that = this
         const mymap: L.Map = this.$refs.basemap['mapObject']
+        // TODO:[-] 22-05-07 先清除一下当前的中心路径折线layer
+        this.clearLayerById(this.currentGroupPathPolyLineGroupLayersId)
         const tyGroupPathLine = new TyGroupPathLine(mymap, that.tyGroupLineList)
         // 只加载了集合路径的 line，不包含集合路径包络多边形
         const tempTyGroupPolyLineLayerGroup = tyGroupPathLine.addPolyLines2MapByGroup()
@@ -1722,12 +1728,23 @@ export default class TyGroupMap extends mixins(
             // const tyOutLineGroupLayer = tyPolygon.generateCircle(outlines)
             this.currentGroupPathPolyLineLayerGroup = tempTyGroupPolyLineLayerGroup
             this.currentGroupPathPolyLineGroupLayersId = tempTyGroupPolyLineLayerGroup._leaflet_id
+        } else {
+            // - 22-05-06 此处加入了 清除台风集合路径外侧轮廓
+            this.clearTyGroupOutlineGroupLayer()
+        }
+        if (!isShowGroupPathLayer) {
+            this.clearLayerById(this.currentGroupPathPolyLineGroupLayersId)
+        }
+        if (!isShowOutlinePolyLayer) {
+            this.clearTyOutlineGroupLayer()
         }
     }
 
     // 加载中间路径的 polyline 与 center
     loadCenterTyphoonPoints(): void {
         const mymap: any = this.$refs.basemap['mapObject']
+        this.clearLayerById(this.currentCenterPathLineLayerId)
+        this.clearLayerById(this.currentCenterPathIconLayerId)
         const centerGroupLineList = this.tyGroupLineList.filter((temp) => {
             return temp.groupBp === 0 && temp.tyPathType === 'c' && temp.tyPathMarking === 0
         })
@@ -1737,7 +1754,10 @@ export default class TyGroupMap extends mixins(
             opacity: 0.8
         })
         const tempTyGroupCenterPathIconLayerGroup = tyGroupCenterPathLine.addCenterCirlePulsing2MapByGroup()
+        this.currentCenterPathIconLayerId = tempTyGroupCenterPathIconLayerGroup._leaflet_id
         this.currentCenterGroupPathPolyLineLayerGroup = tyGroupCenterPathLine.addPolyLines2MapByGroup() // 添加中间路径的折线到map
+        this.currentCenterPathLineLayerId = this.currentCenterGroupPathPolyLineLayerGroup._leaflet_id
+
         // TODO:[-] 22-02-25 暂时加入的加入概率圆
         tyGroupCenterPathLine.addProRadiusCirle2MapByCenter()
 
@@ -2206,25 +2226,26 @@ export default class TyGroupMap extends mixins(
     onTyGroupOptions(val: ITyGroupPathOptions, oldVal: ITyGroupPathOptions): void {
         // 现在 isShow=true 且 old isShow=false
         // 需要前后两次 isShow 发生了变化才会触发以下操作
+        // - 22-05-06 注意需要将此处的 clearTyGroupOutlineGroupLayer 放在 loadGroupTyphoonLine 中
         if (val.isShow != oldVal.isShow) {
+            this.clearTyGroupOutlineGroupLayer()
             if (!val.isShow) {
                 // this.clearGroupLayer(this.currentGroupPathPolyLineLayerGroup)
                 this.clearLayerById(this.currentGroupPathPolyLineGroupLayersId)
-                this.clearTyGroupOutlineGroupLayer()
             } else if (val.isShow) {
                 const showMsg = `加载台风:${val.tyCode}集合路径`
                 this.$notify({ title: '成功', message: showMsg, type: 'success' })
-                this.loadGroupTyphoonLine(val.isShowOutlinePolyLayer)
+                this.loadGroupTyphoonLine(val.isShowOutlinePolyLayer, val.isShow)
             }
         }
-        if (val.isShowOutlinePolyLayer != oldVal.isShowOutlinePolyLayer) {
-            if (!val.isShowOutlinePolyLayer) {
-                this.clearTyGroupOutlineGroupLayer()
-                // this.clearGroupLayer(this.currentGroupPathPolyLineLayerGroup)
-            } else if (val.isShow) {
-                this.loadGroupTyphoonLine(val.isShowOutlinePolyLayer)
-            }
-        }
+        // if (val.isShowOutlinePolyLayer != oldVal.isShowOutlinePolyLayer) {
+        //     if (!val.isShowOutlinePolyLayer) {
+        //         this.clearTyGroupOutlineGroupLayer()
+        //         // this.clearGroupLayer(this.currentGroupPathPolyLineLayerGroup)
+        //     } else if (val.isShow) {
+        //         this.loadGroupTyphoonLine(val.isShowOutlinePolyLayer)
+        //     }
+        // }
         if (val.isShowTyDetailForm != oldVal.isShowTyDetailForm) {
             if (!val.isShowTyDetailForm) {
                 this.clearTyRealDataLayer()

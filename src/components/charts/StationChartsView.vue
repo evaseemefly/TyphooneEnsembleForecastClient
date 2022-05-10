@@ -352,7 +352,7 @@ export default class StationChartsView extends Vue {
                 ],
                 series: [
                     {
-                        name: 'min',
+                        name: '最小值',
                         type: 'line',
                         // areaStyle: { color: '#e74c3c' },
                         areaStyle: {
@@ -402,7 +402,7 @@ export default class StationChartsView extends Vue {
                         smooth: true
                     },
                     {
-                        name: 'max',
+                        name: '最大值',
                         type: 'line',
                         areaStyle: {
                             opacity: 0.5,

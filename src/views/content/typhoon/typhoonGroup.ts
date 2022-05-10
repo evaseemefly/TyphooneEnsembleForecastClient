@@ -112,9 +112,17 @@ class TyGroupPathLine {
     tyGroupPathLines: Array<TyphoonComplexGroupRealDataMidModel>
     myMap: L.Map
     tyColorScale: TyGroupPathScaleColor
+
+    /**
+     * 台风集合路径折线 layers
+     *
+     * @type {L.Layer[]}
+     * @memberof TyGroupPathLine
+     */
     public tyGroupPolyLineLayer: L.Layer[]
     polyColor = DEFAULT_COLOR
     tyGroupProPathCircles: { lat: number; lon: number; radius: number }[] = []
+    private
     // tyCenterPath:any
 
     /**
@@ -247,6 +255,12 @@ class TyGroupPathLine {
         // 添加 24,,48,72,96,120 对应的大风概率半径(注意此半径目前是写死的)，相当于是集合预报路径的一个显示轮廓的半径
     }
 
+    /**
+     * 获取当前台风集合折线 layers
+     *
+     * @return {*}  {L.Layer[]}
+     * @memberof TyGroupPathLine
+     */
     public getTyGroupPolyLineLayers(): L.Layer[] {
         return this.tyGroupPolyLineLayer
     }
@@ -267,7 +281,7 @@ class TyGroupPathLine {
     }
 
     /**
-     * 添加中间路径的折线到地图上
+     * 添加当前台风集合路径的折线到地图上
      *
      * @return {*}  {L.LayerGroup<any>}
      * @memberof TyGroupPathLine
