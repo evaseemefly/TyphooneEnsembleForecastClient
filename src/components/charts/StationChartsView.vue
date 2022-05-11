@@ -178,6 +178,8 @@ export default class StationChartsView extends Vue {
                 },
                 */
                 if (res.data.length > 0) {
+                    // TODO:[-] - 22-05-10 注意此处每次需要清空一下
+                    that.forecastAstronomicTideList = []
                     res.data.forEach(
                         (item: { station_code: string; surge: number; forecast_dt: string }) => {
                             that.forecastAstronomicTideList.push(item.surge)

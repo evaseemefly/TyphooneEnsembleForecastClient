@@ -368,6 +368,7 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
             // hasChildren: boolean
             isChildren: boolean
         }[] = []
+        this.converToolsBar = []
         this.toolsBar.map((father) => {
             pid = ++index
             this.converToolsBar.push({
@@ -1024,6 +1025,8 @@ export default class OceanMainToolsBar extends mixins(OilShowTypeSelectBar, Fact
         if (isInit) {
             this.layersItem = []
             this.setInitLayers(false)
+            // 注意需要加入 对于 convertedBar 的 init
+            this.initToolsBar2ConvertedBar()
         }
     }
 
