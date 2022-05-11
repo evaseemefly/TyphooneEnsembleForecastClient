@@ -38,6 +38,11 @@ import { AlertTideEnum } from '@/enum/surge'
 import { DEFAULTTYCODE, DEFAULTTIMESTAMP } from '@/const/typhoon'
 import { DEFAULT_ALERT_TIDE } from '@/const/surge'
 import { DEFAULT_STATION_CODE, DEFAULT_STATION_NAME } from '@/const/station'
+
+const formatNumber = (val: number): string => {
+    return val.toFixed(2)
+}
+
 @Component({})
 export default class StationChartsView extends Vue {
     mydata: any = null
@@ -288,7 +293,8 @@ export default class StationChartsView extends Vue {
                         label: {
                             backgroundColor: '#d4e257'
                         }
-                    }
+                    },
+                    valueFormatter: (val) => val.toFixed(1)
                     // formatter: function(params, ticket, callback) {
                     //     //x轴名称
                     //     const name = params[0].name
@@ -371,6 +377,11 @@ export default class StationChartsView extends Vue {
                             ])
                             // origin: 'end'
                         },
+                        itemStyle: {
+                            formatter: function(params) {
+                                return params.toFixed(2)
+                            }
+                        },
 
                         lineStyle: { color: 'rgba(255, 0, 135)' },
 
@@ -418,6 +429,11 @@ export default class StationChartsView extends Vue {
                                     color: 'rgb(116, 21, 219)'
                                 }
                             ])
+                        },
+                        itemStyle: {
+                            formatter: function(params) {
+                                return params.toFixed(2)
+                            }
                         },
 
                         lineStyle: { color: 'rgba(1, 191, 236)' },
