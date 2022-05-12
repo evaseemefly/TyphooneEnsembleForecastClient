@@ -657,7 +657,7 @@ export default class TyGroupMap extends mixins(
         tyCode: this.tyCode,
         timeStamp: this.tyTimeStamp,
         forecastDt: DefaultTyGroupPathOptions.forecastDt,
-        isShow: true, // 是否显示台风轮廓路径图层(只保留中心路径)
+        isShow: false, // 是否显示台风轮廓路径图层(只保留中心路径)
         layerType: DefaultTyGroupPathOptions.layerType,
         gpId: DEFAULT_TYPHOON_GROUP_PATH_ID,
         isShowOutlinePolyLayer: false, // 是否显示台风外侧路径多边形图层
