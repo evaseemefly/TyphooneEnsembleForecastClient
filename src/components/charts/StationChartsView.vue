@@ -564,20 +564,22 @@ export default class StationChartsView extends Vue {
     }
     @Watch('getOptions')
     ontimestampStr(val: { tyCode: string; stationCode: string; timestampStr: string }): void {
-        console.log(
-            `StationCharts,options发生变化tyCode:${val.tyCode},stationCode:${val.stationCode},timestampStr:${val.timestampStr}发生变化`
-        )
-        this.$notify({
-            title: '成功',
-            message: `加载海洋站:${val.stationCode}潮位数据`,
-            type: 'success'
-        })
+        // console.log(
+        //     `StationCharts,options发生变化tyCode:${val.tyCode},stationCode:${val.stationCode},timestampStr:${val.timestampStr}发生变化`
+        // )
+
         this.clearForecastSurge()
         if (
             val.tyCode !== DEFAULTTYCODE &&
             val.timestampStr !== DEFAULTTIMESTAMP &&
             val.stationCode !== DEFAULT_STATION_CODE
         ) {
+            // 若加载的不是默认的 ty | timestamp | station 则会执行加载 real data list 以及提示操作
+            this.$notify({
+                title: '成功',
+                message: `加载海洋站:${val.stationCode}潮位数据`,
+                type: 'success'
+            })
             this.loadStationSurgeRealDataListAndRange(val.tyCode, val.timestampStr, val.stationCode)
         }
     }
