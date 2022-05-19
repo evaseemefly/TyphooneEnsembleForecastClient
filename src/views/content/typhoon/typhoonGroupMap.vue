@@ -501,21 +501,7 @@ export default class TyGroupMap extends mixins(
     makerLatlng = [0, 0]
     // TODO:[-] 21-01-06 初始位置，加载 case 后将case的初始位置赋值于此
     initialLatLng = [0, 0]
-    // TODO:[*] 19-10-31 由于设置类型为any，且赋值为null，引发的子组件在为null的情况下未渲染
-    oilAvgRealData: OilMidModel = new OilMidModel()
-    // TODO:[-] 20-06-21 批量添加通过 group 的方式进行添加
-    layerGroupScatters: any = null
-    // 21-01-04 由 layerScatterMarkersGroups 替代了，因为是分页加载散点
-    // layerGroupTemp: any = null
-    layerScatterMarkersGroups: L.Layer[] = []
-    oilHeatmapList: any[] = []
-    polyline: {
-        latlngs: []
-        color: string
-    } = {
-        latlngs: [],
-        color: 'yellow'
-    }
+
     // TODO:[-] 22-04-07 爬取到的台风路径
     spiderTyphoonPathList: {
         forecastDt: Date
@@ -536,9 +522,7 @@ export default class TyGroupMap extends mixins(
         iconSize: [32, 37],
         iconAnchor: [16, 37] // 防止地图缩放时产品偏移，需固定绝对位置
     })
-    // TODO:[*] 20-07-15 新加入的关于点选位置添加在地图中的 markers
-    iconMySelectedMarker: L.Marker = null
-    iconMySelectedGisFormMarker: L.Marker = null
+
     // 当前选定的 case model 信息
     tempCaseModel: CaseOilModel
     // timebar的起始时间
@@ -570,8 +554,6 @@ export default class TyGroupMap extends mixins(
         isShow: true,
         productType: ProductEnum.COVERAGE_TYPE_WIND
     }
-    // TODO:[-] 21-04-05 + 当前的 海浪-海表面高度 LayerId
-    waveWveRasterLayerId: number = DEFAULT_LAYER_ID
     // TODO:[*] 20-10-22 + 缩放等级
     zoomLevel = 7
     // 用于动态加载的 wms 的 ws 的str
@@ -590,10 +572,7 @@ export default class TyGroupMap extends mixins(
 
     // TODO:[-] 21-04-21 与台风业务相关的 data
     tyGroupLineList: TyphoonComplexGroupRealDataMidModel[] = []
-    tyGroupPolyLine = {
-        latlngs: [],
-        color: 'yellow'
-    }
+
     // TODO:[-] + 21-05-31 中间路径的 cirleLayers 集合
     tyGroupCenterCirleLayers: L.Layer[] = []
     tyOutlineGroupLayers: L.LayerGroup = null
@@ -622,8 +601,6 @@ export default class TyGroupMap extends mixins(
     currentCenterPathLineLayerId: number = DEFAULT_LAYER_ID // + 22-05-07 当前台风的中间路layer id
 
     // 21-10-08 当前的台风集合预报路径 间隔点集合 group layer
-    currentGroupPathProPathCirclesGroup: L.LayerGroup = null
-
     currentGroupPathPolyLineLayerGroupId = DEFAULT_LAYER_ID
 
     // + 21-05-10 当前的 逐时风暴增水场 layer，每次切换时会替换，且从 map 中清除
@@ -982,241 +959,6 @@ export default class TyGroupMap extends mixins(
         const that = this
         const mymap: L.Map = this.$refs.basemap['mapObject']
         this.clearUniquerRasterLayer()
-    }
-
-    // clear
-
-    loadStationList_bak(zoom: number): void {
-        // const zoom = this.zoom
-        const that = this
-        const mymap: L.Map = this.$refs.basemap['mapObject']
-        const surgeArr: number[] = []
-        const iconArr: IconCirlePulsing[] = []
-        const iconSurgeMinArr: IconMinStationSurge[] = []
-
-        const surgePulsingMarkersList: L.Marker[] = []
-        const surgeDataFormMarkersList: L.Marker[] = []
-        this.clearSurgeAllGroupLayers()
-        this.$message(
-            `加载台风:${that.stationSurgeIconOptions.tyCode},预报时间:${formatDate(
-                that.stationSurgeIconOptions.forecastDt
-            )}对应的海洋站`
-        )
-        // TODO:[-] 21-12-27 此处需要判断一下，减少向后台查询的请求次数，若 stationSurgeIconOptions 无变化不需要再次请求
-        getStationSurgeRangeListByGroupPath(
-            this.stationSurgeIconOptions.gpId,
-            this.stationSurgeIconOptions.tyCode,
-            this.stationSurgeIconOptions.forecastDt,
-            this.stationSurgeIconOptions.tyTimeStamp
-        ).then(
-            (res: {
-                status: number
-                data: {
-                    ty_code: string
-                    gp_id: number
-                    station_code: string
-                    forecast_index: number
-                    forecast_dt: Date
-                    surge: number
-                    name: string
-                    lat: number
-                    lon: number
-                    surge_max: number
-                    surge_min: number
-                }[]
-            }) => {
-                if (res.status === 200) {
-                    if (res.data.length > 0) {
-                        // TODO:[-] 21-05-14
-                        // [
-                        //     {
-                        //         "ty_code": "2022",
-                        //         "gp_id": 1,
-                        //         "station_code": "SHW",
-                        //         "forecast_index": 3,
-                        //         "forecast_dt": "2020-09-15T20:00:00Z",
-                        //         "surge": -16.0,
-                        //         "name": "汕尾",
-                        //         "lat": 22.7564,
-                        //         "lon": 115.3572,
-                        //         "surge_max": -14.1,
-                        //         "surge_min": -17.5
-                        //     },
-                        // ]
-                        const surgeArr: number[] = []
-                        const iconArr: IconCirlePulsing[] = []
-                        const iconSurgeMinArr: IToHtml[] = []
-                        that.currentStationSurgeList = []
-                        res.data.forEach((element) => {
-                            surgeArr.push(element.surge)
-
-                            that.currentStationSurgeList.push(
-                                new StationSurgeMiModel(
-                                    element.name,
-                                    element.station_code,
-                                    element.surge,
-                                    element.surge_max,
-                                    element.surge_min,
-                                    element.forecast_dt
-                                )
-                            )
-                        })
-                        // 获取极值
-                        const surgeMax = Math.max(...surgeArr)
-                        const surgeMin = Math.min(...surgeArr)
-                        res.data.forEach((temp) => {
-                            const icon = new IconCirlePulsing({
-                                val: temp.surge,
-                                max: surgeMax,
-                                min: surgeMin
-                            })
-                            const iconSurgeMin = new StationSurge(
-                                temp.name,
-                                temp.station_code,
-                                that.tyCode,
-                                that.tyTimeStamp,
-                                that.forecastDt
-                            ).getImplements(zoom, {
-                                stationName: temp.name,
-                                stationCode: temp.station_code,
-                                surgeMax: temp.surge_max,
-                                surgeMin: temp.surge_min,
-                                surgeVal: temp.surge
-                            })
-                            iconArr.push(icon)
-                            iconSurgeMinArr.push(iconSurgeMin)
-                        })
-                        let index = 0
-                        // 批量添加至 map 中
-                        iconArr.forEach((temp) => {
-                            // 1- 脉冲点 icon
-                            const stationDivIcon = L.divIcon({
-                                className: 'surge_pulsing_icon_default',
-                                html: temp.toHtml()
-                                // 目前需要此部分，因为会造成 位置的位移
-                                // 坐标，[相对于原点的水平位置（左加右减），相对原点的垂直位置（上加下减）]
-                                // iconAnchor: [-20, 30]
-                            })
-
-                            // 2- 台站 station data form icon
-                            const stationSurgeMinDivICOn = L.divIcon({
-                                className: iconSurgeMinArr[index].getClassName(),
-                                html: iconSurgeMinArr[index].toHtml(),
-                                // 坐标，[相对于原点的水平位置（左加右减），相对原点的垂直位置（上加下减）]
-                                iconAnchor: [-20, 10]
-                            })
-
-                            const surgePulsingMarker = L.marker(
-                                [res.data[index].lat, res.data[index].lon],
-                                {
-                                    icon: stationDivIcon,
-                                    customData: {
-                                        name: res.data[index].name,
-                                        surge: res.data[index].surge,
-                                        surgeMax: res.data[index].surge_max,
-                                        surgeMin: res.data[index].surge_min,
-                                        stationCode: res.data[index].station_code,
-                                        lat: res.data[index].lat,
-                                        lon: res.data[index].lon,
-                                        stationName: res.data[index].name
-                                    }
-                                }
-                            )
-                            // TODO:[-] 21-06-04 鼠标移入脉冲点，显示 station 的 mini form
-                            surgePulsingMarker
-                                .on(
-                                    'mouseover',
-                                    (e: {
-                                        target: {
-                                            options: {
-                                                customData: {
-                                                    name: string
-                                                    surge: number
-                                                    surgeMax: number
-                                                    surgeMin: number
-                                                    stationCode: string
-                                                    lat: number
-                                                    lon: number
-                                                }
-                                            }
-                                        }
-                                    }) => {
-                                        const customData = e.target.options.customData
-                                        const iconSurgeMin = new IconFormMinStationSurgeMidModel(
-                                            customData.name,
-                                            customData.stationCode,
-                                            customData.surge,
-                                            '潮位'
-                                        )
-                                        // TODO:[-] 21-06-08 将弹出的 mini form 放在该脉冲点的旁边位置
-                                        const stationSurgeMinDivICOn = L.divIcon({
-                                            className: iconSurgeMin.getClassName(),
-                                            html: iconSurgeMin.toHtml(),
-                                            // 坐标，[相对于原点的水平位置（左加右减），相对原点的垂直位置（上加下减）]
-                                            iconAnchor: [-20, 30]
-                                        })
-                                        const tempStationSurgeMarker = L.marker(
-                                            [customData.lat, customData.lon],
-                                            {
-                                                icon: stationSurgeMinDivICOn,
-                                                customData: customData
-                                            }
-                                        )
-                                        that.stationMinMarker = tempStationSurgeMarker
-                                        tempStationSurgeMarker.addTo(mymap)
-                                    }
-                                )
-                                .on('mouseout', (e) => {
-                                    if (that.stationMinMarker) {
-                                        mymap.removeLayer(that.stationMinMarker)
-                                        that.stationMinMarker = undefined
-                                    }
-                                })
-                                .on('click', (e) => {
-                                    // 通过 -> e -> target -> options -> customData -> stationCode
-                                    that.stationCode = e.target.options.customData.stationCode
-                                    that.stationName = e.target.options.customData.stationName
-                                })
-                            surgePulsingMarkersList.push(surgePulsingMarker)
-                            const stationSurgeIconMarker = L.marker(
-                                [res.data[index].lat, res.data[index].lon],
-                                {
-                                    icon: stationSurgeMinDivICOn,
-                                    customData: {
-                                        stationCode: res.data[index]['station_code'],
-                                        stationName: res.data[index].name
-                                    }
-                                }
-                            )
-
-                            stationSurgeIconMarker
-                                .on('mouseover', (e) => {
-                                    // todo:[-] 21-05-15 加入鼠标移入时置顶，移出时恢复之前的 zindex
-                                    stationSurgeIconMarker.setZIndexOffset(19999)
-                                })
-                                .on('mouseout', (e) => {
-                                    stationSurgeIconMarker.setZIndexOffset(1999)
-                                })
-                                .on('click', (e) => {
-                                    // 通过 -> e -> target -> options -> customData -> stationCode
-                                    // console.log(e)
-                                    that.stationCode = e.target.options.customData.stationCode
-                                    that.stationName = e.target.options.customData.stationName
-                                })
-                            surgeDataFormMarkersList.push(stationSurgeIconMarker)
-                            index++
-                        })
-                        // 批量生成 marker后统一添加至 map中
-                        that.groupLayerSurgePulsing = L.layerGroup(surgePulsingMarkersList).addTo(
-                            mymap
-                        )
-                        that.groupLayerSurgeStationDivForm = L.layerGroup(
-                            surgeDataFormMarkersList
-                        ).addTo(mymap)
-                    }
-                }
-            }
-        )
     }
 
     // 加载当前时刻的所有潮位站数据 并存储至 that.currentStationSurgeList
@@ -1799,7 +1541,7 @@ export default class TyGroupMap extends mixins(
                 cirleLayers.push(circleTemp)
             })
             const tempTyGroupProPathCircles = L.layerGroup([...cirleLayers]).addTo(mymap)
-            this.currentGroupPathProPathCirclesGroup = tempTyGroupProPathCircles
+            this.currentGroupPathPolyLineLayerGroupId = tempTyGroupProPathCircles._leaflet_id
         }
     }
 
@@ -2096,55 +1838,6 @@ export default class TyGroupMap extends mixins(
         console.log(point)
         this.center = [point.lat, point.lng]
     }
-
-    // 20-08-12 监听 当前的 targetOilModelData 的变化，若发生变化后则更新 自定义的 位置 marker
-    @Watch('targetOilModelData')
-    onOilModelData(res: CaseOilModel): void {
-        // 21-01-06 监听到 当前的 oilModelData变化后，将lat,lon 赋值给 this.initialLatlng
-        this.setLatlng([res.lat, res.lon])
-        this.setInitialLatlng([res.lat, res.lon])
-        this.addPositionMarker2Map([res.lat, res.lon])
-    }
-
-    addPositionMarker2Map(latlon: number[]): void {
-        const mymap: L.Map = this.$refs.basemap['mapObject']
-        this.makerLatlng = latlon
-        // TODO:[-] 20-07-15 暂时注释掉 pulse icon 因为会出现偏移
-        // const iconMarker = L.icon.pulse({ iconSize: [12, 12], color: 'red' })
-        // L.marker(valNew, { icon: iconMarker }).addTo(mymap)
-
-        if (this.iconMySelectedMarker !== null) {
-            mymap.removeLayer(this.iconMySelectedMarker)
-            mymap.removeLayer(this.iconMySelectedGisFormMarker)
-        }
-        const myIcon = new CustomerMarker()
-        const myIconGisForm = new CustomerGisFormMarker(latlon)
-        const myIconHtml = myIcon.toHtml()
-        const myMarkerIcon = L.divIcon({
-            className: 'my-marker',
-            html: myIconHtml,
-            iconAnchor: [6, 6]
-        })
-
-        // TODO:[*] 21-03-09 ERROR:
-        // [Vue warn]: Error in callback for watcher "getLatlng": "RangeError: Maximum call stack size exceeded"
-        const myDivIcon = L.marker([latlon[0], latlon[1]], {
-            icon: myMarkerIcon
-        }).addTo(mymap)
-        this.iconMySelectedMarker = myDivIcon
-
-        const myDivIconGisForm = L.marker([latlon[0], latlon[1]], {
-            icon: L.divIcon({
-                className: 'my-marker-gis-form',
-                html: myIconGisForm.toHtml(),
-                iconAnchor: [-30, 30]
-            })
-        }).addTo(mymap)
-        this.iconMySelectedGisFormMarker = myDivIconGisForm
-    }
-
-    // TODO:[*] 20-02-20 监听 store->map->mutations->GET_MAP_NOW
-    // @Mutation(GET_MAP_NOW, { namespace: 'map' }) getcurrent
 
     @Getter(GET_MAP_NOW, { namespace: 'map' }) getcurrent
 

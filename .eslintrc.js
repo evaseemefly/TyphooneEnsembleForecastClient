@@ -75,7 +75,20 @@ module.exports = {
         '@typescript-eslint/interface-name-prefix':0,
         // 此规则禁止将变量分配给this。
         // https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/no-this-alias.md
-        '@typescript-eslint/no-this-alias':0
+        '@typescript-eslint/no-this-alias':0,
+        // 注意此处配置 备注中是否允许有空格
+        // 参考: https://eslint.vuejs.org/rules/no-irregular-whitespace.html
+        // http://eslint.cn/docs/rules/no-irregular-whitespace
+        'no-irregular-whitespace': 'off',
+        // 以下配置无效
+        "vue/no-irregular-whitespace": ["error", {
+            "skipStrings": true,
+            "skipComments": true,
+            "skipRegExps": true,
+            "skipTemplates": true,
+            "skipHTMLAttributeValues": true,
+            "skipHTMLTextContents": true,
+        },]
 
     }
 }
