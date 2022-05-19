@@ -45,7 +45,7 @@
                     <img src="../../../assets/nmefclog.png" />
                 </div>
                 <div class="logo loop">
-                    <img src="/static/icons/ocean_flow_icon.svg" />
+                    <img src="/static/icons/ocean_flow/of_earth_bold.png" />
                     <div class="flash"></div>
                 </div>
             </div>
@@ -196,6 +196,7 @@ export default class TopNavbar extends Vue {
     img {
         position: absolute;
         left: 0px;
+        height: 55px !important;
     }
 }
 .flash {

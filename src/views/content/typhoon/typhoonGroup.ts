@@ -3,15 +3,19 @@ import * as L from 'leaflet'
 import '@geoman-io/leaflet-geoman-free'
 import 'leaflet-semicircle' // 绘制半圆
 import * as pointInPolygon from 'point-in-polygon' // 判断点是否在多边形中 - https://github.com/substack/point-in-polygon
-
+// TODO:[-] 22-04-13 加入多颜色线段
+// https://github.com/Oliv/leaflet-polycolor
+import leafletPolycolor from 'leaflet-polycolor'
+leafletPolycolor(L)
 /*
 + 21-05-18 关于 tyGroupPath 相关的class
 */
 import { IconTypeEnum } from '@/enum/common'
 import { DEFAULT_COLOR } from '@/const/common'
 import { RADIUSUNIT } from '@/const/typhoon'
+import { CanvasMarkerLayer } from '@/common/canvasMakerLayer'
 import { DEFAULTTYCODE, DEFAULTTIMESTAMP } from '@/const/typhoon'
-import { ScaleColor, TyGroupPathScaleColor } from '@/common/scaleColor'
+import { ScaleColor, TyGroupPathScaleColor, getTyPathLineColor } from '@/common/scaleColor'
 import { getTargetTyGroupDistDate, getTargetTyGroupDateRange } from '@/api/tyhoon'
 import { IconTyphoonCirlePulsing, IconTyphoonCustom } from '@/views/members/icon/pulsingIcon'
 // mid models
@@ -20,11 +24,21 @@ import {
     TyphoonForecastRealDataMidModel
 } from '@/middle_model/typhoon'
 import { TyphoonCircleStatus } from '@/common/circleStatus'
+import { getTyIconUrlByType } from '@/common/icon'
 import moment from 'moment'
 import { getTaskStateVal } from '@/enum/task'
 export interface ITyGroupPathOptions {
     tyCode: string
     timestamp: string
+}
+
+export interface ITyPath {
+    forecastDt: Date
+    lat: number
+    lon: number
+    bp: number
+    isForecast: boolean
+    tyType: string
 }
 
 class TyGroupPath {
@@ -98,9 +112,17 @@ class TyGroupPathLine {
     tyGroupPathLines: Array<TyphoonComplexGroupRealDataMidModel>
     myMap: L.Map
     tyColorScale: TyGroupPathScaleColor
+
+    /**
+     * 台风集合路径折线 layers
+     *
+     * @type {L.Layer[]}
+     * @memberof TyGroupPathLine
+     */
     public tyGroupPolyLineLayer: L.Layer[]
     polyColor = DEFAULT_COLOR
     tyGroupProPathCircles: { lat: number; lon: number; radius: number }[] = []
+    private
     // tyCenterPath:any
 
     /**
@@ -233,6 +255,12 @@ class TyGroupPathLine {
         // 添加 24,,48,72,96,120 对应的大风概率半径(注意此半径目前是写死的)，相当于是集合预报路径的一个显示轮廓的半径
     }
 
+    /**
+     * 获取当前台风集合折线 layers
+     *
+     * @return {*}  {L.Layer[]}
+     * @memberof TyGroupPathLine
+     */
     public getTyGroupPolyLineLayers(): L.Layer[] {
         return this.tyGroupPolyLineLayer
     }
@@ -253,7 +281,7 @@ class TyGroupPathLine {
     }
 
     /**
-     * 添加中间路径的折线到地图上
+     * 添加当前台风集合路径的折线到地图上
      *
      * @return {*}  {L.LayerGroup<any>}
      * @memberof TyGroupPathLine
@@ -273,7 +301,10 @@ class TyGroupPathLine {
      * @memberof TyGroupPathLine
      */
     protected sortTyGroupLinesList(): void {
+        /** 中间路径 'c', 'f', 's'@type {*} */
         let arr1: TyphoonComplexGroupRealDataMidModel[] = []
+
+        /** 左右路径 'r', 'l' @type {*} */
         let arr2: TyphoonComplexGroupRealDataMidModel[] = []
         // 将 标识符为 : [c,f,s] 提起出来存在 arr1 中
         // 将 标识符为 : [r,l] 提取出来存在 arr2 中
@@ -289,24 +320,24 @@ class TyGroupPathLine {
         arr2 = arr2.sort((a, b) => {
             return a.tyPathMarking - b.tyPathMarking
         })
-        console.log('------')
+        // console.log('------')
         //以下均为测试内容
-        arr2.forEach((temp) => {
-            if ((temp.tyPathType === 'l' || temp.tyPathType === 'r') && temp.tyPathMarking === 0) {
-                const logObj = {}
-                logObj['id'] = temp.gpId
-                logObj['index'] = arr2.findIndex((val) => {
-                    return val.gpId === temp.gpId
-                })
+        // arr2.forEach((temp) => {
+        //     if ((temp.tyPathType === 'l' || temp.tyPathType === 'r') && temp.tyPathMarking === 0) {
+        //         const logObj = {}
+        //         logObj['id'] = temp.gpId
+        //         logObj['index'] = arr2.findIndex((val) => {
+        //             return val.gpId === temp.gpId
+        //         })
 
-                console.log(temp.gpId)
-                console.log(
-                    arr2.findIndex((val) => {
-                        return val.gpId === temp.gpId
-                    })
-                )
-            }
-        })
+        //         console.log(temp.gpId)
+        //         console.log(
+        //             arr2.findIndex((val) => {
+        //                 return val.gpId === temp.gpId
+        //             })
+        //         )
+        //     }
+        // })
         // TODO:[-] 22-03-03 注意 l 与 r 的tyPathMarking =0 的情况都是最外侧的路径，需要提取并排序
         // 单独找到 ty_marking =0 的放到末尾
         // 此处需要注意，由于有不同的气压的变化，所以路径需要剔除 p00,p05,p10,p_05,p_10
@@ -336,7 +367,7 @@ class TyGroupPathLine {
             //     arr2.push(val)
             // }
             if (val.gpId === 9644) {
-                console.log('-')
+                // console.log('-')
             }
             if ((val.tyPathType === 'l' || val.tyPathType === 'r') && val.tyPathMarking === 0) {
                 const indexSpliceObj = arr2New.findIndex((temp) => {
@@ -347,18 +378,18 @@ class TyGroupPathLine {
                 arr2New.push(spliceObj)
             }
         })
-        console.log('sort后')
-        arr2New.forEach((temp) => {
-            if ((temp.tyPathType === 'l' || temp.tyPathType === 'r') && temp.tyPathMarking === 0) {
-                console.log(temp.gpId)
-                console.log(
-                    arr2New.findIndex((val) => {
-                        return val.gpId === temp.gpId
-                    })
-                )
-            }
-        })
-        console.log('-----')
+        // console.log('sort后')
+        // arr2New.forEach((temp) => {
+        //     if ((temp.tyPathType === 'l' || temp.tyPathType === 'r') && temp.tyPathMarking === 0) {
+        //         console.log(temp.gpId)
+        //         console.log(
+        //             arr2New.findIndex((val) => {
+        //                 return val.gpId === temp.gpId
+        //             })
+        //         )
+        //     }
+        // })
+        // console.log('-----')
         // -----
 
         arr1 = arr1.sort((a, b) => {
@@ -374,34 +405,35 @@ class TyGroupPathLine {
         })
         this.tyGroupPathLines = [...arr1, ...arr2New]
         //
-        console.log('合并数组后----')
-        this.tyGroupPathLines.forEach((temp) => {
-            if ((temp.tyPathType === 'l' || temp.tyPathType === 'r') && temp.tyPathMarking === 0) {
-                console.log(temp.gpId)
-                console.log(
-                    arr2New.findIndex((val) => {
-                        return val.gpId === temp.gpId
-                    })
-                )
-            }
-        })
-        console.log('-----')
+        // console.log('合并数组后----')
+        // this.tyGroupPathLines.forEach((temp) => {
+        //     if ((temp.tyPathType === 'l' || temp.tyPathType === 'r') && temp.tyPathMarking === 0) {
+        //         console.log(temp.gpId)
+        //         console.log(
+        //             arr2New.findIndex((val) => {
+        //                 return val.gpId === temp.gpId
+        //             })
+        //         )
+        //     }
+        // })
+        // console.log('-----')
         // TODO:[-] 21-05-13 新加入一个对其倒叙，因为此种方式排序完的数组，中间路径会出现在最前，也就是最先被叠加
+        // TODO:[*] 22-04-25 注意此处，存在一个倒叙操作
         this.tyGroupPathLines = this.tyGroupPathLines.sort((a, b) => {
             return -1
         })
-        console.log('倒叙排列后')
+        // console.log('倒叙排列后')
         this.tyGroupPathLines.forEach((temp) => {
             if ((temp.tyPathType === 'l' || temp.tyPathType === 'r') && temp.tyPathMarking === 0) {
-                console.log(temp.gpId)
-                console.log(
-                    arr2.findIndex((val) => {
-                        return val.gpId === temp.gpId
-                    })
-                )
+                // console.log(temp.gpId)
+                // console.log(
+                //     arr2.findIndex((val) => {
+                //         return val.gpId === temp.gpId
+                //     })
+                // )
             }
         })
-        console.log('-----')
+        // console.log('-----')
     }
 
     addPathOutline2Map(): void {
@@ -410,6 +442,9 @@ class TyGroupPathLine {
 
     /**
      * 获取最外侧台风路径的包络
+     * - 22-04-25 修复了多次加载会出现交点位置错误的bug
+     * 返回轮廓经纬度数组(有序)
+     * 交点在整个经纬度数组的首尾|交点在整个经纬度数组的中间位置
      *
      * @return {*}  {L.LatLng[]}
      * @memberof TyGroupPathLine
@@ -422,6 +457,7 @@ class TyGroupPathLine {
                对两者填色
         */
         // 取出最外侧的 路径后需要对其排序
+        // TODO:[-] 22-04-21 注意此处多次加载会出现轮廓绘制错误——轮廓多边形排序引起的
         // step1: 描绘最外侧的轮廓，通过多边形
         // const pathOutter1 = this.tyGroupPathLines[0]
         const pathOutter1 = this.tyGroupPathLines.find((temp) => {
@@ -431,7 +467,7 @@ class TyGroupPathLine {
             if (a.lat > b.lat || a.lon > b.lon) {
                 return -1
             } else {
-                return 0
+                return 1
             }
         })
         // const pathOutter2 = this.tyGroupPathLines[1]
@@ -442,17 +478,63 @@ class TyGroupPathLine {
             if (a.lat > b.lat || a.lon > b.lon) {
                 return 1
             } else {
-                return 0
+                return -1
             }
         })
         const lines: L.LatLng[] = []
 
+        // TODO:[-] 22-04-25 此处需要加入一个判断，判断 latlng1 与 latlng2 的首位置的坐标是否一致，若不一致需要倒序
+        // if (latlng1[0].lat != latlng2[0].lat || latlng1[0].lon != latlng2[0].lon) {
+        //     lines.sort((_) => {
+        //         return -1
+        //     })
+        // }
+
+        // latlng2中存在的相同的元素
+        let sameLatlng: TyphoonForecastRealDataMidModel = undefined
+        latlng1.forEach((element) => {
+            const latlngSame = latlng2.find((item) => {
+                return element.lat === item.lat && element.lon === item.lon
+            })
+            if (latlngSame) {
+                sameLatlng = latlngSame
+            }
+        })
+        // latlng1 中交点的index
+        const same1Index: number = latlng1.findIndex((temp) => {
+            return temp.lat === sameLatlng.lat && temp.lon === sameLatlng.lon
+        })
+        // latlng2 中交点的index
+        const same2Index: number = latlng2.findIndex((temp) => {
+            return temp.lat === sameLatlng.lat && temp.lon === sameLatlng.lon
+        })
+        // latlng2 中交点在最后
+        if (same2Index > 0) {
+            // latlng1 交点也在最后，需要对 latlng1 倒序排列
+            if (same1Index > 0) {
+                latlng1.sort((_) => {
+                    return -1
+                })
+            }
+        }
+        // latlng2 中交点在首位
+        else if (same2Index === 0) {
+            // latlng1 中交点也在首位，需要对latlng1 倒序排列
+            if (same1Index === 0) {
+                latlng1.sort((_) => {
+                    return -1
+                })
+            }
+        }
+
+        //----
         latlng1.forEach((temp) => {
             lines.push(new L.LatLng(temp.lat, temp.lon))
         })
         latlng2.forEach((temp) => {
             lines.push(new L.LatLng(temp.lat, temp.lon))
         })
+
         return lines
         // L.polygon(lines, { color: '#76eec6', opacity: 1, fillOpacity: 1 }).addTo(this.myMap)
 
@@ -1112,6 +1194,157 @@ class TyphoonCircle {
         // }).setDirection(dir, 180)
     }
 }
+
+/**
+ * + 22-04-08
+ * 台风路径
+ *
+ * @class TyphoonPathIcon
+ */
+class TyCMAPathLine {
+    public tyPathList: ITyPath[] = []
+    protected myMap: L.Map
+    constructor(mymap: L.Map, tyPathList: ITyPath[]) {
+        this.tyPathList = tyPathList
+        this.myMap = mymap
+    }
+
+    add2Map(): L.LayerGroup<any> {
+        const tyPointsList = this.initCenterPulsingIcon()
+        const tyPolylineRealdata = this.initLineRealdataLayer()
+        const tyPolylineForecast = this.initLineForecastLayer()
+        return new L.LayerGroup([...tyPointsList, tyPolylineRealdata, tyPolylineForecast]).addTo(
+            this.myMap
+        )
+    }
+
+    add2MapByCanvas(): L.LayerGroup<any> {
+        const tyPointsList = this.initCenterPulsingIcon()
+        const tyPolylineRealdata = this.initLineRealdataLayer()
+        const tyPolylineForecast = this.initLineForecastLayer()
+        const canvasMarkerLayer = new CanvasMarkerLayer().addTo(this.myMap)
+        canvasMarkerLayer.addLayers(tyPointsList)
+        return new L.LayerGroup([...tyPolylineRealdata, tyPolylineForecast]).addTo(this.myMap)
+    }
+
+    getlastTyLatlng(): L.LatLng | null {
+        if (this.tyPathList.length > 0) {
+            const lastTy = this.tyPathList[this.tyPathList.length - 1]
+            return new L.LatLng(lastTy.lat, lastTy.lon)
+        } else {
+            return null
+        }
+    }
+
+    protected initCenterPulsingIcon(): L.Marker[] {
+        const tyPointsList: L.Marker[] = []
+        this.tyPathList.forEach((tempPath) => {
+            const typhoonStatus = new TyphoonCircleStatus(
+                0,
+                tempPath.bp,
+                tempPath.forecastDt,
+                tempPath.lat,
+                tempPath.lon
+            )
+            // TODO:[-] 22-03-15 修改为 台风img marker
+            const tyCustomIcon = L.icon({
+                iconUrl: getTyIconUrlByType(tempPath.tyType),
+                iconSize: [40, 40], // size of the icon
+                // shadowSize: [50, 64], // size of the shadow
+                iconAnchor: [20, 20], // point of the icon which will
+                className: 'my-leaflet-custom-icon'
+            })
+            // TODO:[-] 22-03-17 修改之前的台风中心路径由脉冲mark改为台风标准图片marker，切记需要加入 customData!!
+            const tyCustomMarker = L.marker([tempPath.lat, tempPath.lon], {
+                icon: tyCustomIcon
+                // customData: typhoonStatus
+            })
+            tyPointsList.push(tyCustomMarker)
+        })
+        return tyPointsList
+    }
+    /**
+     * 实时台风路径
+     *
+     * @protected
+     * @return {*}  {L.Polyline}
+     * @memberof TyCMAPathLine
+     */
+    protected initLineRealdataLayer(): any {
+        const latLngs: L.LatLng[] = []
+        this.tyPathList.forEach((temp) => {
+            if (!temp.isForecast) {
+                latLngs.push(new L.LatLng(temp.lat, temp.lon))
+            }
+        })
+        // 对于实况需要加入一个循环判断
+
+        //方式1: 此种方式不行
+        // const tyTypes: string[] = ['TS', 'STS', 'TY', 'STY', 'SuperTY']
+        // const polylines: L.Polyline[] = []
+        // tyTypes.forEach((tempTyType) => {
+        //     const tempTyTypePathList = this.tyPathList.filter((tempTyPath) => {
+        //         return tempTyPath.tyType === tempTyType
+        //     })
+        //     const tempLatlng: L.LatLng[] = []
+        //     tempTyTypePathList.map((temp) => tempLatlng.push(new L.LatLng(temp.lat, temp.lon)))
+        //     const tempTyPolyline = new L.Polyline(tempLatlng, {
+        //         color: getTyPathLineColor(tempTyType)
+        //     })
+        //     polylines.push(tempTyPolyline)
+        // })
+        // ---
+        // 方法2:
+        /*
+            实现思路
+            step1: 获取不同的台风等级的所在位置index，以及对应的颜色
+        */
+        const tyTypes: string[] = ['TS', 'STS', 'TY', 'STY', 'SuperTY']
+        const polylines: L.Polyline[] = []
+        const latlngs: number[][] = []
+        const colorScales: string[] = []
+        this.tyPathList.forEach((temp) => {
+            if (!temp.isForecast) {
+                latlngs.push([temp.lat, temp.lon])
+                colorScales.push(getTyPathLineColor(temp.tyType))
+            }
+        })
+        // 此处使用 leaflet-polycolor 实现折线的多颜色(线性过度)
+        // latlngs 每个折点的坐标数组;
+        // colorScales 每个折点的起止颜色数组
+        const polyLine = L.polycolor(latlngs, {
+            colors: colorScales,
+            weight: 5
+        })
+        return polyLine
+    }
+
+    /**
+     * 预报台风风路径
+     *
+     * @protected
+     * @return {*}  {L.Polyline}
+     * @memberof TyCMAPathLine
+     */
+    protected initLineForecastLayer(): L.Polyline {
+        const latLngs: L.LatLng[] = []
+
+        const forecastTyIndex: number = this.tyPathList.findIndex((temp) => {
+            return temp.isForecast
+        })
+        if (forecastTyIndex >= 0) {
+            const lastRealTy = this.tyPathList[forecastTyIndex - 1]
+            latLngs.push(new L.LatLng(lastRealTy.lat, lastRealTy.lon))
+            this.tyPathList.forEach((temp) => {
+                if (temp.isForecast) {
+                    latLngs.push(new L.LatLng(temp.lat, temp.lon))
+                }
+            })
+        }
+
+        return new L.Polyline(latLngs, { color: '#2980b9', dashArray: '5,10' })
+    }
+}
 /**
  * 台风最后的半径圆多边形
  *
@@ -1389,5 +1622,6 @@ export {
     TyphoonPolygon,
     TyphoonOutLinePolygon,
     TyphoonCircle,
-    TyphoonLastSemiCirclePolygon
+    TyphoonLastSemiCirclePolygon,
+    TyCMAPathLine
 }

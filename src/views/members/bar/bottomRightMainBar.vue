@@ -3,6 +3,7 @@
         <ColorBar></ColorBar>
         <SwitchBaseMap></SwitchBaseMap>
         <StationSurgeLevelLegeng></StationSurgeLevelLegeng>
+        <TyphoonLevelLegeng></TyphoonLevelLegeng>
         <!-- <ForecastAreaBar
             :tyCode="tyCode"
             :timeStampStr="timeStampStr"
@@ -17,7 +18,7 @@ import ColorBar from '@/views/members/bar/colorBar.vue'
 import ForecastAreaBar from '@/views/members/bar/forecastAreaBar.vue'
 import SwitchBaseMap from '@/components/bar/switchBaseMap.vue'
 import StationSurgeLevelLegeng from '@/components/bar/stationSurgeLevelLegend.vue'
-
+import TyphoonLevelLegeng from '@/components/bar/typhoonLevelLegend.vue'
 // 引入部分中间变量
 import CoverageMin from '@/views/content/oilspilling/coverage.vue'
 @Component({
@@ -25,7 +26,8 @@ import CoverageMin from '@/views/content/oilspilling/coverage.vue'
         ColorBar,
         ForecastAreaBar,
         SwitchBaseMap,
-        StationSurgeLevelLegeng
+        StationSurgeLevelLegeng,
+        TyphoonLevelLegeng
     }
 })
 export default class BottomRightMainBar extends Vue {

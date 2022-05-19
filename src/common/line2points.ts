@@ -1,7 +1,6 @@
 import { LayerTypeEnum } from '@/enum/map'
 import {
     TyphoonComplexGroupRealDataMidModel,
-    TyphoonForecastRealDataMidModel
 } from '@/middle_model/typhoon'
 import * as L from 'leaflet'
 

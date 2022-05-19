@@ -53,6 +53,23 @@ class MapMixin extends Vue {
     get getPolyLines(): IPolyLine[] {
         return [this.SouthAreaPolyLine, this.EastAreaPolyLine, this.NorthAreaPolyLine]
     }
+
+    /**
+     *根据 leaflet_id -> map.removce(layer)
+     *
+     * @param {number} id
+     * @memberof MapMixin
+     */
+    clearLayerById(id: number): void {
+        const mymap: L.Map = this.$refs.basemap['mapObject']
+        if (mymap) {
+            mymap.eachLayer((layer: L.Layer) => {
+                if (layer._leaflet_id === id) {
+                    mymap.removeLayer(layer)
+                }
+            })
+        }
+    }
 }
 
 export { MapMixin }

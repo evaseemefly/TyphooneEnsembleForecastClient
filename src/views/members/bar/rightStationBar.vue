@@ -144,9 +144,9 @@ export default class TabContent extends Vue {
     }
     @Watch('getQuaterOptions')
     onQuaterOptions(val: { tyCode: string; stationCode: string; timestampStr: string }): void {
-        console.log(
-            `监听到options发生变化:tyCode:${val.tyCode},stationCode:${val.stationCode},timestampStr:${val.timestampStr}`
-        )
+        // console.log(
+        //     `监听到options发生变化:tyCode:${val.tyCode},stationCode:${val.stationCode},timestampStr:${val.timestampStr}`
+        // )
         if (
             val.tyCode !== DEFAULTTYCODE &&
             val.stationCode !== DEFAULT_STATION_CODE &&
