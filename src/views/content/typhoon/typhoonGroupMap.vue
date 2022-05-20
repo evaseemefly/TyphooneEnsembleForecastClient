@@ -560,7 +560,7 @@ export default class TyGroupMap extends mixins(
     wmsWorkSpace = ''
     layerControl: any = null
     // TODO:[-] + 21-08-05 新加入的全局唯一的 栅格layer
-    uniqueRasterLayer: L.Layer = null
+    uniqueRasterLayer: L.Layer | null = null
     uniqueRasterLayerId = DEFAULT_LAYER_ID
     // TODO:[*] 20-07-27 记录当前 add layers to map 时的 layers种类数组
     existLayers: LayerTypeEnum[] = []
@@ -575,37 +575,37 @@ export default class TyGroupMap extends mixins(
 
     // TODO:[-] + 21-05-31 中间路径的 cirleLayers 集合
     tyGroupCenterCirleLayers: L.Layer[] = []
-    tyOutlineGroupLayers: L.LayerGroup = null
+    tyOutlineGroupLayers: L.LayerGroup | null = null
     //
     tyOutlineGroupLayersId: number = DEFAULT_LAYER_ID
     // + 21-05-12 台风集合预报路径的概率半径集合 24: 60, 48:100,72:120,96:150,120:180
     tyGroupProPathCircles: { lat: number; lon: number; radius: number }[] = []
     currentStationSurgeList: StationSurgeMiModel[] = []
     // 当前的大风半径范围
-    currentGaleRadius: L.Circle = null
+    currentGaleRadius: L.Circle | null = null
     // group_ty_range
     // 台风大风半径的范围
     // 当前显示的 台风realdata div icon
-    tyRealDataDivIcon: L.Marker = null
+    tyRealDataDivIcon: L.Marker | null = null
     isShowTyRealDataDivIcon = true
 
     // TODO:[-] 21-10-08 当前的台风集合折线
-    currentGroupPathPolyLine: L.Polyline = null
+    currentGroupPathPolyLine: L.Polyline | null = null
     // 21-10-08 当前的台风集合预报路径 折线集合 group layer
-    currentGroupPathPolyLineLayerGroup: L.LayerGroup = null
     currentGroupPathPolyLineGroupLayersId: number = DEFAULT_LAYER_ID
-    // - 21-10-19 台风中间路径的脉冲 layer
-    currentGroupPathPulsingLayerGroup: L.LayerGroup = null
-    currentCenterPathIconLayerId: number = DEFAULT_LAYER_ID // + 22-05-07 当前台风的中间路径的icon layer id
-    // currentCenterGroupPathPolyLineLayerGroup: L.LayerGroup = null // - 22-05-19 不再使用 layer group
-    currentCenterPathLineLayerId: number = DEFAULT_LAYER_ID // + 22-05-07 当前台风的中间路layer id
+    /** - 21-10-19 台风中间路径的脉冲 layer */
+    currentGroupPathPulsingLayerGroup: L.LayerGroup | null = null
+    /**  + 22-05-07 当前台风的中间路径的圆点icon layer id (group layer)*/
+    currentCenterPathIconLayerId: number = DEFAULT_LAYER_ID
+    /** + 22-05-07 当前台风的中间路layer id */
+    currentCenterPathLineLayerId: number = DEFAULT_LAYER_ID
 
-    // 21-10-08 当前的台风集合预报路径 间隔点集合 group layer
-    currentGroupPathPolyLineLayerGroupId = DEFAULT_LAYER_ID
+    // 中间路径概率圆 layer id
+    currentPathProCirclesLayerId = DEFAULT_LAYER_ID
 
     // + 21-05-10 当前的 逐时风暴增水场 layer，每次切换时会替换，且从 map 中清除
     // TODO:[*] 22-04-19 将layer统一修改为 layerId
-    fieldSurgeRasterLayer: L.Layer = null
+    fieldSurgeRasterLayer: L.Layer | null = null
 
     // + 21-05-14 当前的预报时间
     forecastDt = new Date('2020-09-15T18:00:00Z')
@@ -617,11 +617,11 @@ export default class TyGroupMap extends mixins(
     stationCode = DEFAULT_STATION_CODE
     stationName = DEFAULT_STATION_NAME
     // + 21-05-15 脉冲 groupLayer
-    groupLayerSurgePulsing: L.LayerGroup = null // - 22-05-19 已不再使用，只有 bak 备份中还有使用，暂时不删除
+    groupLayerSurgePulsing: L.LayerGroup | null = null // - 22-05-19 已不再使用，只有 bak 备份中还有使用，暂时不删除
     groupLayerSurgeStationPulsingId: number = DEFAULT_LAYER_ID // - 22-05-19 海洋站脉冲 icon group layer id
 
     // + 21-05-15 台站 div groupLayer
-    groupLayerSurgeStationDivForm: L.LayerGroup = null // - 22-05-19 已不再使用，只有 bak 备份中还有使用，暂时不删除
+    groupLayerSurgeStationDivForm: L.LayerGroup | null = null // - 22-05-19 已不再使用，只有 bak 备份中还有使用，暂时不删除
     groupLayerSurgeStationDivId: number = DEFAULT_LAYER_ID // - 22-05-19 将 groupLayerSurgeStationDivForm 替换为 id 保存当前海洋站 icon 的 group layer id
     tyGroupGaleRadiusRange: { max: number; min: number } = { max: 80, min: 31 }
 
@@ -695,13 +695,13 @@ export default class TyGroupMap extends mixins(
     }
 
     // TODO:[-] 21-06-08 临时的 潮位站 min marker
-    stationMinMarker: L.Marker = undefined
+    stationMinMarker: L.Marker | undefined = undefined
     mapBoxlayerOptions: {
         accessToken: 'pk.eyJ1IjoiZXZhc2VlbWVmbHkxIiwiYSI6ImNrcHE4OHJsejBobnoyb3BhOTkwb3MzbGwifQ.5ThyBJrIccBpeVi9pUdJnw'
         style: '/static/mapbox/style/style_210610/style.json'
     }
     // TODO:[-] 21-06-10 配合 mapbox 使用的 mymap
-    mymap: L.Map = undefined
+    mymap: L.Map | undefined = undefined
     // + 21-07-01 新加入的用来控制是否显示 创建caseForm
     isShowCreateCaseForm = false
 
@@ -973,7 +973,7 @@ export default class TyGroupMap extends mixins(
             tyCode: string,
             forecastDt: Date,
             timestampStr: string
-        ) => Promise<AxiosResponse<any>> = null
+        ) => Promise<AxiosResponse<any>> | null = null
         switch (stationType) {
             // 静态潮位站
             case LayerTypeEnum.STATION_ICON_STATIC_LAYER:
@@ -993,6 +993,9 @@ export default class TyGroupMap extends mixins(
             case LayerTypeEnum.STATION_ICON_MAX_LAYER:
                 // this.$message(`加载台风:${that.stationSurgeIconOptions.tyCode}全过程海洋站极值`)
                 getStationFunc = getAllPathStationMaxSurgeList
+                break
+            default:
+                getStationFunc = getStaticStationList
                 break
         }
 
@@ -1090,7 +1093,8 @@ export default class TyGroupMap extends mixins(
             const icon = new IconCirlePulsing({
                 val: temp.surge,
                 max: surgeMax,
-                min: surgeMin
+                min: surgeMin,
+                iconType: IconTypeEnum.TY_PULSING_ICON
             })
             const iconSurgeMin = new StationSurge(
                 temp.stationName,
@@ -1229,13 +1233,13 @@ export default class TyGroupMap extends mixins(
     // TODO:[-] 21-10-08 清除所有 当前 台风集合路径的相关 layer
     clearGroupPathAllLayer(): void {
         if (
-            this.currentGroupPathPolyLineLayerGroup &&
+            this.currentGroupPathPolyLineGroupLayersId !== DEFAULT_LAYER_ID &&
             this.currentGroupPathPulsingLayerGroup &&
             this.currentCenterPathLineLayerId !== DEFAULT_LAYER_ID
         ) {
             // TODO:[*] 22-04-18 将 removerLayer => clearLayerById
             // this.clearGroupLayer(this.currentGroupPathPolyLineLayerGroup)
-            this.clearLayerById(this.currentGroupPathPolyLineLayerGroupId)
+            this.clearLayerById(this.currentPathProCirclesLayerId)
             // 清除台风全部集合路径的折线
             this.clearLayerById(this.currentGroupPathPolyLineGroupLayersId)
             this.currentGroupPathPolyLineGroupLayersId = DEFAULT_LAYER_ID
@@ -1394,8 +1398,8 @@ export default class TyGroupMap extends mixins(
         // TODO:[-] 22-05-07 先清除一下当前的中心路径折线layer
         this.clearLayerById(this.currentGroupPathPolyLineGroupLayersId)
         const tyGroupPathLine = new TyGroupPathLine(mymap, that.tyGroupLineList)
-        // 只加载了集合路径的 line，不包含集合路径包络多边形
-        const tempTyGroupPolyLineLayerGroup = tyGroupPathLine.addPolyLines2MapByGroup()
+        // 集合路径的折线 line，不包含集合路径包络多边形
+        const currentTyGroupPathPoly = tyGroupPathLine.addPolyLines2MapByGroup()
         // TODO:[-] 22-02-25 尝试将概率圆+路径包络拼接成一个图形
         // tyGroupPathLine.addPathOutline2Map()
         const tempCenterPathLine = new TyGroupCenterPathLine(mymap, that.tyGroupLineList)
@@ -1479,8 +1483,7 @@ export default class TyGroupMap extends mixins(
             // TODO:[*] 22-04-21 注意此处每次调用generateCircle均会执行一次排序操作
             this.tyOutlineGroupLayersId = tyPolygon.generateCircle()._leaflet_id
             // const tyOutLineGroupLayer = tyPolygon.generateCircle(outlines)
-            this.currentGroupPathPolyLineLayerGroup = tempTyGroupPolyLineLayerGroup
-            this.currentGroupPathPolyLineGroupLayersId = tempTyGroupPolyLineLayerGroup._leaflet_id
+            this.currentGroupPathPolyLineGroupLayersId = currentTyGroupPathPoly._leaflet_id
         } else {
             // - 22-05-06 此处加入了 清除台风集合路径外侧轮廓
             this.clearTyGroupOutlineGroupLayer()
@@ -1506,15 +1509,17 @@ export default class TyGroupMap extends mixins(
             lineWeight: 5,
             opacity: 0.8
         })
-        const tempTyGroupCenterPathIconLayerGroup = tyGroupCenterPathLine.addCenterCirlePulsing2MapByGroup()
-        this.currentCenterPathIconLayerId = tempTyGroupCenterPathIconLayerGroup._leaflet_id
+
+        /** 当前中心路径的圆点脉冲 group layer @type {*} */
+        const currentTyCenterPathIconLayerGroup = tyGroupCenterPathLine.addCenterCirlePulsing2MapByGroup()
+        this.currentCenterPathIconLayerId = currentTyCenterPathIconLayerGroup._leaflet_id
         const currentCenterGroupPathPolyLineLayerGroup = tyGroupCenterPathLine.addPolyLines2MapByGroup() // 添加中间路径的折线到map
         this.currentCenterPathLineLayerId = currentCenterGroupPathPolyLineLayerGroup._leaflet_id
 
         // TODO:[-] 22-02-25 暂时加入的加入概率圆
         tyGroupCenterPathLine.addProRadiusCirle2MapByCenter()
 
-        this.currentGroupPathPulsingLayerGroup = tempTyGroupCenterPathIconLayerGroup
+        this.currentGroupPathPulsingLayerGroup = currentTyCenterPathIconLayerGroup
     }
 
     // + 21-05-12 添加 中间路径的概率半径 -> map
@@ -1541,14 +1546,14 @@ export default class TyGroupMap extends mixins(
                 cirleLayers.push(circleTemp)
             })
             const tempTyGroupProPathCircles = L.layerGroup([...cirleLayers]).addTo(mymap)
-            this.currentGroupPathPolyLineLayerGroupId = tempTyGroupProPathCircles._leaflet_id
+            this.currentPathProCirclesLayerId = tempTyGroupProPathCircles._leaflet_id
         }
     }
 
     // + 21-04-22 将 台风实时圆 add to map
     addTyphoonRealDataDiv2Map(tyRealDataCircle: TyphoonCircleStatus): void {
         const that = this
-        const mymap: any = this.$refs.basemap['mapObject']
+        const mymap: L.Map = this.$refs.basemap['mapObject']
         const typhoonDivHtml: string = tyRealDataCircle.toDivIconHtml()
 
         const typhoonDivIcon = L.divIcon({

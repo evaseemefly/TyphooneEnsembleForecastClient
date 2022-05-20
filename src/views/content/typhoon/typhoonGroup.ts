@@ -720,6 +720,12 @@ class TyGroupCenterPathLine extends TyGroupPathLine {
         this.tyCenterPointsLayers = tyPointsLayers
     }
 
+    /**
+     * 添加中心路径圆点脉冲 (使用 group layer)
+     *
+     * @return {*}  {L.LayerGroup<any>}
+     * @memberof TyGroupCenterPathLine
+     */
     addCenterCirlePulsing2MapByGroup(): L.LayerGroup<any> {
         const tyCenterPointsLayersGroup = L.layerGroup([...this.tyCenterPointsLayers])
         tyCenterPointsLayersGroup.addTo(this.myMap)
