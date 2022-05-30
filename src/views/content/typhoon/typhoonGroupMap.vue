@@ -168,6 +168,9 @@ import 'leaflet-velocity'
 // import _ from 'lodash'
 // import { debounce } from 'lodash'
 import { Debounce } from 'lodash-decorators'
+// TODO:[*] 22-05-30 尝试加入 canvas-markers
+// https://github.com/eJuke/Leaflet.Canvas-Markers
+import { CanvasMarkerLayer } from '@/common/canvasMakerLayer'
 // import '@ansur/leaflet-pulse-icon/dist/L.Icon.Pulse'
 // 手动引入 第三方的 icon 脉冲效果
 // import '@ansur/leaflet-pulse-icon/src/L.Icon.Pulse'
@@ -1087,8 +1090,8 @@ export default class TyGroupMap extends mixins(
         stationSurgeList.forEach((temp) => {
             surgeArr.push(temp.surge)
         })
-        const surgeMax = Math.max(...surgeArr)
-        const surgeMin = Math.min(...surgeArr)
+        const surgeMax = Math.max(...surgeArr).toFixed(2)
+        const surgeMin = Math.min(...surgeArr).toFixed(2)
         stationSurgeList.forEach((temp) => {
             const icon = new IconCirlePulsing({
                 val: temp.surge,
@@ -1105,9 +1108,9 @@ export default class TyGroupMap extends mixins(
             ).getImplements(zoom, {
                 stationName: temp.stationName,
                 stationCode: temp.stationCode,
-                surgeMax: temp.max,
-                surgeMin: temp.min,
-                surgeVal: temp.surge
+                surgeMax: temp.max.toFixed(2),
+                surgeMin: temp.min.toFixed(2),
+                surgeVal: temp.surge.toFixed(2)
             })
             iconArr.push(icon)
             iconSurgeMinArr.push(iconSurgeMin)
@@ -1136,9 +1139,9 @@ export default class TyGroupMap extends mixins(
                 icon: stationDivIcon,
                 customData: {
                     name: tempStationSurge.stationName,
-                    surge: tempStationSurge.surge,
-                    surgeMax: tempStationSurge.max,
-                    surgeMin: tempStationSurge.min,
+                    surge: tempStationSurge.surge.toFixed(2),
+                    surgeMax: tempStationSurge.max.toFixed(2),
+                    surgeMin: tempStationSurge.min.toFixed(2),
                     stationCode: tempStationSurge.stationCode,
                     lat: tempStationSurge.lat,
                     lon: tempStationSurge.lon,
@@ -1224,6 +1227,10 @@ export default class TyGroupMap extends mixins(
             index++
         })
         // 批量生成 marker后统一添加至 map中
+        // TODO:[x] 22-05-30 尝试引入 canvasMarkers 注意此处经尝试，无法对非图片的icon进行渲染(之前风场是img icon无问题)
+        // const surgeStationIconCanvasMarkers = new CanvasMarkerLayer().addTo(mymap)
+        // surgeStationIconCanvasMarkers.addLayers(surgeStationIconMarkersList)
+        // surgeStationIconCanvasMarkers.addTo(mymap)
         const surgeStationPulsingMarkers = L.layerGroup(surgePulsingMarkersList).addTo(mymap)
         const surgeStationIconMarkers = L.layerGroup(surgeStationIconMarkersList).addTo(mymap)
         this.groupLayerSurgeStationPulsingId = surgeStationPulsingMarkers._leaflet_id
@@ -2265,7 +2272,10 @@ export default class TyGroupMap extends mixins(
         }
         // 添加至地图中
         const cmaPathLine = new TyCMAPathLine(mymap, val)
+
+        // TODO:[*] 22-05-30 注意此处修改尝试使用 canvas 渲染路径中心点(png)
         const cmaPathLineLayer = cmaPathLine.add2Map()
+        // cmaPathLine.add2MapByCanvas()
         const lastTyLatlng = cmaPathLine.getlastTyLatlng()
         if (lastTyLatlng) {
             this.center = [lastTyLatlng.lat, lastTyLatlng.lng]

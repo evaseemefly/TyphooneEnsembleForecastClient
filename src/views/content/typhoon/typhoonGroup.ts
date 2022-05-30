@@ -1230,7 +1230,7 @@ class TyCMAPathLine {
         const tyPolylineForecast = this.initLineForecastLayer()
         const canvasMarkerLayer = new CanvasMarkerLayer().addTo(this.myMap)
         canvasMarkerLayer.addLayers(tyPointsList)
-        return new L.LayerGroup([...tyPolylineRealdata, tyPolylineForecast]).addTo(this.myMap)
+        return new L.LayerGroup([tyPolylineRealdata, tyPolylineForecast]).addTo(this.myMap)
     }
 
     getlastTyLatlng(): L.LatLng | null {
