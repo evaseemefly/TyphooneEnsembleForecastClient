@@ -171,6 +171,8 @@ import { Debounce } from 'lodash-decorators'
 // TODO:[*] 22-05-30 尝试加入 canvas-markers
 // https://github.com/eJuke/Leaflet.Canvas-Markers
 import { CanvasMarkerLayer } from '@/common/canvasMakerLayer'
+// TODO:[*] 22-05-31 加入前台渲染 png
+import '@/common/pixel/leaflet-tile-pixelLayer'
 // import '@ansur/leaflet-pulse-icon/dist/L.Icon.Pulse'
 // 手动引入 第三方的 icon 脉冲效果
 // import '@ansur/leaflet-pulse-icon/src/L.Icon.Pulse'
@@ -292,6 +294,7 @@ import {
     TyphoonCircle,
     TyCMAPathLine
 } from './typhoonGroup'
+import { loading } from '@/common/common'
 // 各类 DTO
 import { CustomerMarker, CustomerGisFormMarker } from './marker'
 
@@ -357,6 +360,8 @@ import {
     IconMinStationSurge,
     IconTyphoonCirlePulsing
 } from '@/views/members/icon/pulsingIcon'
+// TODO:[-] 22-06-02 加入前端绘制等值线类
+import { SurgeSosurface } from '@/views/content/typhoon/isosurface'
 import { WindArrow } from '@/views/content/oilspilling/arrow'
 // + 21-03-24 海浪等值线绘制类
 import { WaveContourLine, WaveArrow } from '@/views/content/oilspilling/wave'
@@ -565,6 +570,9 @@ export default class TyGroupMap extends mixins(
     // TODO:[-] + 21-08-05 新加入的全局唯一的 栅格layer
     uniqueRasterLayer: L.Layer | null = null
     uniqueRasterLayerId = DEFAULT_LAYER_ID
+    // TODO:[-] 22-06-02 增水等值面layer id
+    sosurfaceLayerId = DEFAULT_LAYER_ID
+    sosurfaceLayer: L.Layer = null
     // TODO:[*] 20-07-27 记录当前 add layers to map 时的 layers种类数组
     existLayers: LayerTypeEnum[] = []
     // TODO:[-] 20-06-20 加入的是否分页的标识符
@@ -1975,7 +1983,7 @@ export default class TyGroupMap extends mixins(
     }
 
     @Watch('getTyMaxSurgeOpts', { immediate: true, deep: true })
-    onTyMaxSurgeOptions(val: ITySurgeLayerOptions, oldVal: ITySurgeLayerOptions): void {
+    async onTyMaxSurgeOptions(val: ITySurgeLayerOptions, oldVal: ITySurgeLayerOptions): void {
         const that = this
         const mymap: any = this.$refs.basemap['mapObject']
         // const scaleList: string[] | string = getColorScale('my-colour').scaleColorList
@@ -1986,6 +1994,7 @@ export default class TyGroupMap extends mixins(
             //     clearRas
             // }
             this.clearUniquerRasterLayer()
+            this.clearSosurfaceLayer()
             // TODO:[-] 22-03-21 此处修改为使用新的 canvas 渲染 geotiff raster
             const surgeRasterLayer = new SurgeRasterGeoLayer({
                 tyCode: val.tyCode,
@@ -1997,16 +2006,23 @@ export default class TyGroupMap extends mixins(
                 customCoefficient: 0.8,
                 customCoeffMax: 1
             })
-
-            surgeRasterLayer.add2map(mymap, that.$message).then((layerId) => {
+            const loadingInstance = loading('加载最大增水场')
+            await surgeRasterLayer.add2map(mymap, that.$message, false).then((layerId) => {
                 // console.log(surgeRasterLayer)
                 this.setScaleRange(surgeRasterLayer.scaleRange || [])
                 // TODO:[*] 22-04-14 将返回 layer 修改为 layerId，需要测试
                 // this.uniqueRasterLayer = layer
                 this.uniqueRasterLayerId = layerId
             })
+            // TODO:[*] 22-06-02 添加等值面
+            const maxSosurface = new SurgeSosurface(surgeRasterLayer.tiffUrl)
+            await maxSosurface.addSosurfaceToMap(mymap)
+            that.sosurfaceLayerId = maxSosurface.getLayerId()
+            loadingInstance.close()
+            // that.sosurfaceLayer = maxSosurface.getLayer()
         } else if (!val.isShow) {
             this.clearUniquerRasterLayer()
+            this.clearSosurfaceLayer()
         }
     }
 
@@ -2161,11 +2177,23 @@ export default class TyGroupMap extends mixins(
         return isOk
     }
 
-    // 清除唯一的栅格图层——以后将所有清除 raster 均调用此方法
+    /**  清除唯一的栅格图层——以后将所有清除 raster 均调用此方法 */
     clearUniquerRasterLayer(): void {
         if (this.uniqueRasterLayerId !== DEFAULT_LAYER_ID) {
             this.clearLayerById(this.uniqueRasterLayerId)
             this.uniqueRasterLayerId = DEFAULT_LAYER_ID
+        }
+    }
+
+    /** 清除增水场等值面 layer */
+    clearSosurfaceLayer(): void {
+        const mymap: L.Map = this.$refs.basemap['mapObject']
+        if (this.sosurfaceLayerId !== DEFAULT_LAYER_ID) {
+            this.clearLayerById(this.sosurfaceLayerId)
+            this.sosurfaceLayerId = DEFAULT_LAYER_ID
+        }
+        if (this.sosurfaceLayer !== null) {
+            // clearRasterFromMap(mymap, this.sosurfaceLayer)
         }
     }
 
@@ -2537,7 +2565,6 @@ export default class TyGroupMap extends mixins(
 @import '../../../styles/station/icon';
 // + 21-12-06 加入重写的 emelemtnui 样式
 @import '../../../styles/my-elementui/common';
-
 // TODO:[-] 21-06-10 TEST 加入了关于 mybasemap 的测试样式
 // #mybasemap {
 //     height: 1%;
