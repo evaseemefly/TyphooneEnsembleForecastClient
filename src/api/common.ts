@@ -2,16 +2,17 @@
 // export const host = 'http://127.0.0.1:8000'
 // mac
 // export const host = 'http://127.0.0.1:8082'
-// export const host = 'http://127.0.0.1:8082'
+// home 5820
+export const host = 'http://127.0.0.1:8082'
 // - 21-10-13 上线测试的实际地址,注意要去掉/
-export const host = 'http://128.5.10.21:8000'
+// export const host = 'http://128.5.10.21:8000'
 
 /** @type {*} 21-03-05 + 新添加的用来加载 geoserver的host */
 // export const hostGeo = 'http://128.5.10.21:8082/geoserver/'
-const baseHost = 'http://128.5.10.21'
-// const baseHost = 'http://localhost'
+// const baseHost = 'http://128.5.10.21'
+const baseHost = 'http://localhost'
 // const basePort = '8000' // 单位 7920
-const basePort = '8084' // remote | 单位 mac
+const basePort = '8084' // remote | 单位 mac | 5820
 // const basePort = '18080' // home mac
 // const basePort = '8082'
 export const baseUrl = `${baseHost}:${basePort}`

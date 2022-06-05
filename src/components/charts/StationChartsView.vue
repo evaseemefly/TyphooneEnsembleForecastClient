@@ -38,6 +38,11 @@ import { AlertTideEnum } from '@/enum/surge'
 import { DEFAULTTYCODE, DEFAULTTIMESTAMP } from '@/const/typhoon'
 import { DEFAULT_ALERT_TIDE } from '@/const/surge'
 import { DEFAULT_STATION_CODE, DEFAULT_STATION_NAME } from '@/const/station'
+
+const formatNumber = (val: number): string => {
+    return val.toFixed(2)
+}
+
 @Component({})
 export default class StationChartsView extends Vue {
     mydata: any = null
@@ -60,6 +65,8 @@ export default class StationChartsView extends Vue {
     forecastSurgeValList: number[] = []
     forecastSurgeMaxList: number[] = []
     forecastSurgeMinList: number[] = []
+    // + 22-05-06 最大值与最小值的差
+    forecastSurgediffList: number[] = []
     forecastAstronomicTideList: number[] = []
     // 22-02-21 注意四色警戒潮位是对应的总潮位值
     alertBlue: number = DEFAULT_ALERT_TIDE
@@ -138,6 +145,7 @@ export default class StationChartsView extends Vue {
                             that.forecastSurgeValList.push(item.surge)
                             that.forecastSurgeMaxList.push(item.surge_max)
                             that.forecastSurgeMinList.push(item.surge_min)
+                            that.forecastSurgediffList.push(item.surge_max - item.surge_min)
                         }
                     )
                 }
@@ -175,6 +183,8 @@ export default class StationChartsView extends Vue {
                 },
                 */
                 if (res.data.length > 0) {
+                    // TODO:[-] - 22-05-10 注意此处每次需要清空一下
+                    that.forecastAstronomicTideList = []
                     res.data.forEach(
                         (item: { station_code: string; surge: number; forecast_dt: string }) => {
                             that.forecastAstronomicTideList.push(item.surge)
@@ -283,7 +293,8 @@ export default class StationChartsView extends Vue {
                         label: {
                             backgroundColor: '#d4e257'
                         }
-                    }
+                    },
+                    valueFormatter: (val) => val.toFixed(1)
                     // formatter: function(params, ticket, callback) {
                     //     //x轴名称
                     //     const name = params[0].name
@@ -344,15 +355,16 @@ export default class StationChartsView extends Vue {
                                 fontSize: 12 //字体大小
                             }
                         }
+                        // scale: true
                     }
                 ],
                 series: [
                     {
-                        name: '最大值',
+                        name: '最小值',
                         type: 'line',
                         // areaStyle: { color: '#e74c3c' },
                         areaStyle: {
-                            opacity: 0.8,
+                            opacity: 0.5,
                             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
                                 {
                                     offset: 0,
@@ -363,23 +375,24 @@ export default class StationChartsView extends Vue {
                                     color: 'rgba(135, 0, 157)'
                                 }
                             ])
+                            // origin: 'end'
                         },
+                        itemStyle: {
+                            formatter: function(params) {
+                                return params.toFixed(2)
+                            }
+                        },
+
                         lineStyle: { color: 'rgba(255, 0, 135)' },
-                        emphasis: {
-                            focus: 'series'
-                        },
-                        data: that.forecastSurgeMaxList,
+
+                        data: that.forecastSurgeMinList,
                         showSymbol: false,
                         smooth: true
-                        // TODO: 21-08-25 新加入的四色警戒潮位标线
-                        // markLine: {
-                        //     data: [{ type: 'average', name: '平均值' }]
-                        // }
                     },
                     {
                         name: '中间预测路径值',
                         type: 'line',
-                        // areaStyle: { color: '#e67e22' },
+                        areaStyle: { color: '#e67e22' },
                         areaStyle: {
                             opacity: 0.8,
                             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
@@ -402,47 +415,65 @@ export default class StationChartsView extends Vue {
                         smooth: true
                     },
                     {
-                        name: '最小值',
+                        name: '最大值',
                         type: 'line',
-                        // areaStyle: { color: '#f1c40f' },
                         areaStyle: {
-                            opacity: 0.8,
+                            opacity: 0.5,
                             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
                                 {
                                     offset: 0,
-                                    color: 'rgba(128, 255, 165)'
+                                    color: 'rgb(55, 162, 255)'
                                 },
                                 {
                                     offset: 1,
-                                    color: 'rgba(1, 191, 236)'
+                                    color: 'rgb(116, 21, 219)'
                                 }
                             ])
                         },
-                        lineStyle: { color: 'rgba(1, 191, 236)' },
-                        emphasis: {
-                            focus: 'series'
+                        itemStyle: {
+                            formatter: function(params) {
+                                return params.toFixed(2)
+                            }
                         },
-                        data: that.forecastSurgeMinList,
+
+                        lineStyle: { color: 'rgba(1, 191, 236)' },
+
+                        // emphasis: {
+                        //     focus: 'series'
+                        // },
+                        data: that.forecastSurgeMaxList,
+                        // data: that.forecastSurgeMinList.map((val, index) => {
+                        //     return that.forecastSurgeMaxList[index] - val
+                        // }),
+                        // data: that.forecastSurgeMinList.forEach((temp) => {
+                        //     return -temp
+                        // }),
+
+                        // data: that.forecastSurgeMinList.map((val, index) => {
+                        //     return -(that.forecastSurgeMaxList[index] - val)
+                        // }),
                         showSymbol: false,
                         smooth: true
+                        // stack: 'confidence-band'
                     },
+
                     {
                         name: '天文潮位',
                         type: 'line',
                         // areaStyle: { color: '#9b59b6' },
-                        areaStyle: {
-                            opacity: 0.8,
-                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                                {
-                                    offset: 0,
-                                    color: 'rgba(0, 221, 255)'
-                                },
-                                {
-                                    offset: 1,
-                                    color: 'rgba(77, 119, 255)'
-                                }
-                            ])
-                        },
+                        // areaStyle: {
+                        //     opacity: 0.8,
+                        //     color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        //         {
+                        //             offset: 0,
+                        //             color: 'rgba(0, 221, 255)'
+                        //         },
+                        //         {
+                        //             offset: 1,
+                        //             color: 'rgba(77, 119, 255)'
+                        //         }
+                        //     ])
+                        // },
                         lineStyle: { color: 'rgba(0, 221, 255)' },
                         emphasis: {
                             focus: 'series'
@@ -524,24 +555,6 @@ export default class StationChartsView extends Vue {
                         }
                     }
                 ]
-                // visualMap: {
-                //     type: 'piecewise',
-                //     show: false,
-                //     dimension: 0,
-                //     seriesIndex: 0,
-                //     pieces: [
-                //         {
-                //             gt: this.alertOrange,
-                //             // lt: 3,
-                //             color: 'rgba(0, 0, 180, 0.4)'
-                //         },
-                //         {
-                //             gt: this.alertOrange,
-                //             // lt: 7,
-                //             color: 'rgba(0, 0, 180, 0.4)'
-                //         }
-                //     ]
-                // }
             }
             myChart.setOption(option)
             if (!this.myChart) {
@@ -551,20 +564,22 @@ export default class StationChartsView extends Vue {
     }
     @Watch('getOptions')
     ontimestampStr(val: { tyCode: string; stationCode: string; timestampStr: string }): void {
-        console.log(
-            `StationCharts,options发生变化tyCode:${val.tyCode},stationCode:${val.stationCode},timestampStr:${val.timestampStr}发生变化`
-        )
-        this.$notify({
-            title: '成功',
-            message: `加载海洋站:${val.stationCode}潮位数据`,
-            type: 'success'
-        })
+        // console.log(
+        //     `StationCharts,options发生变化tyCode:${val.tyCode},stationCode:${val.stationCode},timestampStr:${val.timestampStr}发生变化`
+        // )
+
         this.clearForecastSurge()
         if (
             val.tyCode !== DEFAULTTYCODE &&
             val.timestampStr !== DEFAULTTIMESTAMP &&
             val.stationCode !== DEFAULT_STATION_CODE
         ) {
+            // 若加载的不是默认的 ty | timestamp | station 则会执行加载 real data list 以及提示操作
+            this.$notify({
+                title: '成功',
+                message: `加载海洋站:${val.stationCode}潮位数据`,
+                type: 'success'
+            })
             this.loadStationSurgeRealDataListAndRange(val.tyCode, val.timestampStr, val.stationCode)
         }
     }

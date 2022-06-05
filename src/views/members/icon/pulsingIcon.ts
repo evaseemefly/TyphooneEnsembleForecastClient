@@ -53,6 +53,7 @@ class IconCirlePulsing {
     }
     toHtml(): string {
         const that = this
+        // TODO:[-] 22-05-16 注意此处若为 海洋站静态位置 则 宽高都为 NaN
         // 海洋站icon的宽高
         const iconPulsingWidth = that.getPlusingIconRectangle()[0]
         const iconPulsingHeight = that.getPlusingIconRectangle()[1]
@@ -80,11 +81,12 @@ class IconCirlePulsing {
      * @memberof IconCirlePulsing
      */
     getRadius(): number {
-        //
+        // TODO:[-] 22-05-16 此处存在可能的bug，对于 max 与 min 均为 0的情况 分母可能是0
+        const defaultVal = 1
         const val =
             Math.abs(this.config.val - this.config.min) /
             Math.abs(this.config.max - this.config.min)
-        return val
+        return isNaN(val) ? defaultVal : val
     }
 
     /**

@@ -41,6 +41,7 @@ import { DictEnum, ProductEnum } from '@/enum/dict'
 import {
     USELESS_COVERAGE_ID,
     DEFAULT_TYPHOON_ID,
+    DEFAULT_LAYER_ID,
     DEFAULT_DATE,
     DEFAULT_TIMESTAMP
 } from '@/const/common'
@@ -415,6 +416,11 @@ class SurgeRasterGeoLayer {
      */
     rasterMin = 0
 
+    private _tiffUrl: string = null
+
+    get tiffUrl(): string {
+        return this._tiffUrl
+    }
     constructor(options?: {
         tyCode?: string
         tyTimestamp?: string
@@ -428,11 +434,20 @@ class SurgeRasterGeoLayer {
         this.options = { ...this.options, ...options }
     }
 
+    public async getGeoTiff(tyCode: string, tyTs: string): string {
+        const maxSurge = new MaxSurge(this.tyCode, this.tyTimestamp)
+
+        const awaitUrl = await maxSurge.getGeoTifUrl(this.tyCode, this.tyTimestamp)
+        return awaitUrl
+    }
+
     public async add2map(
         map: L.Map,
-        errorCallBackFun: (opt: { message: string; type: string }) => void
+        errorCallBackFun: (opt: { message: string; type: string }) => void,
+        isShowRasterLayer = true
     ): Promise<number> {
-        let layerId = -1
+        let layerId: number = DEFAULT_LAYER_ID
+
         let addedLayer: L.Layer = null
         const that = this
         // TODO:[-] 20-11-04 暂时注释掉，调取远程的文件会出现错误
@@ -440,125 +455,130 @@ class SurgeRasterGeoLayer {
 
         // TODO:[*] 21-04-30 测试 暂时将 读取的 tif路径写死(最大增水)
         let urlGeoTifUrl = ''
-        const maxSurge = new MaxSurge(this.tyCode, this.tyTimestamp)
+        // TODO:[*] 22-06-02 替换为 getGeoTiff
+        // const maxSurge = new MaxSurge(this.tyCode, this.tyTimestamp)
 
-        const awaitUrl = await maxSurge.getGeoTifUrl(this.tyCode, this.tyTimestamp)
-        urlGeoTifUrl = awaitUrl
-        // const urlGeoTifUrl =
-        //     'http://localhost:82/images/TEST/TYPHOONSURGE/maxSurge_TY2022_2021010416_c0_p00.tif'
-        // 大体思路 获取 geotiff file 的路径，二进制方式读取 -> 使用 georaster 插件实现转换 -> 获取色标，
-        // TODO:[-] 20-11-02 将之前的逻辑方式修改为 await 的方式
-        // TODO:[-] 20-11-05 在 fetch 请求头中加入跨域的部分
-        const fetchHeader = new Headers({
-            'Access-Control-Allow-Origin': '*',
-            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8,'
-        })
-        const response = await fetch(urlGeoTifUrl, {
-            method: 'GET',
-            // headers: fetchHeader,
-            mode: 'cors'
-        })
-        const arrayBuffer = await response.arrayBuffer()
-        // 使用 import 'georaster' 的方式引入会出现没有智能提示的问题
-        // TODO:[-] 20-11-04
-        // Uncaught (in promise) TypeError: Invalid byte order value.
-        // at Function.fromSource (e2c99254-e67c-4422-be5d-01e0b254a36b:10)
-
-        const georasterResponse = await parseGeoraster(arrayBuffer)
-        // TODO:[-] 22-04-14 加入 栅格的范围是否由 options.custom 定义
-        const min: number = this.options.customMin
-            ? this.options.customMin
-            : georasterResponse.mins[0]
-        // TODO:[-] 22-04-15 若增水大于1m，则整个场*0.8，所以对于max*0.8
-        const rasterMax = georasterResponse.maxs[0]
-        this.rasterMax = rasterMax
-        this.rasterMin = min
-        const max = rasterMax
-        // - 22-04-15 此处注释掉
-        // if (this.options.customCoeffMax && rasterMax > this.options.customCoeffMax) {
-        //     max =
-        //         this.options.customCoefficient && this.options.customCoeffMax
-        //             ? this.options.customCoefficient * rasterMax
-        //             : georasterResponse.maxs[0]
-        // }
-        // TODO:[-] 22-04-15 此处修改为 range 为色标要求的范围
-        // const range = georasterResponse.ranges[0]
-        const range: number = max - min
-        // const scale = chroma.scale('Viridis')
-        // TODO:[*] 21-08-19 error: chroma 错误
-        // chroma.js?6149:180 Uncaught (in promise) Error: unknown format: #ee4620,#ee462f,#ed4633,#ef6b6d,#f3a4a5,#f9dcdd,#dcdcfe
-        // TODO:[-] 22-04-15 手动设置色标
-        // TODO:[*] 22-04-20 注意此处需要对scaleList 进行修改加入最后一个色标
-        const scaleList = [...this.options.scaleList]
-        if (
-            that.options.customCoeffMax &&
-            that.options.customCoefficient &&
-            rasterMax > that.options.customCoeffMax
-        ) {
-            scaleList.push(scaleList[scaleList.length - 1])
+        // const awaitUrl = await maxSurge.getGeoTifUrl(this.tyCode, this.tyTimestamp)
+        urlGeoTifUrl = await this.getGeoTiff(this.tyCode, this.tyTimestamp)
+        if (this._tiffUrl == null) {
+            this._tiffUrl = urlGeoTifUrl
         }
-        const scale = chroma.scale(scaleList)
-        this.scaleRange = [min, max * this.options.customCoefficient]
-        // scale.domain(this.scaleRange)
-
-        // TODO:[*] 21-02-10 此处当加载全球风场的geotiff时，y不在实际范围内，需要手动处理
-        georasterResponse.ymax = georasterResponse.ymax
-        georasterResponse.ymin = georasterResponse.ymin
-
-        const layer = new GeoRasterLayer({
-            georaster: georasterResponse,
-            opacity: 0.6,
-            pixelValuesToColorFn: function(pixelValues) {
-                const pixelValue = pixelValues[0] // there's just one band in this raster
-                // TODO:[-] 22-04-15 此处加入对于极值大于1.0米的增水将像素值乘以一个系数0.8
-                // if (that.options.customCoeffMax && rasterMax > this.options.customCoeffMax) {
-                //     pixelValue = pixelValue * this.options.customCoefficient
-                // }
-
-                // if there's zero wind, don't return a color
-                // TODO:[-] 22-01-20 由于最大增水场可能会出现 pixelValue 为 0 的情况，所以需要剔除掉===0的判断
-                // if (pixelValue === 0 || Number.isNaN(pixelValue)) return null
-                // 注意此处有出现 该值超过1的情况
-                const scaledPixelValue = (pixelValue - min) / range
-
-                if (Number.isNaN(pixelValue)) return null
-                let color = ''
-                if (
-                    that.options.customCoeffMax &&
-                    that.options.customCoefficient &&
-                    rasterMax > that.options.customCoeffMax
-                ) {
-                    color = scale(scaledPixelValue * (1 / that.options.customCoefficient)).hex()
-                    // color = scale(scaledPixelValue).hex()
-                } else {
-                    color = scale(scaledPixelValue).hex()
-                }
-
-                return color
-            },
-            resolution: 256
-        })
-        addedLayer = layer.addTo(map)
-        layerId = addedLayer._leaflet_id
-        // TODO:[*] 21-08-19 ERROR:TypeError
-        // Uncaught (in promise) TypeError: Cannot set property rasterLayer of #<SurgeRasterGeoLayer> which has only a getter
-        // this.rasterLayer 设置了 get 访问器，未设置 set 访问器，加入解决问题
-        // this.rasterLayer = addedLayer
-        try {
-            // const tifResp = await loadCurrentTif(
-            //     this.coverageId,
-            //     this.forecastDt,
-            //     this.forecastArea,
-            //     DictEnum.COVERAGE_TYPE_CURRENT
-            // )
-            if (tifResp.status == 200) {
-                return layerId
-            }
-        } catch (error) {
-            errorCallBackFun({
-                message: '无法读取台风最大增水场',
-                type: 'error'
+        // TODO:[-] 22-06-02 加入根据 isShowRasterLayer 来实现是否加载 raster 的操作，默认加载
+        if (isShowRasterLayer) {
+            // 大体思路 获取 geotiff file 的路径，二进制方式读取 -> 使用 georaster 插件实现转换 -> 获取色标，
+            // TODO:[-] 20-11-02 将之前的逻辑方式修改为 await 的方式
+            // TODO:[-] 20-11-05 在 fetch 请求头中加入跨域的部分
+            const fetchHeader = new Headers({
+                'Access-Control-Allow-Origin': '*',
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8,'
             })
+            const response = await fetch(urlGeoTifUrl, {
+                method: 'GET',
+                // headers: fetchHeader,
+                mode: 'cors'
+            })
+            const arrayBuffer = await response.arrayBuffer()
+            // 使用 import 'georaster' 的方式引入会出现没有智能提示的问题
+            // TODO:[-] 20-11-04
+            // Uncaught (in promise) TypeError: Invalid byte order value.
+            // at Function.fromSource (e2c99254-e67c-4422-be5d-01e0b254a36b:10)
+
+            const georasterResponse = await parseGeoraster(arrayBuffer)
+            // TODO:[-] 22-04-14 加入 栅格的范围是否由 options.custom 定义
+            const min: number = this.options.customMin
+                ? this.options.customMin
+                : georasterResponse.mins[0]
+            // TODO:[-] 22-04-15 若增水大于1m，则整个场*0.8，所以对于max*0.8
+            const rasterMax = georasterResponse.maxs[0]
+            this.rasterMax = rasterMax
+            this.rasterMin = min
+            const max = rasterMax
+            // - 22-04-15 此处注释掉
+            // if (this.options.customCoeffMax && rasterMax > this.options.customCoeffMax) {
+            //     max =
+            //         this.options.customCoefficient && this.options.customCoeffMax
+            //             ? this.options.customCoefficient * rasterMax
+            //             : georasterResponse.maxs[0]
+            // }
+            // TODO:[-] 22-04-15 此处修改为 range 为色标要求的范围
+            // const range = georasterResponse.ranges[0]
+            const range: number = max - min
+            // const scale = chroma.scale('Viridis')
+            // TODO:[*] 21-08-19 error: chroma 错误
+            // chroma.js?6149:180 Uncaught (in promise) Error: unknown format: #ee4620,#ee462f,#ed4633,#ef6b6d,#f3a4a5,#f9dcdd,#dcdcfe
+            // TODO:[-] 22-04-15 手动设置色标
+            // TODO:[*] 22-04-20 注意此处需要对scaleList 进行修改加入最后一个色标
+            const scaleList = [...this.options.scaleList]
+            if (
+                that.options.customCoeffMax &&
+                that.options.customCoefficient &&
+                rasterMax > that.options.customCoeffMax
+            ) {
+                scaleList.push(scaleList[scaleList.length - 1])
+            }
+            const scale = chroma.scale(scaleList)
+            this.scaleRange = [min, max * this.options.customCoefficient]
+            // scale.domain(this.scaleRange)
+
+            // TODO:[*] 21-02-10 此处当加载全球风场的geotiff时，y不在实际范围内，需要手动处理
+            georasterResponse.ymax = georasterResponse.ymax
+            georasterResponse.ymin = georasterResponse.ymin
+
+            const layer = new GeoRasterLayer({
+                georaster: georasterResponse,
+                opacity: 0.6,
+                pixelValuesToColorFn: function(pixelValues) {
+                    const pixelValue = pixelValues[0] // there's just one band in this raster
+                    // TODO:[-] 22-04-15 此处加入对于极值大于1.0米的增水将像素值乘以一个系数0.8
+                    // if (that.options.customCoeffMax && rasterMax > this.options.customCoeffMax) {
+                    //     pixelValue = pixelValue * this.options.customCoefficient
+                    // }
+
+                    // if there's zero wind, don't return a color
+                    // TODO:[-] 22-01-20 由于最大增水场可能会出现 pixelValue 为 0 的情况，所以需要剔除掉===0的判断
+                    // if (pixelValue === 0 || Number.isNaN(pixelValue)) return null
+                    // 注意此处有出现 该值超过1的情况
+                    const scaledPixelValue = (pixelValue - min) / range
+
+                    if (Number.isNaN(pixelValue)) return null
+                    let color = ''
+                    if (
+                        that.options.customCoeffMax &&
+                        that.options.customCoefficient &&
+                        rasterMax > that.options.customCoeffMax
+                    ) {
+                        color = scale(scaledPixelValue * (1 / that.options.customCoefficient)).hex()
+                        // color = scale(scaledPixelValue).hex()
+                    } else {
+                        color = scale(scaledPixelValue).hex()
+                    }
+
+                    return color
+                },
+                resolution: 256
+            })
+            addedLayer = layer.addTo(map)
+            layerId = addedLayer._leaflet_id
+            // TODO:[*] 21-08-19 ERROR:TypeError
+            // Uncaught (in promise) TypeError: Cannot set property rasterLayer of #<SurgeRasterGeoLayer> which has only a getter
+            // this.rasterLayer 设置了 get 访问器，未设置 set 访问器，加入解决问题
+            // this.rasterLayer = addedLayer
+            try {
+                // const tifResp = await loadCurrentTif(
+                //     this.coverageId,
+                //     this.forecastDt,
+                //     this.forecastArea,
+                //     DictEnum.COVERAGE_TYPE_CURRENT
+                // )
+                if (tifResp.status == 200) {
+                    return layerId
+                }
+            } catch (error) {
+                errorCallBackFun({
+                    message: '无法读取台风最大增水场',
+                    type: 'error'
+                })
+            }
         }
         return layerId
     }
@@ -740,8 +760,11 @@ class FieldSurgeGeoLayer extends SurgeRasterGeoLayer {
 
             const georasterResponse = await parseGeoraster(arrayBuffer)
             // TODO:[*] 21-05-31 将 风暴潮的范围写成固定值
-            const min = georasterResponse.mins[0]
-            const max = georasterResponse.maxs[0]
+            // TODO:[-] 22-04-26 此处将 max 与 min 修改为整个过程的极值范围
+            const min = maxRange.min
+            const max = maxRange.max
+            // const min = georasterResponse.mins[0]
+            // const max = georasterResponse.maxs[0]
             // const range = georasterResponse.ranges[0]
             // TODO:[*] 21-08-04 此处不使用写死的 range,因为增水实际有可能会是一个负值，所以还是将 min 与 max 设置为 georasterResponse 的 min - max
             // const min = 0

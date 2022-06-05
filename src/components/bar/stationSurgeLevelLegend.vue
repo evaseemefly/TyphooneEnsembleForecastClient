@@ -32,11 +32,11 @@ export default class StationSurgeLevelLegeng extends Vue {
         isActive: boolean
         styleCls: string
     }> = [
-        { iconCls: '', name: '<=100', key: 1, isActive: false, styleCls: 'green' },
-        { iconCls: '', name: '<=150', key: 2, isActive: false, styleCls: 'blue' },
-        { iconCls: '', name: '<=200', key: 3, isActive: false, styleCls: 'yellow' },
-        { iconCls: '', name: '<=250', key: 4, isActive: false, styleCls: 'orange' },
-        { iconCls: '', name: '>250', key: 5, isActive: false, styleCls: 'red' }
+        { iconCls: '', name: '<=1.0', key: 1, isActive: false, styleCls: 'green' },
+        { iconCls: '', name: '<=1.5', key: 2, isActive: false, styleCls: 'blue' },
+        { iconCls: '', name: '<=2.0', key: 3, isActive: false, styleCls: 'yellow' },
+        { iconCls: '', name: '<=2.5', key: 4, isActive: false, styleCls: 'orange' },
+        { iconCls: '', name: '>2.5', key: 5, isActive: false, styleCls: 'red' }
     ]
     getBaseMapType(area: { code: number }): string {
         if (this.iconList.length > 0) {

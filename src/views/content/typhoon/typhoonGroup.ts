@@ -112,9 +112,17 @@ class TyGroupPathLine {
     tyGroupPathLines: Array<TyphoonComplexGroupRealDataMidModel>
     myMap: L.Map
     tyColorScale: TyGroupPathScaleColor
+
+    /**
+     * 台风集合路径折线 layers
+     *
+     * @type {L.Layer[]}
+     * @memberof TyGroupPathLine
+     */
     public tyGroupPolyLineLayer: L.Layer[]
     polyColor = DEFAULT_COLOR
     tyGroupProPathCircles: { lat: number; lon: number; radius: number }[] = []
+    private
     // tyCenterPath:any
 
     /**
@@ -247,6 +255,12 @@ class TyGroupPathLine {
         // 添加 24,,48,72,96,120 对应的大风概率半径(注意此半径目前是写死的)，相当于是集合预报路径的一个显示轮廓的半径
     }
 
+    /**
+     * 获取当前台风集合折线 layers
+     *
+     * @return {*}  {L.Layer[]}
+     * @memberof TyGroupPathLine
+     */
     public getTyGroupPolyLineLayers(): L.Layer[] {
         return this.tyGroupPolyLineLayer
     }
@@ -267,7 +281,7 @@ class TyGroupPathLine {
     }
 
     /**
-     * 添加中间路径的折线到地图上
+     * 添加当前台风集合路径的折线到地图上
      *
      * @return {*}  {L.LayerGroup<any>}
      * @memberof TyGroupPathLine
@@ -428,6 +442,9 @@ class TyGroupPathLine {
 
     /**
      * 获取最外侧台风路径的包络
+     * - 22-04-25 修复了多次加载会出现交点位置错误的bug
+     * 返回轮廓经纬度数组(有序)
+     * 交点在整个经纬度数组的首尾|交点在整个经纬度数组的中间位置
      *
      * @return {*}  {L.LatLng[]}
      * @memberof TyGroupPathLine
@@ -466,12 +483,58 @@ class TyGroupPathLine {
         })
         const lines: L.LatLng[] = []
 
+        // TODO:[-] 22-04-25 此处需要加入一个判断，判断 latlng1 与 latlng2 的首位置的坐标是否一致，若不一致需要倒序
+        // if (latlng1[0].lat != latlng2[0].lat || latlng1[0].lon != latlng2[0].lon) {
+        //     lines.sort((_) => {
+        //         return -1
+        //     })
+        // }
+
+        // latlng2中存在的相同的元素
+        let sameLatlng: TyphoonForecastRealDataMidModel = undefined
+        latlng1.forEach((element) => {
+            const latlngSame = latlng2.find((item) => {
+                return element.lat === item.lat && element.lon === item.lon
+            })
+            if (latlngSame) {
+                sameLatlng = latlngSame
+            }
+        })
+        // latlng1 中交点的index
+        const same1Index: number = latlng1.findIndex((temp) => {
+            return temp.lat === sameLatlng.lat && temp.lon === sameLatlng.lon
+        })
+        // latlng2 中交点的index
+        const same2Index: number = latlng2.findIndex((temp) => {
+            return temp.lat === sameLatlng.lat && temp.lon === sameLatlng.lon
+        })
+        // latlng2 中交点在最后
+        if (same2Index > 0) {
+            // latlng1 交点也在最后，需要对 latlng1 倒序排列
+            if (same1Index > 0) {
+                latlng1.sort((_) => {
+                    return -1
+                })
+            }
+        }
+        // latlng2 中交点在首位
+        else if (same2Index === 0) {
+            // latlng1 中交点也在首位，需要对latlng1 倒序排列
+            if (same1Index === 0) {
+                latlng1.sort((_) => {
+                    return -1
+                })
+            }
+        }
+
+        //----
         latlng1.forEach((temp) => {
             lines.push(new L.LatLng(temp.lat, temp.lon))
         })
         latlng2.forEach((temp) => {
             lines.push(new L.LatLng(temp.lat, temp.lon))
         })
+
         return lines
         // L.polygon(lines, { color: '#76eec6', opacity: 1, fillOpacity: 1 }).addTo(this.myMap)
 
@@ -657,6 +720,12 @@ class TyGroupCenterPathLine extends TyGroupPathLine {
         this.tyCenterPointsLayers = tyPointsLayers
     }
 
+    /**
+     * 添加中心路径圆点脉冲 (使用 group layer)
+     *
+     * @return {*}  {L.LayerGroup<any>}
+     * @memberof TyGroupCenterPathLine
+     */
     addCenterCirlePulsing2MapByGroup(): L.LayerGroup<any> {
         const tyCenterPointsLayersGroup = L.layerGroup([...this.tyCenterPointsLayers])
         tyCenterPointsLayersGroup.addTo(this.myMap)
@@ -1161,7 +1230,7 @@ class TyCMAPathLine {
         const tyPolylineForecast = this.initLineForecastLayer()
         const canvasMarkerLayer = new CanvasMarkerLayer().addTo(this.myMap)
         canvasMarkerLayer.addLayers(tyPointsList)
-        return new L.LayerGroup([...tyPolylineRealdata, tyPolylineForecast]).addTo(this.myMap)
+        return new L.LayerGroup([tyPolylineRealdata, tyPolylineForecast]).addTo(this.myMap)
     }
 
     getlastTyLatlng(): L.LatLng | null {
