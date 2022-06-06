@@ -32,6 +32,17 @@ export const GET_SCALE_KEY = 'GET_SCALE_KEY'
 export const SET_SCALE_RANGE = 'SET_SCALE_RANGE'
 export const GET_SCALE_RANGE = 'GET_SCALE_RANGE'
 
+/** 设置 潮位等值线 色标对应的值 range */
+export const SET_ISOSURGE_COLOR_SCALE_VAL_RANGE='SET_ISOSURGE_COLOR_SCALE_RANGE'
+/** 获取 潮位等值线 色标对应的值 range */ 
+export const GET_ISOSURGE_COLOR_SCALE_VAL_RANGE='GET_ISOSURGE_COLOR_SCALE_VAL_RANGE'
+
+/** 设置 潮位等值线 色标颜色str list */
+export const SET_ISOSURGE_COLOR_SCALE_STR_LIST='SET_ISOSURGE_COLOR_SCALE_STR_LIST'
+/** 获取 潮位等值线 色标颜色str list */ 
+export const 
+GET_ISOSURGE_COLOR_SCALE_STR_LIST='GET_ISOSURGE_COLOR_SCALE_STR_LIST'
+
 // 产品的种类(主要是oil还是rescue)
 export const SET_PRODUCT_TYPE = 'SET_PRODUCT_TYPE'
 export const GET_PRODUCT_TYPE = 'GET_PRODUCT_TYPE'

@@ -413,7 +413,9 @@ import {
     SET_MAP_NOW,
     GET_TY_GROUP_PATH_LATERS_OPTS, // +22-03-13 台风集合预报路径配置项
     SET_SHOW_STATION_ICON,
-    SET_SHOW_TYPHOON_LEGEND_ICON
+    SET_SHOW_TYPHOON_LEGEND_ICON,
+    SET_ISOSURGE_COLOR_SCALE_VAL_RANGE, // + 22-06-06
+    SET_ISOSURGE_COLOR_SCALE_STR_LIST
 } from '@/store/types'
 import {
     DEFAULT_LAYER_ID,
@@ -572,7 +574,7 @@ export default class TyGroupMap extends mixins(
     uniqueRasterLayerId = DEFAULT_LAYER_ID
     // TODO:[-] 22-06-02 增水等值面layer id
     sosurfaceLayerId = DEFAULT_LAYER_ID
-    sosurfaceLayer: L.Layer = null
+    surgeGridTitleLayerId = DEFAULT_LAYER_ID // 增水 格点数据 title 图层
     // TODO:[*] 20-07-27 记录当前 add layers to map 时的 layers种类数组
     existLayers: LayerTypeEnum[] = []
     // TODO:[-] 20-06-20 加入的是否分页的标识符
@@ -2006,7 +2008,7 @@ export default class TyGroupMap extends mixins(
                 customCoefficient: 0.8,
                 customCoeffMax: 1
             })
-            const loadingInstance = loading('加载最大增水场')
+            // const loadingInstance = loading('加载最大增水场')
             await surgeRasterLayer.add2map(mymap, that.$message, false).then((layerId) => {
                 // console.log(surgeRasterLayer)
                 this.setScaleRange(surgeRasterLayer.scaleRange || [])
@@ -2015,11 +2017,28 @@ export default class TyGroupMap extends mixins(
                 this.uniqueRasterLayerId = layerId
             })
             // TODO:[*] 22-06-02 添加等值面
-            const maxSosurface = new SurgeSosurface(surgeRasterLayer.tiffUrl)
+            const sosurfaceOptions: { colorScale?: string[]; valScale?: number[] } = {
+                colorScale: [
+                    '#00429d',
+                    '#4771b2',
+                    '#73a2c6',
+                    '#a5d5d8',
+                    '#ffffe0',
+                    '#ffbcaf',
+                    '#f4777f',
+                    '#cf3759',
+                    '#93003a'
+                ],
+                valScale: [0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6]
+            }
+            this.setIsoSurgeColorScaleValRange(sosurfaceOptions.valScale)
+            this.setIsoSurgeColorScaleStrList(sosurfaceOptions.colorScale)
+            const maxSosurface = new SurgeSosurface(surgeRasterLayer.tiffUrl, sosurfaceOptions)
             await maxSosurface.addSosurfaceToMap(mymap)
             that.sosurfaceLayerId = maxSosurface.getLayerId()
+            that.surgeGridTitleLayerId = maxSosurface.getPointsTitleLayerId()
             loadingInstance.close()
-            // that.sosurfaceLayer = maxSosurface.getLayer()
+            that.sosurfaceLayer = maxSosurface.getLayer()
         } else if (!val.isShow) {
             this.clearUniquerRasterLayer()
             this.clearSosurfaceLayer()
@@ -2036,6 +2055,11 @@ export default class TyGroupMap extends mixins(
     @Mutation(SET_SHOW_STATION_ICON, { namespace: 'station' }) setShowStationIcon
 
     @Mutation(SET_SHOW_TYPHOON_LEGEND_ICON, { namespace: 'typhoon' }) setShowTyLegend
+
+    /** 设置当前 潮位等值面色标 实际值数组 */
+    @Mutation(SET_ISOSURGE_COLOR_SCALE_VAL_RANGE,{namespace:'common'}) setIsoSurgeColorScaleValRange
+
+    @Mutation(SET_ISOSURGE_COLOR_SCALE_STR_LIST,{namespace:'common'}) setIsoSurgeColorScaleStrList
 
     @Watch('tyProSurgeOptions', { immediate: true, deep: true })
     onTyProSurgeOptions(val: ITySurgeLayerOptions): void {
@@ -2190,10 +2214,9 @@ export default class TyGroupMap extends mixins(
         const mymap: L.Map = this.$refs.basemap['mapObject']
         if (this.sosurfaceLayerId !== DEFAULT_LAYER_ID) {
             this.clearLayerById(this.sosurfaceLayerId)
+            this.clearLayerById(this.surgeGridTitleLayerId)
             this.sosurfaceLayerId = DEFAULT_LAYER_ID
-        }
-        if (this.sosurfaceLayer !== null) {
-            // clearRasterFromMap(mymap, this.sosurfaceLayer)
+            this.surgeGridTitleLayerId = DEFAULT_LAYER_ID
         }
     }
 
@@ -2565,6 +2588,8 @@ export default class TyGroupMap extends mixins(
 @import '../../../styles/station/icon';
 // + 21-12-06 加入重写的 emelemtnui 样式
 @import '../../../styles/my-elementui/common';
+// + 22-06-06 引入格点数据图层的样式
+@import './style/isosurface';
 // TODO:[-] 21-06-10 TEST 加入了关于 mybasemap 的测试样式
 // #mybasemap {
 //     height: 1%;
@@ -2809,11 +2834,5 @@ export default class TyGroupMap extends mixins(
 #my-test {
     background: #76eec6;
 }
-/* 自定义的添加的 grid font div icon 的文字样式 */
-.grid_font {
-    color: aliceblue;
-    font-size: 13px;
-    font-weight: bold;
-    text-shadow: 1px 3px 4px black;
-}
+
 </style>

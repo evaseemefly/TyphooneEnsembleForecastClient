@@ -37,6 +37,8 @@ export interface ISosurface {
 class SurgeSosurface implements ISosurface {
     options: {
         url: string
+        colorScale: string[]
+        valScale: number[]
     }
     geoOptions: {
         xmax: number // lon
@@ -57,14 +59,29 @@ class SurgeSosurface implements ISosurface {
     map: L.Map
     _layer: L.Layer
 
-    constructor(url: string) {
+    constructor(
+        url: string,
+        options?: {
+            colorScale?: string[]
+            valScale?: number[]
+        }
+    ) {
         this.url = url
+        this.options = { ...this.options, ...options }
         // this.map = map
     }
 
     private _id: number = DEFAULT_LAYER_ID
     private _pointsTitleLayerId: number = DEFAULT_LAYER_ID
 
+    /**
+     * 加载 this.url 的 geotiff 加载为 等值线 layer 与 grid title layer ，并记录id this._id , this._pointsTitleLayerId
+     *
+     * @param {L.Mapm} map
+     * @param {boolean} [isShowTitle=true]
+     * @returns {Promise<any>}
+     * @memberof SurgeSosurface
+     */
     addSosurfaceToMap(map: L.Mapm, isShowTitle = true): Promise<any> {
         const that = this
         return fetch(that.url, {
@@ -86,28 +103,30 @@ class SurgeSosurface implements ISosurface {
                     pixelHeight: number
                     pixelWidth: number
                     values: any[]
+                    maxs: number[]
+                    mins: number[]
                 }) => {
                     /*
-                height: 660
-                maxs: [2.2799999713897705]
-                mins: [0]
-                noDataValue: NaN
-                numberOfRasters: 1
-                pixelHeight: 0.01666666705257433
-                pixelWidth: 0.01666667043776066
-                projection: 4326
-                ranges: [2.2799999713897705]
-                rasterType: "geotiff"
-                sourceType: "ArrayBuffer"
-                toCanvas: ƒ (e)
-                values: [Array(660)]
-                width: 1080
-                xmax: 123.00000203639075
-                xmin: 104.99999796360925
-                ymax: 26.00000012734953
-                ymin: 14.999999872650472
-            */
-                    // console.log(parseRes)
+                        height: 660
+                        maxs: [2.2799999713897705]
+                        mins: [0]
+                        noDataValue: NaN
+                        numberOfRasters: 1
+                        pixelHeight: 0.01666666705257433
+                        pixelWidth: 0.01666667043776066
+                        projection: 4326
+                        ranges: [2.2799999713897705]
+                        rasterType: "geotiff"
+                        sourceType: "ArrayBuffer"
+                        toCanvas: ƒ (e)
+                        values: [Array(660)]
+                        width: 1080
+                        xmax: 123.00000203639075
+                        xmin: 104.99999796360925
+                        ymax: 26.00000012734953
+                        ymin: 14.999999872650472
+                    */
+
                     const grid = parseRes
                     that.geoOptions = {
                         xmax: parseRes.xmax, // lon
@@ -117,21 +136,18 @@ class SurgeSosurface implements ISosurface {
                         pixelHeight: parseRes.pixelHeight,
                         pixelWidth: parseRes.pixelWidth
                     }
+                    let scale: { fill: string }[] = []
+                    this.options.colorScale.forEach((temp) =>
+                        scale.push({
+                            fill: temp
+                        })
+                    )
                     const isobandsOptions = {
                         zProperty: 'value',
                         commonProperties: {
                             'fill-opacity': 0.8
                         },
-                        breaksProperties: [
-                            { fill: '#e3e3ff' },
-                            { fill: '#c6c6ff' },
-                            { fill: '#a9aaff' },
-                            { fill: '#8e8eff' },
-                            { fill: '#7171ff' },
-                            { fill: '#5554ff' },
-                            { fill: '#3939ff' }
-                            //{ fill: "#1b1cff" },
-                        ]
+                        breaksProperties: scale
                     }
                     // 将 raster -> points
                     const arr = parseRes.values[0]
@@ -170,11 +186,13 @@ class SurgeSosurface implements ISosurface {
                     // points -> featureCollection
                     const gridPoints = turf.featureCollection(pointArr)
                     // Uncaught (in promise) Error: Invalid input to Input must contain Points, FeatureCollection required
-                    const isobands = turf.isobands(
-                        gridPoints,
-                        [0.5, 1, 1.5, 2, 2.5, 3],
-                        isobandsOptions
-                    )
+                    let valScale: number[] = []
+                    const rasterMax: number = parseRes.maxs[0]
+                    this.options.valScale.forEach((temp) => {
+                        valScale.push(temp)
+                    })
+                    valScale.push(rasterMax)
+                    const isobands = turf.isobands(gridPoints, valScale, isobandsOptions)
                     //5、把turf的FeatureCollection转换成leaflet的feature数组
                     const geoArr = isobands.features
                     //console.log(geoArr);
@@ -197,6 +215,14 @@ class SurgeSosurface implements ISosurface {
             )
     }
 
+    /**
+     * 废弃暂时不使用!
+     *
+     * @param {L.Map} map
+     * @param {boolean} [isShowTitle=true]
+     * @returns {Promise<any>}
+     * @memberof SurgeSosurface
+     */
     addIsobandIntersectionToMap(map: L.Map, isShowTitle = true): Promise<any> {
         const that = this
         return fetch(that.url, {
@@ -303,7 +329,7 @@ class SurgeSosurface implements ISosurface {
                     that._id = layer._leaflet_id
                     // that._layer = layer
                     if (isShowTitle) {
-                        that._addPointsTitle2Map(map, arr, width, height)
+                        that._pointsTitleLayerId = that._addPointsTitle2Map(map, arr, width, height)
                     }
                     // return that._id
                 }
@@ -311,7 +337,7 @@ class SurgeSosurface implements ISosurface {
     }
 
     /**
-     * 将 格点以div icon 的方式添加至 map 中
+     * 将 格点以div icon 的方式添加至 map 中 并返回
      *
      * @param {L.Map} map
      * @param {L.FeatureCollection} featureCollection
@@ -385,14 +411,20 @@ class SurgeSosurface implements ISosurface {
         const pointsTxtLay = L.geoJSON(pointsFeatureCollection, {
             // 添加geojson数据
             pointToLayer: function(feature, latlng) {
+                // TODO:[-] 22-06-06 此处加入一个不同样式，对于增水为0的设置一个半透明/或灰色的字体
                 //marker的icon文字
+                let defaultFontCls = 'default'
+                const surgeVal = feature.properties.value
+                if (surgeVal <= 0) {
+                    defaultFontCls = 'minor'
+                } else {
+                    defaultFontCls = 'major'
+                }
                 const htmlStr: string =
-                    '<div class=\'grid_font\' style=\'margin-top:-5px\'>' +
-                    feature.properties.value +
-                    '</div>'
+                    `<div class=' ${defaultFontCls}' style='margin-top:-5px'>` + surgeVal + '</div>'
                 const myIcon = L.divIcon({
                     html: htmlStr,
-                    className: 'my-div-icon',
+                    className: 'grid_font',
                     iconSize: 30
                 })
                 return L.marker(latlng, { icon: myIcon })
