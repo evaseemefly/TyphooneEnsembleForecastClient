@@ -2809,4 +2809,11 @@ export default class TyGroupMap extends mixins(
 #my-test {
     background: #76eec6;
 }
+/* 自定义的添加的 grid font div icon 的文字样式 */
+.grid_font {
+    color: aliceblue;
+    font-size: 13px;
+    font-weight: bold;
+    text-shadow: 1px 3px 4px black;
+}
 </style>

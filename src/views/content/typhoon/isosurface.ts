@@ -27,6 +27,13 @@ export interface ISosurface {
     getLayerId(): number
 }
 
+/**
+ * 潮位等值线实现类
+ * 可实现根据 指定 tif url 绘制 对应的等值线与grid val显示
+ *
+ * @class SurgeSosurface
+ * @implements {ISosurface}
+ */
 class SurgeSosurface implements ISosurface {
     options: {
         url: string
@@ -56,8 +63,9 @@ class SurgeSosurface implements ISosurface {
     }
 
     private _id: number = DEFAULT_LAYER_ID
+    private _pointsTitleLayerId: number = DEFAULT_LAYER_ID
 
-    addSosurfaceToMap(map: L.Map): Promise<any> {
+    addSosurfaceToMap(map: L.Mapm, isShowTitle = true): Promise<any> {
         const that = this
         return fetch(that.url, {
             method: 'GET',
@@ -129,6 +137,8 @@ class SurgeSosurface implements ISosurface {
                     const arr = parseRes.values[0]
                     const pointArr: {}[] = []
                     const latlngsGrid: number[][] = []
+                    const height = parseRes.height
+                    const width = parseRes.width
                     // y 660
                     for (let y = 0; y < parseRes.height; y++) {
                         // x 1080
@@ -179,13 +189,15 @@ class SurgeSosurface implements ISosurface {
                     // console.log(layer)
                     that._id = layer._leaflet_id
                     // that._layer = layer
-
+                    if (isShowTitle) {
+                        that._pointsTitleLayerId = that._addPointsTitle2Map(map, arr, width, height)
+                    }
                     // return that._id
                 }
             )
     }
 
-    addIsobandIntersectionToMap(map: L.Map): Promise<any> {
+    addIsobandIntersectionToMap(map: L.Map, isShowTitle = true): Promise<any> {
         const that = this
         return fetch(that.url, {
             method: 'GET',
@@ -236,11 +248,13 @@ class SurgeSosurface implements ISosurface {
                     const arr = parseRes.values[0]
                     const pointArr: {}[] = []
                     const latlngsGrid: number[][] = []
+                    const height = parseRes.height
+                    const width = parseRes.width
                     // y 660
-                    for (let y = 0; y < parseRes.height; y++) {
+                    for (let y = 0; y < height; y++) {
                         // x 1080
                         const xarr: number[] = []
-                        for (let x = 0; x < parseRes.width; x++) {
+                        for (let x = 0; x < width; x++) {
                             const obj: {
                                 type: string
                                 properties: { value: number }
@@ -288,7 +302,9 @@ class SurgeSosurface implements ISosurface {
                     // console.log(layer)
                     that._id = layer._leaflet_id
                     // that._layer = layer
-
+                    if (isShowTitle) {
+                        that._addPointsTitle2Map(map, arr, width, height)
+                    }
                     // return that._id
                 }
             )
@@ -301,44 +317,59 @@ class SurgeSosurface implements ISosurface {
      * @param {L.FeatureCollection} featureCollection
      * @memberof SurgeSosurface
      */
-    _addPointsTitle2Map(map: L.Map, points: number[][], width: number, height: number): void {
-        const pointArr = []
-        const latlngs = []
+    _addPointsTitle2Map(map: L.Map, points: number[][], width: number, height: number): number {
+        const that = this
+        const pointArr: {
+            type: string
+            properties: { value: string }
+            geometry: {
+                type: string
+                coordinates: any
+            }
+        }[] = []
+        const latlngs: number[][] = []
         // TODO:[-] 22-06-05 尝试对其进行抽稀(使用非均值的方式)
 
-        const height = parseRes.height // y 660
-        const width = parseRes.width // x 1080
         //   height = height / 10;
         //   width = width / 10;
-        const x_step = 30
-        const y_step = 30
-        const nan_stamp = 'NaN'
+        const xStep = 30
+        const yStep = 30
+        const nanStamp = 'NaN'
         // y 660
-        for (let y = 0; y < height; y = y + y_step) {
+        for (let y = 0; y < height; y = y + yStep) {
             // x 1080
-            const xarr = []
-            for (let x = 0; x < width; x = x + x_step) {
-                const obj = {
+            const xarr: number[] = []
+            for (let x = 0; x < width; x = x + xStep) {
+                const obj: {
+                    type: string
+                    properties: { value: string }
+                    geometry: {
+                        type: string
+                        coordinates: any
+                    }
+                } = {
                     type: 'Feature',
-                    properties: { value: 0 },
+                    properties: { value: '0' },
                     geometry: {
                         type: 'Point',
                         coordinates: null
                     }
                 }
-                const point_val = arr[y][x].toFixed(1)
-                if (point_val !== nan_stamp) {
-                    obj.properties = { value: point_val } //网格中心点数值
-                    obj.geometry.coordinates = getGridCenterCoordinates(x, y) //网格中心点坐标
+                const pointVal = points[y][x].toFixed(1)
+                if (pointVal !== nanStamp) {
+                    obj.properties = { value: pointVal } //网格中心点数值
+                    obj.geometry.coordinates = that.getGridCenterCoordinates(x, y) //网格中心点坐标
                     pointArr.push(obj)
+                    // 此处可去掉
                     xarr.push(obj.geometry.coordinates)
                 }
             }
+            // 此处可去掉
             latlngs.push(xarr)
         }
         // points -> featureCollection
-        const grid_points = turf.featureCollection(pointArr)
-        console.log(grid_points)
+        const pointsFeatureCollection = turf.featureCollection(pointArr)
+        console.log(pointsFeatureCollection)
         const interpolate_options = {
             gridType: 'points',
             property: 'value',
@@ -351,21 +382,24 @@ class SurgeSosurface implements ISosurface {
         // 注意此种方式绘制的 为 point 因为 geojson中的数据是 point 类型
         // const flexpartlayer = L.geoJson(data_grid).addTo(map)
         // 尝试将 point 转换为 divIcon ，divIcon 只显示数字文字
-        const pointsTxtLay = L.geoJSON(grid_points, {
+        const pointsTxtLay = L.geoJSON(pointsFeatureCollection, {
             // 添加geojson数据
             pointToLayer: function(feature, latlng) {
                 //marker的icon文字
+                const htmlStr: string =
+                    '<div class=\'grid_font\' style=\'margin-top:-5px\'>' +
+                    feature.properties.value +
+                    '</div>'
                 const myIcon = L.divIcon({
-                    html:
-                        "<div class='grid_font' style='margin-top:-5px'>" +
-                        feature.properties.value +
-                        '</div>',
+                    html: htmlStr,
                     className: 'my-div-icon',
                     iconSize: 30
                 })
                 return L.marker(latlng, { icon: myIcon })
             }
         }).addTo(map)
+
+        return pointsTxtLay._leaflet_id
     }
 
     /**
@@ -376,6 +410,10 @@ class SurgeSosurface implements ISosurface {
      */
     getLayerId(): number {
         return this._id
+    }
+
+    getPointsTitleLayerId(): number {
+        return this._pointsTitleLayerId
     }
 
     getLayer(): L.Layer {
