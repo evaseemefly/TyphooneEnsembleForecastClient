@@ -2,6 +2,7 @@ import * as L from 'leaflet'
 import * as turf from '@turf/turf'
 import 'georaster'
 import { DEFAULT_LAYER_ID } from '@/const/common'
+import { max } from 'moment'
 /**
  * 等值面实现类接口
  *
@@ -40,6 +41,20 @@ class SurgeSosurface implements ISosurface {
         colorScale: string[]
         valScale: number[]
     }
+
+    /**
+     * 当前 增水场 (对应 tif url) 的范围及极值
+     *
+     * @type {{
+     *         xmax: number // lon
+     *         xmin: number
+     *         ymax: number // lat
+     *         ymin: number
+     *         pixelHeight: number
+     *         pixelWidth: number
+     *     }}
+     * @memberof SurgeSosurface
+     */
     geoOptions: {
         xmax: number // lon
         xmin: number
@@ -47,13 +62,17 @@ class SurgeSosurface implements ISosurface {
         ymin: number
         pixelHeight: number
         pixelWidth: number
+        valMax: number
+        valMin: number
     } = {
         xmax: 123.00000203639075, // lon
         xmin: 104.99999796360925,
         ymax: 26.00000012734953, // lat
         ymin: 14.999999872650472,
         pixelHeight: 0.01666666705257433,
-        pixelWidth: 0.01666667043776066
+        pixelWidth: 0.01666667043776066,
+        valMax: 0,
+        valMin: 0
     }
     url: string
     map: L.Map
@@ -134,7 +153,9 @@ class SurgeSosurface implements ISosurface {
                         ymax: parseRes.ymax, // lat
                         ymin: parseRes.ymin,
                         pixelHeight: parseRes.pixelHeight,
-                        pixelWidth: parseRes.pixelWidth
+                        pixelWidth: parseRes.pixelWidth,
+                        valMax: parseRes.maxs.length > 0 ? parseRes.maxs[0] : 0,
+                        valMin: parseRes.mins.length > 0 ? parseRes.mins[0] : 0
                     }
                     let scale: { fill: string }[] = []
                     this.options.colorScale.forEach((temp) =>

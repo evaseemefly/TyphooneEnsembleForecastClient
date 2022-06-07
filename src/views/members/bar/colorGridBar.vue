@@ -100,7 +100,7 @@ export default class ColorGridBar extends Vue {
     onIsosurgeColorScaleStrList(scaleList: string[]): void {
         let copyScleList: string[] = scaleList
         const num = copyScleList.length
-        this.colorScalesList = scaleList === undefined ? [] : copyScleList.slice(0, num - 1)
+        // this.colorScalesList = scaleList === undefined ? [] : copyScleList.slice(0, num - 1)
     }
 
     @Watch('getIsosurgeColorScaleValRange', { immediate: true, deep: true })

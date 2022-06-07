@@ -1988,15 +1988,14 @@ export default class TyGroupMap extends mixins(
     async onTyMaxSurgeOptions(val: ITySurgeLayerOptions, oldVal: ITySurgeLayerOptions): void {
         const that = this
         const mymap: any = this.$refs.basemap['mapObject']
-        // const scaleList: string[] | string = getColorScale('my-colour').scaleColorList
         const scaleList: string[] | string = val.scaleList
         if (val.isShow && val.isShow === true) {
-            // if (this.uniqueRasterLayer) {
-            //     clearRasterFromMap(mymap, this.uniqueRasterLayer)
-            //     clearRas
-            // }
             this.clearUniquerRasterLayer()
             this.clearSosurfaceLayer()
+            const loadInstance = loading('等待加载等值面', {
+                fullscreen: true,
+                background: 'rgba(49, 59, 89, 0.733)'
+            })
             // TODO:[-] 22-03-21 此处修改为使用新的 canvas 渲染 geotiff raster
             const surgeRasterLayer = new SurgeRasterGeoLayer({
                 tyCode: val.tyCode,
@@ -2008,12 +2007,9 @@ export default class TyGroupMap extends mixins(
                 customCoefficient: 0.8,
                 customCoeffMax: 1
             })
-            // const loadingInstance = loading('加载最大增水场')
+
             await surgeRasterLayer.add2map(mymap, that.$message, false).then((layerId) => {
-                // console.log(surgeRasterLayer)
                 this.setScaleRange(surgeRasterLayer.scaleRange || [])
-                // TODO:[*] 22-04-14 将返回 layer 修改为 layerId，需要测试
-                // this.uniqueRasterLayer = layer
                 this.uniqueRasterLayerId = layerId
             })
             // TODO:[*] 22-06-02 添加等值面
@@ -2031,14 +2027,16 @@ export default class TyGroupMap extends mixins(
                 ],
                 valScale: [0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6]
             }
-            this.setIsoSurgeColorScaleValRange(sosurfaceOptions.valScale)
-            this.setIsoSurgeColorScaleStrList(sosurfaceOptions.colorScale)
             const maxSosurface = new SurgeSosurface(surgeRasterLayer.tiffUrl, sosurfaceOptions)
             await maxSosurface.addSosurfaceToMap(mymap)
+
+            const newValScales = sosurfaceOptions.valScale.push(maxSosurface.geoOptions.valMax)
+            this.setIsoSurgeColorScaleValRange(newValScales)
+            this.setIsoSurgeColorScaleStrList(sosurfaceOptions.colorScale)
             that.sosurfaceLayerId = maxSosurface.getLayerId()
             that.surgeGridTitleLayerId = maxSosurface.getPointsTitleLayerId()
-            loadingInstance.close()
             that.sosurfaceLayer = maxSosurface.getLayer()
+            loadInstance.close()
         } else if (!val.isShow) {
             this.clearUniquerRasterLayer()
             this.clearSosurfaceLayer()
@@ -2057,9 +2055,11 @@ export default class TyGroupMap extends mixins(
     @Mutation(SET_SHOW_TYPHOON_LEGEND_ICON, { namespace: 'typhoon' }) setShowTyLegend
 
     /** 设置当前 潮位等值面色标 实际值数组 */
-    @Mutation(SET_ISOSURGE_COLOR_SCALE_VAL_RANGE,{namespace:'common'}) setIsoSurgeColorScaleValRange
+    @Mutation(SET_ISOSURGE_COLOR_SCALE_VAL_RANGE, { namespace: 'common' })
+    setIsoSurgeColorScaleValRange
 
-    @Mutation(SET_ISOSURGE_COLOR_SCALE_STR_LIST,{namespace:'common'}) setIsoSurgeColorScaleStrList
+    @Mutation(SET_ISOSURGE_COLOR_SCALE_STR_LIST, { namespace: 'common' })
+    setIsoSurgeColorScaleStrList
 
     @Watch('tyProSurgeOptions', { immediate: true, deep: true })
     onTyProSurgeOptions(val: ITySurgeLayerOptions): void {
@@ -2834,5 +2834,4 @@ export default class TyGroupMap extends mixins(
 #my-test {
     background: #76eec6;
 }
-
 </style>

@@ -441,6 +441,17 @@ class SurgeRasterGeoLayer {
         return awaitUrl
     }
 
+
+    /**
+     * 根据 this.tyCode, this.tyTimestamp 获取对应的增水场 url 地址，若 isShowRasterLayer =true 则在地图中加载 raster layer
+     * 若 isShowRasterLayer =false 则 只获取 tif url 
+     *
+     * @param {L.Map} map
+     * @param {(opt: { message: string; type: string }) => void} errorCallBackFun
+     * @param {boolean} [isShowRasterLayer=true] 是否在地图中加载 raster layer
+     * @returns {Promise<number>}
+     * @memberof SurgeRasterGeoLayer
+     */
     public async add2map(
         map: L.Map,
         errorCallBackFun: (opt: { message: string; type: string }) => void,
