@@ -154,10 +154,11 @@ class SurgeSosurface implements ISosurface {
                         ymin: parseRes.ymin,
                         pixelHeight: parseRes.pixelHeight,
                         pixelWidth: parseRes.pixelWidth,
-                        valMax: parseRes.maxs.length > 0 ? parseRes.maxs[0] : 0,
+                        valMax:
+                            parseRes.maxs.length > 0 ? parseFloat(parseRes.maxs[0].toFixed(2)) : 0,
                         valMin: parseRes.mins.length > 0 ? parseRes.mins[0] : 0
                     }
-                    let scale: { fill: string }[] = []
+                    const scale: { fill: string }[] = []
                     this.options.colorScale.forEach((temp) =>
                         scale.push({
                             fill: temp
@@ -207,7 +208,7 @@ class SurgeSosurface implements ISosurface {
                     // points -> featureCollection
                     const gridPoints = turf.featureCollection(pointArr)
                     // Uncaught (in promise) Error: Invalid input to Input must contain Points, FeatureCollection required
-                    let valScale: number[] = []
+                    const valScale: number[] = []
                     const rasterMax: number = parseRes.maxs[0]
                     this.options.valScale.forEach((temp) => {
                         valScale.push(temp)

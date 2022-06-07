@@ -4,7 +4,7 @@
         <ColorGridBar></ColorGridBar>
         <SwitchBaseMap></SwitchBaseMap>
         <StationSurgeLevelLegeng></StationSurgeLevelLegeng>
-        <TyphoonLevelLegeng></TyphoonLevelLegeng>        
+        <TyphoonLevelLegeng></TyphoonLevelLegeng>
         <!-- <ForecastAreaBar
             :tyCode="tyCode"
             :timeStampStr="timeStampStr"
@@ -54,5 +54,6 @@ export default class BottomRightMainBar extends Vue {
 
     display: flex;
     flex-direction: column-reverse;
+    align-items: flex-end; // 副轴向左对齐
 }
 </style>

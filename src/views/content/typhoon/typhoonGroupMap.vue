@@ -2030,8 +2030,11 @@ export default class TyGroupMap extends mixins(
             const maxSosurface = new SurgeSosurface(surgeRasterLayer.tiffUrl, sosurfaceOptions)
             await maxSosurface.addSosurfaceToMap(mymap)
 
-            const newValScales = sosurfaceOptions.valScale.push(maxSosurface.geoOptions.valMax)
-            this.setIsoSurgeColorScaleValRange(newValScales)
+            if (sosurfaceOptions.valScale !== undefined) {
+                sosurfaceOptions.valScale.push(maxSosurface.geoOptions.valMax)
+            }
+
+            this.setIsoSurgeColorScaleValRange(sosurfaceOptions.valScale)
             this.setIsoSurgeColorScaleStrList(sosurfaceOptions.colorScale)
             that.sosurfaceLayerId = maxSosurface.getLayerId()
             that.surgeGridTitleLayerId = maxSosurface.getPointsTitleLayerId()

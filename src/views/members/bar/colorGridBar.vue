@@ -1,21 +1,23 @@
 <template>
     <div class="color-bar-list">
         <transition name="color-bar-fade">
-            <div class="color-bar" v-show="isShowScaleBar">
-                <div class="color-bar-title font-align-center">
-                    <div class="font-align-center">单位:m</div>
-                </div>
-                <div class="color-bar-content">
-                    <div
-                        class="color-grid-item font-align-center"
-                        v-for="(colorTemp, index) in colorScalesList"
-                        :key="index"
-                        :style="{ background: colorTemp }"
-                    >
-                        <span>{{ colorScaleNumList[index] }}</span>
+            <el-tooltip class="item" effect="dark" content="增水场等值面色标" placement="top-start">
+                <div class="color-bar" v-show="isShowScaleBar">
+                    <div class="color-bar-title font-align-center">
+                        <div class="font-align-center">单位:m</div>
+                    </div>
+                    <div class="color-bar-content">
+                        <div
+                            class="color-grid-item font-align-center"
+                            v-for="(colorTemp, index) in colorScalesList"
+                            :key="index"
+                            :style="{ background: colorTemp }"
+                        >
+                            <span>{{ colorScaleNumList[index] }}</span>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </el-tooltip>
         </transition>
     </div>
 </template>
@@ -98,9 +100,9 @@ export default class ColorGridBar extends Vue {
      */
     @Watch('getIsosurgeColorScaleStrList', { immediate: true, deep: true })
     onIsosurgeColorScaleStrList(scaleList: string[]): void {
-        let copyScleList: string[] = scaleList
+        const copyScleList: string[] = scaleList
         const num = copyScleList.length
-        // this.colorScalesList = scaleList === undefined ? [] : copyScleList.slice(0, num - 1)
+        this.colorScalesList = scaleList === undefined ? [] : copyScleList.slice(0, num)
     }
 
     @Watch('getIsosurgeColorScaleValRange', { immediate: true, deep: true })
@@ -153,6 +155,11 @@ export default class ColorGridBar extends Vue {
         span {
             margin-left: -20px;
         }
+    }
+    .color-grid-item:last-child {
+        // visibility: hidden;
+        background: #34495e2a !important;
+        backdrop-filter: blur(4px);
     }
     .font-align-center {
         display: flex;
