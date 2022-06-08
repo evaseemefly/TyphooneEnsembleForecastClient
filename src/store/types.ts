@@ -68,6 +68,12 @@ export const GET_IS_INIT_LAYERS = 'GET_IS_INIT_LAYERS'
 export const SET_BASE_MAP_KEY = 'SET_BASE_MAP_KEY'
 export const GET_BASE_MAP_KEY = 'GET_BASE_MAP_KEY'
 
+// + 22-06-08 切换栅格图层
+/** 设置栅格图层显示类型 */
+export const SET_RASTER_LAYER_KEY = 'SET_RASTER_LAYER_KEY'
+/** 获取栅格图层显示类型 */
+export const GET_RASTER_LAYER_KEY = 'GET_RASTER_LAYER_KEY'
+
 // map - 修改是否显示创建 oil case model
 export const SET_CREATE_OIL_CASE_MODAL = 'SET_CREATE_OIL_CASE_MODAL'
 export const GET_CREATE_OIL_CASE_MODAL = 'GET_CREATE_OIL_CASE_MODAL'

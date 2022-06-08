@@ -58,6 +58,24 @@ export enum MapLayerEnum {
     SATELITE_MAP = 4001, // 卫星卫片
     SIMPLE_MAP = 4002 // 简单底图
 }
+
+/**
+ * + 22-06-08 栅格图层切换 key : 等值线|栅格图层
+ *
+ * @export
+ * @enum {number}
+ */
+export enum RasterLayerEnum {
+    /**
+     * 栅格图层
+     */
+    RASTER_LAYER = 4003,
+
+    /**
+     * 等值线图层
+     */
+    ISOSURFACE_LAYER = 4004
+}
 export const LayerTypeEnum = {
     ...SurgeProLayerEnum,
     ...BaseLayerTypeEnum,

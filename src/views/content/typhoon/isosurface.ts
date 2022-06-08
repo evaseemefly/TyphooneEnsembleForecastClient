@@ -217,8 +217,6 @@ class SurgeSosurface implements ISosurface {
                     const isobands = turf.isobands(gridPoints, valScale, isobandsOptions)
                     //5、把turf的FeatureCollection转换成leaflet的feature数组
                     const geoArr = isobands.features
-                    //console.log(geoArr);
-
                     //6、geoArr在map上绘制
                     const flexpartlayer = L.geoJson(geoArr, {
                         style: that.getFlexStyle

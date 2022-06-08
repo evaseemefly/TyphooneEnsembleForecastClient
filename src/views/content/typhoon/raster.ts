@@ -416,7 +416,7 @@ class SurgeRasterGeoLayer {
      */
     rasterMin = 0
 
-    private _tiffUrl: string = null
+    protected _tiffUrl: string = null
 
     get tiffUrl(): string {
         return this._tiffUrl
@@ -441,10 +441,9 @@ class SurgeRasterGeoLayer {
         return awaitUrl
     }
 
-
     /**
      * 根据 this.tyCode, this.tyTimestamp 获取对应的增水场 url 地址，若 isShowRasterLayer =true 则在地图中加载 raster layer
-     * 若 isShowRasterLayer =false 则 只获取 tif url 
+     * 若 isShowRasterLayer =false 则 只获取 tif url
      *
      * @param {L.Map} map
      * @param {(opt: { message: string; type: string }) => void} errorCallBackFun
@@ -474,7 +473,7 @@ class SurgeRasterGeoLayer {
         if (this._tiffUrl == null) {
             this._tiffUrl = urlGeoTifUrl
         }
-        // TODO:[-] 22-06-02 加入根据 isShowRasterLayer 来实现是否加载 raster 的操作，默认加载
+        // 22-06-02 加入根据 isShowRasterLayer 来实现是否加载 raster 的操作，默认加载
         if (isShowRasterLayer) {
             // 大体思路 获取 geotiff file 的路径，二进制方式读取 -> 使用 georaster 插件实现转换 -> 获取色标，
             // TODO:[-] 20-11-02 将之前的逻辑方式修改为 await 的方式
@@ -729,134 +728,127 @@ class SurgeRasterTifLayer extends SurgeRasterGeoLayer {
 class FieldSurgeGeoLayer extends SurgeRasterGeoLayer {
     public async add2map(
         map: L.Map,
-        errorCallBackFun: (opt: { message: string; type: string }) => void
-    ): Promise<L.Layer> {
+        errorCallBackFun: (opt: { message: string; type: string }) => void,
+        isShowRasterLayer = true
+    ): Promise<number> {
         let addedLayer: L.Layer = null
+        let layerId: number = DEFAULT_LAYER_ID
         const that = this
         const forecastDtStr = moment(this.forecastDt).format('YYYY-MM-DD HH')
         try {
             const maxRangeResp = await loadMaxSurgeRange(that.tyCode, that.tyTimestamp)
             const tifResp = await loadFieldSurgeTif(that.tyCode, that.tyTimestamp, that.forecastDt)
             const urlGeoTifUrl = tifResp.data
+            this._tiffUrl = urlGeoTifUrl
             const maxRange: { max: number; min: number } = maxRangeResp.data
-            // 大体思路 获取 geotiff file 的路径，二进制方式读取 -> 使用 georaster 插件实现转换 -> 获取色标，
-            // TODO:[-] 20-11-02 将之前的逻辑方式修改为 await 的方式
-            // TODO:[-] 20-11-05 在 fetch 请求头中加入跨域的部分
-            const fetchHeader = new Headers({
-                'Access-Control-Allow-Origin': '*',
-                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8,'
-            })
-            // TODO：[-] 21-12-27 此处若加载不存在的文件会出现较长时间的等待问题
+            if (isShowRasterLayer) {
+                // 大体思路 获取 geotiff file 的路径，二进制方式读取 -> 使用 georaster 插件实现转换 -> 获取色标，
+                // TODO:[-] 20-11-02 将之前的逻辑方式修改为 await 的方式
+                // TODO:[-] 20-11-05 在 fetch 请求头中加入跨域的部分
+                const fetchHeader = new Headers({
+                    'Access-Control-Allow-Origin': '*',
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8,'
+                })
+                const response = await fetch(urlGeoTifUrl, {
+                    method: 'GET',
+                    // headers: fetchHeader,
+                    mode: 'cors'
+                })
+                const status = response.status
+                if (status === 200) {
+                    console.log('指定文件存在')
+                }
+                const arrayBuffer = await response.arrayBuffer()
+                // 使用 import 'georaster' 的方式引入会出现没有智能提示的问题
+                // TODO:[-] 20-11-04
+                // Uncaught (in promise) TypeError: Invalid byte order value.
+                // at Function.fromSource (e2c99254-e67c-4422-be5d-01e0b254a36b:10)
 
-            // if (this.checkRemoteFileExist(urlGeoTifUrl)) {
-            // } else {
-            //     throw URIError(`指定:${urlGeoTifUrl}不存在`)
-            // }
-            const response = await fetch(urlGeoTifUrl, {
-                method: 'GET',
-                // headers: fetchHeader,
-                mode: 'cors'
-            })
-            const status = response.status
-            if (status === 200) {
-                console.log('指定文件存在')
+                const georasterResponse = await parseGeoraster(arrayBuffer)
+                // TODO:[*] 21-05-31 将 风暴潮的范围写成固定值
+                // TODO:[-] 22-04-26 此处将 max 与 min 修改为整个过程的极值范围
+                const min = maxRange.min
+                const max = maxRange.max
+                // TODO:[*] 21-08-04 此处不使用写死的 range,因为增水实际有可能会是一个负值，所以还是将 min 与 max 设置为 georasterResponse 的 min - max
+                const range = max - min
+                this.scaleRange = [maxRange.min, maxRange.max]
+                // const scale = chroma.scale('Viridis')
+                // + 21-07-30 参考 windy 的色标
+                // const scale = chroma.scale([
+                //     'rgb(50, 158, 186)',
+                //     'rgb(48, 128, 164)',
+                //     'rgb(48, 128, 164)',
+                //     'rgb(52, 101, 166)',
+                //     'rgb(56, 104, 192)',
+                //     'rgb(56, 83, 169)',
+                //     'rgb(57, 61, 143)',
+                //     'rgb(134, 48, 49)',
+                //     'rgb(194, 76, 91)',
+                //     'rgb(192, 118, 105)',
+                //     'rgb(192, 162, 157)',
+                //     'rgb(192, 162, 157)'
+                // ])
+                // + 21-08-04 : https://colorbrewer2.org/#type=sequential&scheme=YlGnBu&n=9
+                // const scale = chroma.scale([
+                //     '#081d58',
+                //     '#253494',
+                //     '#225ea8',
+                //     '#1d91c0',
+                //     '#41b6c4',
+                //     '#7fcdbb',
+                //     '#c7e9b4',
+                //     '#edf8b1',
+                //     '#ffffd9'
+                // ])
+                const scale = chroma.scale([...this.options.scaleList])
+                // const scale = chroma.scale([
+                //     '#00429d',
+                //     '#4771b2',
+                //     '#73a2c6',
+                //     '#a5d5d8',
+                //     '#ffffe0',
+                //     '#ffbcaf',
+                //     '#f4777f',
+                //     '#cf3759',
+                //     '#93003a'
+                // ])
+
+                // TODO:[*] 21-02-10 此处当加载全球风场的geotiff时，y不在实际范围内，需要手动处理
+                georasterResponse.ymax = georasterResponse.ymax
+                georasterResponse.ymin = georasterResponse.ymin
+                // georasterResponse.ymax = max
+                // georasterResponse.ymin = min
+
+                const layer = new GeoRasterLayer({
+                    georaster: georasterResponse,
+                    opacity: 0.6,
+                    pixelValuesToColorFn: function(pixelValues) {
+                        const pixelValue = pixelValues[0] // there's just one band in this raster
+                        // TODO:[-] 21-05-31 修改了原始数据，陆地部分采用 Nan，所以不需要将 0 值填充为 null
+                        if (Number.isNaN(pixelValue) || pixelValue === -32767) return null
+
+                        // scale to 0 - 1 used by chroma
+                        // TODO:[-] 21-05-31 注意若设置固定范围的色标，则此处的scaledPiexelValue 是一个 0-1 的值，也就是 当前值 / range
+                        let scaledPixelValue = min
+                        if (pixelValue > max) {
+                            scaledPixelValue = max / range
+                        } else if (pixelValue < min) {
+                            scaledPixelValue = min / range
+                        } else {
+                            scaledPixelValue = (pixelValue - min) / range
+                        }
+                        // const scaledPixelValue = (pixelValue - min) / range
+
+                        const color = scale(scaledPixelValue).hex()
+
+                        return color
+                    },
+                    resolution: 256
+                })
+                addedLayer = layer.addTo(map)
+                that.rasterLayer = addedLayer
+                layerId = addedLayer._leaflet_id
             }
-            //
-            // console.log(`获取指定tif,status:${status}`)
-            const arrayBuffer = await response.arrayBuffer()
-            // 使用 import 'georaster' 的方式引入会出现没有智能提示的问题
-            // TODO:[-] 20-11-04
-            // Uncaught (in promise) TypeError: Invalid byte order value.
-            // at Function.fromSource (e2c99254-e67c-4422-be5d-01e0b254a36b:10)
-
-            const georasterResponse = await parseGeoraster(arrayBuffer)
-            // TODO:[*] 21-05-31 将 风暴潮的范围写成固定值
-            // TODO:[-] 22-04-26 此处将 max 与 min 修改为整个过程的极值范围
-            const min = maxRange.min
-            const max = maxRange.max
-            // const min = georasterResponse.mins[0]
-            // const max = georasterResponse.maxs[0]
-            // const range = georasterResponse.ranges[0]
-            // TODO:[*] 21-08-04 此处不使用写死的 range,因为增水实际有可能会是一个负值，所以还是将 min 与 max 设置为 georasterResponse 的 min - max
-            // const min = 0
-            // const max = 0.5
-            const range = max - min
-            this.scaleRange = [maxRange.min, maxRange.max]
-            // const scale = chroma.scale('Viridis')
-            // + 21-07-30 参考 windy 的色标
-            // const scale = chroma.scale([
-            //     'rgb(50, 158, 186)',
-            //     'rgb(48, 128, 164)',
-            //     'rgb(48, 128, 164)',
-            //     'rgb(52, 101, 166)',
-            //     'rgb(56, 104, 192)',
-            //     'rgb(56, 83, 169)',
-            //     'rgb(57, 61, 143)',
-            //     'rgb(134, 48, 49)',
-            //     'rgb(194, 76, 91)',
-            //     'rgb(192, 118, 105)',
-            //     'rgb(192, 162, 157)',
-            //     'rgb(192, 162, 157)'
-            // ])
-            // + 21-08-04 : https://colorbrewer2.org/#type=sequential&scheme=YlGnBu&n=9
-            // const scale = chroma.scale([
-            //     '#081d58',
-            //     '#253494',
-            //     '#225ea8',
-            //     '#1d91c0',
-            //     '#41b6c4',
-            //     '#7fcdbb',
-            //     '#c7e9b4',
-            //     '#edf8b1',
-            //     '#ffffd9'
-            // ])
-            const scale = chroma.scale([...this.options.scaleList])
-            // const scale = chroma.scale([
-            //     '#00429d',
-            //     '#4771b2',
-            //     '#73a2c6',
-            //     '#a5d5d8',
-            //     '#ffffe0',
-            //     '#ffbcaf',
-            //     '#f4777f',
-            //     '#cf3759',
-            //     '#93003a'
-            // ])
-
-            // TODO:[*] 21-02-10 此处当加载全球风场的geotiff时，y不在实际范围内，需要手动处理
-            georasterResponse.ymax = georasterResponse.ymax
-            georasterResponse.ymin = georasterResponse.ymin
-            // georasterResponse.ymax = max
-            // georasterResponse.ymin = min
-
-            const layer = new GeoRasterLayer({
-                georaster: georasterResponse,
-                opacity: 0.6,
-                pixelValuesToColorFn: function(pixelValues) {
-                    const pixelValue = pixelValues[0] // there's just one band in this raster
-                    // TODO:[-] 21-05-31 修改了原始数据，陆地部分采用 Nan，所以不需要将 0 值填充为 null
-                    if (Number.isNaN(pixelValue) || pixelValue === -32767) return null
-
-                    // scale to 0 - 1 used by chroma
-                    // TODO:[-] 21-05-31 注意若设置固定范围的色标，则此处的scaledPiexelValue 是一个 0-1 的值，也就是 当前值 / range
-                    let scaledPixelValue = min
-                    if (pixelValue > max) {
-                        scaledPixelValue = max / range
-                    } else if (pixelValue < min) {
-                        scaledPixelValue = min / range
-                    } else {
-                        scaledPixelValue = (pixelValue - min) / range
-                    }
-                    // const scaledPixelValue = (pixelValue - min) / range
-
-                    const color = scale(scaledPixelValue).hex()
-
-                    return color
-                },
-                resolution: 256
-            })
-            addedLayer = layer.addTo(map)
-            that.rasterLayer = addedLayer
         } catch (error) {
             if (error instanceof URIError) {
                 errorCallBackFun({
@@ -871,7 +863,7 @@ class FieldSurgeGeoLayer extends SurgeRasterGeoLayer {
             }
         }
 
-        return addedLayer
+        return layerId
     }
 }
 

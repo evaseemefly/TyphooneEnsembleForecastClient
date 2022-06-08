@@ -1,6 +1,6 @@
 import { State } from './map'
 import { Commit, Dispatch } from 'vuex'
-import { LayerTypeEnum, MapLayerEnum } from '@/enum/map'
+import { LayerTypeEnum, MapLayerEnum, RasterLayerEnum } from '@/enum/map'
 import {
     SET_MAP_NOW,
     GET_MAP_NOW,
@@ -24,7 +24,9 @@ import {
     SET_CREATE_FORM,
     GET_CREATE_FORM,
     SET_BASE_MAP_KEY,
-    GET_BASE_MAP_KEY
+    GET_BASE_MAP_KEY,
+    SET_RASTER_LAYER_KEY,
+    GET_RASTER_LAYER_KEY
 } from '../types'
 export interface State {
     // range:number,
@@ -46,6 +48,7 @@ export interface State {
     baseMapKey: MapLayerEnum
     // 是否需要重置 图层 layers
     isInitLayers: boolean
+    rasterLayerType: RasterLayerEnum
 }
 
 // 用来存储应用状态的数据对象
@@ -68,7 +71,8 @@ const state: State = {
     autoPlay: false,
     // + 21-08-23 切换底图的key
     baseMapKey: MapLayerEnum.SIMPLE_MAP,
-    isInitLayers: false
+    isInitLayers: false,
+    rasterLayerType: RasterLayerEnum.ISOSURFACE_LAYER
 }
 
 // 用来改变应用状态的函数
@@ -153,6 +157,10 @@ const mutations = {
     },
     [SET_IS_INIT_LAYERS](state: State, isInit: boolean): void {
         state.isInitLayers = isInit
+    },
+
+    [SET_RASTER_LAYER_KEY](state: State, rasterLayerType: RasterLayerEnum): void {
+        state.rasterLayerType = rasterLayerType
     }
 }
 
@@ -208,6 +216,9 @@ const getters = {
     },
     [GET_BASE_MAP_KEY]: (state: State): MapLayerEnum => {
         return state.baseMapKey
+    },
+    [GET_RASTER_LAYER_KEY]: (state: State): RasterLayerEnum => {
+        return state.rasterLayerType
     }
 }
 

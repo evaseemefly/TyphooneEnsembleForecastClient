@@ -2,6 +2,7 @@
     <div id="bottom-right-main-bar">
         <ColorBar></ColorBar>
         <ColorGridBar></ColorGridBar>
+        <SwitchRasterLayer></SwitchRasterLayer>
         <SwitchBaseMap></SwitchBaseMap>
         <StationSurgeLevelLegeng></StationSurgeLevelLegeng>
         <TyphoonLevelLegeng></TyphoonLevelLegeng>
@@ -22,6 +23,8 @@ import StationSurgeLevelLegeng from '@/components/bar/stationSurgeLevelLegend.vu
 import TyphoonLevelLegeng from '@/components/bar/typhoonLevelLegend.vue'
 // + 22-06-06 加入了动态格点数据色标
 import ColorGridBar from '@/views/members/bar/colorGridBar.vue'
+// + 22-06-08 栅格图层切换按钮
+import SwitchRasterLayer from '@/components/bar/switchRasterLayer.vue'
 // 引入部分中间变量
 import CoverageMin from '@/views/content/oilspilling/coverage.vue'
 @Component({
@@ -31,7 +34,8 @@ import CoverageMin from '@/views/content/oilspilling/coverage.vue'
         SwitchBaseMap,
         StationSurgeLevelLegeng,
         TyphoonLevelLegeng,
-        ColorGridBar
+        ColorGridBar,
+        SwitchRasterLayer
     }
 })
 export default class BottomRightMainBar extends Vue {

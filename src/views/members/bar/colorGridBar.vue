@@ -1,5 +1,5 @@
 <template>
-    <div class="color-bar-list">
+    <div class="color-bar-list" v-show="isShow">
         <transition name="color-bar-fade">
             <el-tooltip class="item" effect="dark" content="增水场等值面色标" placement="top-start">
                 <div class="color-bar" v-show="isShowScaleBar">
@@ -28,6 +28,8 @@ import { Mutation, State, namespace, Getter } from 'vuex-class'
 // 本项目
 import { IColorScale, ColorScales, IScale } from '@/const/colorBar'
 import { DEFAULT_DICT_KEY } from '@/const/common'
+import { RasterLayerEnum } from '@/enum/map'
+import { GET_RASTER_LAYER_KEY } from '@/store/types'
 import {
     GET_ISOSURGE_COLOR_SCALE_VAL_RANGE,
     GET_ISOSURGE_COLOR_SCALE_STR_LIST
@@ -108,6 +110,12 @@ export default class ColorGridBar extends Vue {
     @Watch('getIsosurgeColorScaleValRange', { immediate: true, deep: true })
     onIsosurgeColorScaleValRange(scaleNum: number[]): void {
         this.colorScaleNumList = scaleNum == undefined ? [] : scaleNum
+    }
+
+    @Getter(GET_RASTER_LAYER_KEY, { namespace: 'map' }) getRasterLayerType
+
+    get isShow(): boolean {
+        return this.getRasterLayerType === RasterLayerEnum.ISOSURFACE_LAYER
     }
 }
 </script>
