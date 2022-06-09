@@ -168,6 +168,11 @@ import 'leaflet-velocity'
 // import _ from 'lodash'
 // import { debounce } from 'lodash'
 import { Debounce } from 'lodash-decorators'
+// TODO:[*] 22-05-30 尝试加入 canvas-markers
+// https://github.com/eJuke/Leaflet.Canvas-Markers
+import { CanvasMarkerLayer } from '@/common/canvasMakerLayer'
+// TODO:[*] 22-05-31 加入前台渲染 png
+import '@/common/pixel/leaflet-tile-pixelLayer'
 // import '@ansur/leaflet-pulse-icon/dist/L.Icon.Pulse'
 // 手动引入 第三方的 icon 脉冲效果
 // import '@ansur/leaflet-pulse-icon/src/L.Icon.Pulse'
@@ -289,6 +294,7 @@ import {
     TyphoonCircle,
     TyCMAPathLine
 } from './typhoonGroup'
+import { loading } from '@/common/common'
 // 各类 DTO
 import { CustomerMarker, CustomerGisFormMarker } from './marker'
 
@@ -354,6 +360,8 @@ import {
     IconMinStationSurge,
     IconTyphoonCirlePulsing
 } from '@/views/members/icon/pulsingIcon'
+// TODO:[-] 22-06-02 加入前端绘制等值线类
+import { SurgeSosurface } from '@/views/content/typhoon/isosurface'
 import { WindArrow } from '@/views/content/oilspilling/arrow'
 // + 21-03-24 海浪等值线绘制类
 import { WaveContourLine, WaveArrow } from '@/views/content/oilspilling/wave'
@@ -362,7 +370,13 @@ import { StationSurge, IToHtml } from './station'
 import { TyGroupPath, getTyCenterGroupDiffLayer } from './typhoonGroup'
 // 引入枚举
 import { DictEnum } from '@/enum/dict'
-import { LayerTypeEnum, SurgeProLayerEnum, MapLayerEnum, StationIconLayerEnum } from '@/enum/map'
+import {
+    LayerTypeEnum,
+    SurgeProLayerEnum,
+    MapLayerEnum,
+    StationIconLayerEnum,
+    RasterLayerEnum
+} from '@/enum/map'
 import { GroupPathLayerOptEnum } from '@/enum/layersOpt/LayersOpt'
 
 // api
@@ -405,7 +419,10 @@ import {
     SET_MAP_NOW,
     GET_TY_GROUP_PATH_LATERS_OPTS, // +22-03-13 台风集合预报路径配置项
     SET_SHOW_STATION_ICON,
-    SET_SHOW_TYPHOON_LEGEND_ICON
+    SET_SHOW_TYPHOON_LEGEND_ICON,
+    SET_ISOSURGE_COLOR_SCALE_VAL_RANGE, // + 22-06-06
+    SET_ISOSURGE_COLOR_SCALE_STR_LIST,
+    GET_RASTER_LAYER_KEY
 } from '@/store/types'
 import {
     DEFAULT_LAYER_ID,
@@ -501,21 +518,7 @@ export default class TyGroupMap extends mixins(
     makerLatlng = [0, 0]
     // TODO:[-] 21-01-06 初始位置，加载 case 后将case的初始位置赋值于此
     initialLatLng = [0, 0]
-    // TODO:[*] 19-10-31 由于设置类型为any，且赋值为null，引发的子组件在为null的情况下未渲染
-    oilAvgRealData: OilMidModel = new OilMidModel()
-    // TODO:[-] 20-06-21 批量添加通过 group 的方式进行添加
-    layerGroupScatters: any = null
-    // 21-01-04 由 layerScatterMarkersGroups 替代了，因为是分页加载散点
-    // layerGroupTemp: any = null
-    layerScatterMarkersGroups: L.Layer[] = []
-    oilHeatmapList: any[] = []
-    polyline: {
-        latlngs: []
-        color: string
-    } = {
-        latlngs: [],
-        color: 'yellow'
-    }
+
     // TODO:[-] 22-04-07 爬取到的台风路径
     spiderTyphoonPathList: {
         forecastDt: Date
@@ -536,9 +539,7 @@ export default class TyGroupMap extends mixins(
         iconSize: [32, 37],
         iconAnchor: [16, 37] // 防止地图缩放时产品偏移，需固定绝对位置
     })
-    // TODO:[*] 20-07-15 新加入的关于点选位置添加在地图中的 markers
-    iconMySelectedMarker: L.Marker = null
-    iconMySelectedGisFormMarker: L.Marker = null
+
     // 当前选定的 case model 信息
     tempCaseModel: CaseOilModel
     // timebar的起始时间
@@ -570,16 +571,17 @@ export default class TyGroupMap extends mixins(
         isShow: true,
         productType: ProductEnum.COVERAGE_TYPE_WIND
     }
-    // TODO:[-] 21-04-05 + 当前的 海浪-海表面高度 LayerId
-    waveWveRasterLayerId: number = DEFAULT_LAYER_ID
     // TODO:[*] 20-10-22 + 缩放等级
     zoomLevel = 7
     // 用于动态加载的 wms 的 ws 的str
     wmsWorkSpace = ''
     layerControl: any = null
     // TODO:[-] + 21-08-05 新加入的全局唯一的 栅格layer
-    uniqueRasterLayer: L.Layer = null
+    uniqueRasterLayer: L.Layer | null = null
     uniqueRasterLayerId = DEFAULT_LAYER_ID
+    // TODO:[-] 22-06-02 增水等值面layer id
+    sosurfaceLayerId = DEFAULT_LAYER_ID
+    surgeGridTitleLayerId = DEFAULT_LAYER_ID // 增水 格点数据 title 图层
     // TODO:[*] 20-07-27 记录当前 add layers to map 时的 layers种类数组
     existLayers: LayerTypeEnum[] = []
     // TODO:[-] 20-06-20 加入的是否分页的标识符
@@ -590,45 +592,40 @@ export default class TyGroupMap extends mixins(
 
     // TODO:[-] 21-04-21 与台风业务相关的 data
     tyGroupLineList: TyphoonComplexGroupRealDataMidModel[] = []
-    tyGroupPolyLine = {
-        latlngs: [],
-        color: 'yellow'
-    }
+
     // TODO:[-] + 21-05-31 中间路径的 cirleLayers 集合
     tyGroupCenterCirleLayers: L.Layer[] = []
-    tyOutlineGroupLayers: L.LayerGroup = null
+    tyOutlineGroupLayers: L.LayerGroup | null = null
     //
     tyOutlineGroupLayersId: number = DEFAULT_LAYER_ID
     // + 21-05-12 台风集合预报路径的概率半径集合 24: 60, 48:100,72:120,96:150,120:180
     tyGroupProPathCircles: { lat: number; lon: number; radius: number }[] = []
     currentStationSurgeList: StationSurgeMiModel[] = []
     // 当前的大风半径范围
-    currentGaleRadius: L.Circle = null
+    currentGaleRadius: L.Circle | null = null
     // group_ty_range
     // 台风大风半径的范围
     // 当前显示的 台风realdata div icon
-    tyRealDataDivIcon: L.Marker = null
+    tyRealDataDivIcon: L.Marker | null = null
     isShowTyRealDataDivIcon = true
 
     // TODO:[-] 21-10-08 当前的台风集合折线
-    currentGroupPathPolyLine: L.Polyline = null
+    currentGroupPathPolyLine: L.Polyline | null = null
     // 21-10-08 当前的台风集合预报路径 折线集合 group layer
-    currentGroupPathPolyLineLayerGroup: L.LayerGroup = null
     currentGroupPathPolyLineGroupLayersId: number = DEFAULT_LAYER_ID
-    // - 21-10-19 台风中间路径的脉冲 layer
-    currentGroupPathPulsingLayerGroup: L.LayerGroup = null
-    currentCenterPathIconLayerId: number = DEFAULT_LAYER_ID // + 22-05-07 当前台风的中间路径的icon layer id
-    currentCenterGroupPathPolyLineLayerGroup: L.LayerGroup = null
-    currentCenterPathLineLayerId: number = DEFAULT_LAYER_ID // + 22-05-07 当前台风的中间路layer id
+    /** - 21-10-19 台风中间路径的脉冲 layer */
+    currentGroupPathPulsingLayerGroup: L.LayerGroup | null = null
+    /**  + 22-05-07 当前台风的中间路径的圆点icon layer id (group layer)*/
+    currentCenterPathIconLayerId: number = DEFAULT_LAYER_ID
+    /** + 22-05-07 当前台风的中间路layer id */
+    currentCenterPathLineLayerId: number = DEFAULT_LAYER_ID
 
-    // 21-10-08 当前的台风集合预报路径 间隔点集合 group layer
-    currentGroupPathProPathCirclesGroup: L.LayerGroup = null
-
-    currentGroupPathPolyLineLayerGroupId = DEFAULT_LAYER_ID
+    // 中间路径概率圆 layer id
+    currentPathProCirclesLayerId = DEFAULT_LAYER_ID
 
     // + 21-05-10 当前的 逐时风暴增水场 layer，每次切换时会替换，且从 map 中清除
     // TODO:[*] 22-04-19 将layer统一修改为 layerId
-    fieldSurgeRasterLayer: L.Layer = null
+    fieldSurgeRasterLayer: L.Layer | null = null
 
     // + 21-05-14 当前的预报时间
     forecastDt = new Date('2020-09-15T18:00:00Z')
@@ -640,10 +637,12 @@ export default class TyGroupMap extends mixins(
     stationCode = DEFAULT_STATION_CODE
     stationName = DEFAULT_STATION_NAME
     // + 21-05-15 脉冲 groupLayer
-    groupLayerSurgePulsing: L.LayerGroup = null
+    groupLayerSurgePulsing: L.LayerGroup | null = null // - 22-05-19 已不再使用，只有 bak 备份中还有使用，暂时不删除
+    groupLayerSurgeStationPulsingId: number = DEFAULT_LAYER_ID // - 22-05-19 海洋站脉冲 icon group layer id
 
     // + 21-05-15 台站 div groupLayer
-    groupLayerSurgeStationDivForm: L.LayerGroup = null
+    groupLayerSurgeStationDivForm: L.LayerGroup | null = null // - 22-05-19 已不再使用，只有 bak 备份中还有使用，暂时不删除
+    groupLayerSurgeStationDivId: number = DEFAULT_LAYER_ID // - 22-05-19 将 groupLayerSurgeStationDivForm 替换为 id 保存当前海洋站 icon 的 group layer id
     tyGroupGaleRadiusRange: { max: number; min: number } = { max: 80, min: 31 }
 
     // + 21-05-19 BottomMainBar -> ForecastAreaBar 需要传入的 currentCaseCoverageList
@@ -688,6 +687,7 @@ export default class TyGroupMap extends mixins(
     tyMaxSurgeOptions: ITySurgeLayerOptions = {
         isShow: false,
         layerType: LayerTypeEnum.RASTER_MAX_SURGE_LAYER,
+        rasterLayerType: RasterLayerEnum.ISOSURFACE_LAYER,
         // tyCode: this.tyCode,
         // tyTimeStamp: this.tyTimeStamp
         tyCode: this.tyCode,
@@ -700,6 +700,7 @@ export default class TyGroupMap extends mixins(
     tyFieldOptions: ITySurgeLayerOptions = {
         isShow: false,
         layerType: LayerTypeEnum.RASTER_HOURLY_SURGE_LAYER,
+        rasterLayerType: RasterLayerEnum.ISOSURFACE_LAYER,
         tyCode: this.tyCode,
         tyTimeStamp: this.tyTimeStamp,
         forecastDt: new Date(),
@@ -709,6 +710,7 @@ export default class TyGroupMap extends mixins(
     tyProSurgeOptions: ITyProLayerOptions = {
         isShow: false,
         layerType: LayerTypeEnum.UN_LAYER,
+        rasterLayerType: RasterLayerEnum.ISOSURFACE_LAYER,
         tyCode: this.tyCode,
         tyTimeStamp: this.tyTimeStamp,
         pro: 0.5,
@@ -716,13 +718,13 @@ export default class TyGroupMap extends mixins(
     }
 
     // TODO:[-] 21-06-08 临时的 潮位站 min marker
-    stationMinMarker: L.Marker = undefined
+    stationMinMarker: L.Marker | undefined = undefined
     mapBoxlayerOptions: {
         accessToken: 'pk.eyJ1IjoiZXZhc2VlbWVmbHkxIiwiYSI6ImNrcHE4OHJsejBobnoyb3BhOTkwb3MzbGwifQ.5ThyBJrIccBpeVi9pUdJnw'
         style: '/static/mapbox/style/style_210610/style.json'
     }
     // TODO:[-] 21-06-10 配合 mapbox 使用的 mymap
-    mymap: L.Map = undefined
+    mymap: L.Map | undefined = undefined
     // + 21-07-01 新加入的用来控制是否显示 创建caseForm
     isShowCreateCaseForm = false
 
@@ -922,15 +924,18 @@ export default class TyGroupMap extends mixins(
     // 清除掉所有 station 潮位站 divIcon
     clearSurgeAllGroupLayers(): void {
         const mymap: L.Map = this.$refs.basemap['mapObject']
-        if (this.groupLayerSurgePulsing) {
-            mymap.removeLayer(this.groupLayerSurgePulsing)
+        if (this.groupLayerSurgeStationPulsingId !== DEFAULT_LAYER_ID) {
+            // mymap.removeLayer(this.groupLayerSurgePulsing)
+            this.clearLayerById(this.groupLayerSurgeStationPulsingId)
         }
-        if (this.groupLayerSurgeStationDivForm) {
-            mymap.removeLayer(this.groupLayerSurgeStationDivForm)
+        // 清除潮位站 icon group layer (by id)
+        if (this.groupLayerSurgeStationDivId !== DEFAULT_LAYER_ID) {
+            this.clearLayerById(this.groupLayerSurgeStationDivId)
         }
 
-        this.groupLayerSurgePulsing = null
-        this.groupLayerSurgeStationDivForm = null
+        this.groupLayerSurgeStationPulsingId = DEFAULT_LAYER_ID
+
+        this.groupLayerSurgeStationDivId = DEFAULT_LAYER_ID
     }
 
     // 21-10-08 清除当前台风折线群组 layer
@@ -954,8 +959,9 @@ export default class TyGroupMap extends mixins(
         if (this.currentGroupPathPulsingLayerGroup) {
             this.clearGroupLayer(this.currentGroupPathPulsingLayerGroup)
         }
-        if (this.currentCenterGroupPathPolyLineLayerGroup) {
-            this.clearGroupLayer(this.currentCenterGroupPathPolyLineLayerGroup)
+        if (this.currentCenterPathLineLayerId !== DEFAULT_LAYER_ID) {
+            this.clearLayerById(this.currentCenterPathLineLayerId)
+            this.currentCenterPathLineLayerId = DEFAULT_LAYER_ID
         }
     }
 
@@ -978,241 +984,6 @@ export default class TyGroupMap extends mixins(
         this.clearUniquerRasterLayer()
     }
 
-    // clear
-
-    loadStationList_bak(zoom: number): void {
-        // const zoom = this.zoom
-        const that = this
-        const mymap: L.Map = this.$refs.basemap['mapObject']
-        const surgeArr: number[] = []
-        const iconArr: IconCirlePulsing[] = []
-        const iconSurgeMinArr: IconMinStationSurge[] = []
-
-        const surgePulsingMarkersList: L.Marker[] = []
-        const surgeDataFormMarkersList: L.Marker[] = []
-        this.clearSurgeAllGroupLayers()
-        this.$message(
-            `加载台风:${that.stationSurgeIconOptions.tyCode},预报时间:${formatDate(
-                that.stationSurgeIconOptions.forecastDt
-            )}对应的海洋站`
-        )
-        // TODO:[-] 21-12-27 此处需要判断一下，减少向后台查询的请求次数，若 stationSurgeIconOptions 无变化不需要再次请求
-        getStationSurgeRangeListByGroupPath(
-            this.stationSurgeIconOptions.gpId,
-            this.stationSurgeIconOptions.tyCode,
-            this.stationSurgeIconOptions.forecastDt,
-            this.stationSurgeIconOptions.tyTimeStamp
-        ).then(
-            (res: {
-                status: number
-                data: {
-                    ty_code: string
-                    gp_id: number
-                    station_code: string
-                    forecast_index: number
-                    forecast_dt: Date
-                    surge: number
-                    name: string
-                    lat: number
-                    lon: number
-                    surge_max: number
-                    surge_min: number
-                }[]
-            }) => {
-                if (res.status === 200) {
-                    if (res.data.length > 0) {
-                        // TODO:[-] 21-05-14
-                        // [
-                        //     {
-                        //         "ty_code": "2022",
-                        //         "gp_id": 1,
-                        //         "station_code": "SHW",
-                        //         "forecast_index": 3,
-                        //         "forecast_dt": "2020-09-15T20:00:00Z",
-                        //         "surge": -16.0,
-                        //         "name": "汕尾",
-                        //         "lat": 22.7564,
-                        //         "lon": 115.3572,
-                        //         "surge_max": -14.1,
-                        //         "surge_min": -17.5
-                        //     },
-                        // ]
-                        const surgeArr: number[] = []
-                        const iconArr: IconCirlePulsing[] = []
-                        const iconSurgeMinArr: IToHtml[] = []
-                        that.currentStationSurgeList = []
-                        res.data.forEach((element) => {
-                            surgeArr.push(element.surge)
-
-                            that.currentStationSurgeList.push(
-                                new StationSurgeMiModel(
-                                    element.name,
-                                    element.station_code,
-                                    element.surge,
-                                    element.surge_max,
-                                    element.surge_min,
-                                    element.forecast_dt
-                                )
-                            )
-                        })
-                        // 获取极值
-                        const surgeMax = Math.max(...surgeArr)
-                        const surgeMin = Math.min(...surgeArr)
-                        res.data.forEach((temp) => {
-                            const icon = new IconCirlePulsing({
-                                val: temp.surge,
-                                max: surgeMax,
-                                min: surgeMin
-                            })
-                            const iconSurgeMin = new StationSurge(
-                                temp.name,
-                                temp.station_code,
-                                that.tyCode,
-                                that.tyTimeStamp,
-                                that.forecastDt
-                            ).getImplements(zoom, {
-                                stationName: temp.name,
-                                stationCode: temp.station_code,
-                                surgeMax: temp.surge_max,
-                                surgeMin: temp.surge_min,
-                                surgeVal: temp.surge
-                            })
-                            iconArr.push(icon)
-                            iconSurgeMinArr.push(iconSurgeMin)
-                        })
-                        let index = 0
-                        // 批量添加至 map 中
-                        iconArr.forEach((temp) => {
-                            // 1- 脉冲点 icon
-                            const stationDivIcon = L.divIcon({
-                                className: 'surge_pulsing_icon_default',
-                                html: temp.toHtml()
-                                // 目前需要此部分，因为会造成 位置的位移
-                                // 坐标，[相对于原点的水平位置（左加右减），相对原点的垂直位置（上加下减）]
-                                // iconAnchor: [-20, 30]
-                            })
-
-                            // 2- 台站 station data form icon
-                            const stationSurgeMinDivICOn = L.divIcon({
-                                className: iconSurgeMinArr[index].getClassName(),
-                                html: iconSurgeMinArr[index].toHtml(),
-                                // 坐标，[相对于原点的水平位置（左加右减），相对原点的垂直位置（上加下减）]
-                                iconAnchor: [-20, 10]
-                            })
-
-                            const surgePulsingMarker = L.marker(
-                                [res.data[index].lat, res.data[index].lon],
-                                {
-                                    icon: stationDivIcon,
-                                    customData: {
-                                        name: res.data[index].name,
-                                        surge: res.data[index].surge,
-                                        surgeMax: res.data[index].surge_max,
-                                        surgeMin: res.data[index].surge_min,
-                                        stationCode: res.data[index].station_code,
-                                        lat: res.data[index].lat,
-                                        lon: res.data[index].lon,
-                                        stationName: res.data[index].name
-                                    }
-                                }
-                            )
-                            // TODO:[-] 21-06-04 鼠标移入脉冲点，显示 station 的 mini form
-                            surgePulsingMarker
-                                .on(
-                                    'mouseover',
-                                    (e: {
-                                        target: {
-                                            options: {
-                                                customData: {
-                                                    name: string
-                                                    surge: number
-                                                    surgeMax: number
-                                                    surgeMin: number
-                                                    stationCode: string
-                                                    lat: number
-                                                    lon: number
-                                                }
-                                            }
-                                        }
-                                    }) => {
-                                        const customData = e.target.options.customData
-                                        const iconSurgeMin = new IconFormMinStationSurgeMidModel(
-                                            customData.name,
-                                            customData.stationCode,
-                                            customData.surge,
-                                            '潮位'
-                                        )
-                                        // TODO:[-] 21-06-08 将弹出的 mini form 放在该脉冲点的旁边位置
-                                        const stationSurgeMinDivICOn = L.divIcon({
-                                            className: iconSurgeMin.getClassName(),
-                                            html: iconSurgeMin.toHtml(),
-                                            // 坐标，[相对于原点的水平位置（左加右减），相对原点的垂直位置（上加下减）]
-                                            iconAnchor: [-20, 30]
-                                        })
-                                        const tempStationSurgeMarker = L.marker(
-                                            [customData.lat, customData.lon],
-                                            {
-                                                icon: stationSurgeMinDivICOn,
-                                                customData: customData
-                                            }
-                                        )
-                                        that.stationMinMarker = tempStationSurgeMarker
-                                        tempStationSurgeMarker.addTo(mymap)
-                                    }
-                                )
-                                .on('mouseout', (e) => {
-                                    if (that.stationMinMarker) {
-                                        mymap.removeLayer(that.stationMinMarker)
-                                        that.stationMinMarker = undefined
-                                    }
-                                })
-                                .on('click', (e) => {
-                                    // 通过 -> e -> target -> options -> customData -> stationCode
-                                    that.stationCode = e.target.options.customData.stationCode
-                                    that.stationName = e.target.options.customData.stationName
-                                })
-                            surgePulsingMarkersList.push(surgePulsingMarker)
-                            const stationSurgeIconMarker = L.marker(
-                                [res.data[index].lat, res.data[index].lon],
-                                {
-                                    icon: stationSurgeMinDivICOn,
-                                    customData: {
-                                        stationCode: res.data[index]['station_code'],
-                                        stationName: res.data[index].name
-                                    }
-                                }
-                            )
-
-                            stationSurgeIconMarker
-                                .on('mouseover', (e) => {
-                                    // todo:[-] 21-05-15 加入鼠标移入时置顶，移出时恢复之前的 zindex
-                                    stationSurgeIconMarker.setZIndexOffset(19999)
-                                })
-                                .on('mouseout', (e) => {
-                                    stationSurgeIconMarker.setZIndexOffset(1999)
-                                })
-                                .on('click', (e) => {
-                                    // 通过 -> e -> target -> options -> customData -> stationCode
-                                    // console.log(e)
-                                    that.stationCode = e.target.options.customData.stationCode
-                                    that.stationName = e.target.options.customData.stationName
-                                })
-                            surgeDataFormMarkersList.push(stationSurgeIconMarker)
-                            index++
-                        })
-                        // 批量生成 marker后统一添加至 map中
-                        that.groupLayerSurgePulsing = L.layerGroup(surgePulsingMarkersList).addTo(
-                            mymap
-                        )
-                        that.groupLayerSurgeStationDivForm = L.layerGroup(
-                            surgeDataFormMarkersList
-                        ).addTo(mymap)
-                    }
-                }
-            }
-        )
-    }
-
     // 加载当前时刻的所有潮位站数据 并存储至 that.currentStationSurgeList
     loadCurrentStationList(stationType: LayerTypeEnum): Promise<void> {
         const that = this
@@ -1225,7 +996,7 @@ export default class TyGroupMap extends mixins(
             tyCode: string,
             forecastDt: Date,
             timestampStr: string
-        ) => Promise<AxiosResponse<any>> = null
+        ) => Promise<AxiosResponse<any>> | null = null
         switch (stationType) {
             // 静态潮位站
             case LayerTypeEnum.STATION_ICON_STATIC_LAYER:
@@ -1234,17 +1005,20 @@ export default class TyGroupMap extends mixins(
                 break
             // 逐时潮位站
             case LayerTypeEnum.STATION_ICON_FIELD_LAYER:
-                this.$message(
-                    `加载台风:${that.stationSurgeIconOptions.tyCode},预报时间:${formatDate(
-                        that.stationSurgeIconOptions.forecastDt
-                    )}对应的海洋站`
-                )
+                // this.$message(
+                //     `加载台风:${that.stationSurgeIconOptions.tyCode},预报时间:${formatDate(
+                //         that.stationSurgeIconOptions.forecastDt
+                //     )}对应的海洋站`
+                // )
                 getStationFunc = getStationSurgeRangeListByGroupPath
                 break
             // 极值潮位站
             case LayerTypeEnum.STATION_ICON_MAX_LAYER:
                 // this.$message(`加载台风:${that.stationSurgeIconOptions.tyCode}全过程海洋站极值`)
                 getStationFunc = getAllPathStationMaxSurgeList
+                break
+            default:
+                getStationFunc = getStaticStationList
                 break
         }
 
@@ -1324,7 +1098,8 @@ export default class TyGroupMap extends mixins(
         const iconSurgeMinArr: IconMinStationSurge[] = []
 
         const surgePulsingMarkersList: L.Marker[] = []
-        const surgeDataFormMarkersList: L.Marker[] = []
+        // 保存当前海洋站 icon 的 group layer
+        const surgeStationIconMarkersList: L.Marker[] = []
         this.clearSurgeAllGroupLayers()
         // this.$message(
         //     `加载台风:${that.stationSurgeIconOptions.tyCode},预报时间:${formatDate(
@@ -1335,13 +1110,14 @@ export default class TyGroupMap extends mixins(
         stationSurgeList.forEach((temp) => {
             surgeArr.push(temp.surge)
         })
-        const surgeMax = Math.max(...surgeArr)
-        const surgeMin = Math.min(...surgeArr)
+        const surgeMax = Math.max(...surgeArr).toFixed(2)
+        const surgeMin = Math.min(...surgeArr).toFixed(2)
         stationSurgeList.forEach((temp) => {
             const icon = new IconCirlePulsing({
                 val: temp.surge,
                 max: surgeMax,
-                min: surgeMin
+                min: surgeMin,
+                iconType: IconTypeEnum.TY_PULSING_ICON
             })
             const iconSurgeMin = new StationSurge(
                 temp.stationName,
@@ -1352,9 +1128,9 @@ export default class TyGroupMap extends mixins(
             ).getImplements(zoom, {
                 stationName: temp.stationName,
                 stationCode: temp.stationCode,
-                surgeMax: temp.max,
-                surgeMin: temp.min,
-                surgeVal: temp.surge
+                surgeMax: temp.max.toFixed(2),
+                surgeMin: temp.min.toFixed(2),
+                surgeVal: temp.surge.toFixed(2)
             })
             iconArr.push(icon)
             iconSurgeMinArr.push(iconSurgeMin)
@@ -1383,9 +1159,9 @@ export default class TyGroupMap extends mixins(
                 icon: stationDivIcon,
                 customData: {
                     name: tempStationSurge.stationName,
-                    surge: tempStationSurge.surge,
-                    surgeMax: tempStationSurge.max,
-                    surgeMin: tempStationSurge.min,
+                    surge: tempStationSurge.surge.toFixed(2),
+                    surgeMax: tempStationSurge.max.toFixed(2),
+                    surgeMin: tempStationSurge.min.toFixed(2),
                     stationCode: tempStationSurge.stationCode,
                     lat: tempStationSurge.lat,
                     lon: tempStationSurge.lon,
@@ -1467,27 +1243,35 @@ export default class TyGroupMap extends mixins(
                     that.stationCode = e.target.options.customData.stationCode
                     that.stationName = e.target.options.customData.stationName
                 })
-            surgeDataFormMarkersList.push(stationSurgeIconMarker)
+            surgeStationIconMarkersList.push(stationSurgeIconMarker)
             index++
         })
         // 批量生成 marker后统一添加至 map中
-        that.groupLayerSurgePulsing = L.layerGroup(surgePulsingMarkersList).addTo(mymap)
-        that.groupLayerSurgeStationDivForm = L.layerGroup(surgeDataFormMarkersList).addTo(mymap)
+        // TODO:[x] 22-05-30 尝试引入 canvasMarkers 注意此处经尝试，无法对非图片的icon进行渲染(之前风场是img icon无问题)
+        // const surgeStationIconCanvasMarkers = new CanvasMarkerLayer().addTo(mymap)
+        // surgeStationIconCanvasMarkers.addLayers(surgeStationIconMarkersList)
+        // surgeStationIconCanvasMarkers.addTo(mymap)
+        const surgeStationPulsingMarkers = L.layerGroup(surgePulsingMarkersList).addTo(mymap)
+        const surgeStationIconMarkers = L.layerGroup(surgeStationIconMarkersList).addTo(mymap)
+        this.groupLayerSurgeStationPulsingId = surgeStationPulsingMarkers._leaflet_id
+        this.groupLayerSurgeStationDivId = surgeStationIconMarkers._leaflet_id
     }
 
     // TODO:[-] 21-10-08 清除所有 当前 台风集合路径的相关 layer
     clearGroupPathAllLayer(): void {
         if (
-            this.currentGroupPathPolyLineLayerGroup &&
+            this.currentGroupPathPolyLineGroupLayersId !== DEFAULT_LAYER_ID &&
             this.currentGroupPathPulsingLayerGroup &&
-            this.currentCenterGroupPathPolyLineLayerGroup
+            this.currentCenterPathLineLayerId !== DEFAULT_LAYER_ID
         ) {
             // TODO:[*] 22-04-18 将 removerLayer => clearLayerById
             // this.clearGroupLayer(this.currentGroupPathPolyLineLayerGroup)
-            this.clearLayerById(this.currentGroupPathPolyLineLayerGroupId)
+            this.clearLayerById(this.currentPathProCirclesLayerId)
             // 清除台风全部集合路径的折线
             this.clearLayerById(this.currentGroupPathPolyLineGroupLayersId)
-            this.clearGroupLayer(this.currentCenterGroupPathPolyLineLayerGroup)
+            this.currentGroupPathPolyLineGroupLayersId = DEFAULT_LAYER_ID
+            this.clearLayerById(this.currentCenterPathLineLayerId)
+            this.currentCenterPathLineLayerId = DEFAULT_LAYER_ID
             this.clearGroupLayer(this.currentGroupPathPulsingLayerGroup)
             this.clearTyOutlineGroupLayer()
             this.clearTyGroupOutlineGroupLayer()
@@ -1641,8 +1425,8 @@ export default class TyGroupMap extends mixins(
         // TODO:[-] 22-05-07 先清除一下当前的中心路径折线layer
         this.clearLayerById(this.currentGroupPathPolyLineGroupLayersId)
         const tyGroupPathLine = new TyGroupPathLine(mymap, that.tyGroupLineList)
-        // 只加载了集合路径的 line，不包含集合路径包络多边形
-        const tempTyGroupPolyLineLayerGroup = tyGroupPathLine.addPolyLines2MapByGroup()
+        // 集合路径的折线 line，不包含集合路径包络多边形
+        const currentTyGroupPathPoly = tyGroupPathLine.addPolyLines2MapByGroup()
         // TODO:[-] 22-02-25 尝试将概率圆+路径包络拼接成一个图形
         // tyGroupPathLine.addPathOutline2Map()
         const tempCenterPathLine = new TyGroupCenterPathLine(mymap, that.tyGroupLineList)
@@ -1726,8 +1510,7 @@ export default class TyGroupMap extends mixins(
             // TODO:[*] 22-04-21 注意此处每次调用generateCircle均会执行一次排序操作
             this.tyOutlineGroupLayersId = tyPolygon.generateCircle()._leaflet_id
             // const tyOutLineGroupLayer = tyPolygon.generateCircle(outlines)
-            this.currentGroupPathPolyLineLayerGroup = tempTyGroupPolyLineLayerGroup
-            this.currentGroupPathPolyLineGroupLayersId = tempTyGroupPolyLineLayerGroup._leaflet_id
+            this.currentGroupPathPolyLineGroupLayersId = currentTyGroupPathPoly._leaflet_id
         } else {
             // - 22-05-06 此处加入了 清除台风集合路径外侧轮廓
             this.clearTyGroupOutlineGroupLayer()
@@ -1753,15 +1536,17 @@ export default class TyGroupMap extends mixins(
             lineWeight: 5,
             opacity: 0.8
         })
-        const tempTyGroupCenterPathIconLayerGroup = tyGroupCenterPathLine.addCenterCirlePulsing2MapByGroup()
-        this.currentCenterPathIconLayerId = tempTyGroupCenterPathIconLayerGroup._leaflet_id
-        this.currentCenterGroupPathPolyLineLayerGroup = tyGroupCenterPathLine.addPolyLines2MapByGroup() // 添加中间路径的折线到map
-        this.currentCenterPathLineLayerId = this.currentCenterGroupPathPolyLineLayerGroup._leaflet_id
+
+        /** 当前中心路径的圆点脉冲 group layer @type {*} */
+        const currentTyCenterPathIconLayerGroup = tyGroupCenterPathLine.addCenterCirlePulsing2MapByGroup()
+        this.currentCenterPathIconLayerId = currentTyCenterPathIconLayerGroup._leaflet_id
+        const currentCenterGroupPathPolyLineLayerGroup = tyGroupCenterPathLine.addPolyLines2MapByGroup() // 添加中间路径的折线到map
+        this.currentCenterPathLineLayerId = currentCenterGroupPathPolyLineLayerGroup._leaflet_id
 
         // TODO:[-] 22-02-25 暂时加入的加入概率圆
         tyGroupCenterPathLine.addProRadiusCirle2MapByCenter()
 
-        this.currentGroupPathPulsingLayerGroup = tempTyGroupCenterPathIconLayerGroup
+        this.currentGroupPathPulsingLayerGroup = currentTyCenterPathIconLayerGroup
     }
 
     // + 21-05-12 添加 中间路径的概率半径 -> map
@@ -1788,14 +1573,14 @@ export default class TyGroupMap extends mixins(
                 cirleLayers.push(circleTemp)
             })
             const tempTyGroupProPathCircles = L.layerGroup([...cirleLayers]).addTo(mymap)
-            this.currentGroupPathProPathCirclesGroup = tempTyGroupProPathCircles
+            this.currentPathProCirclesLayerId = tempTyGroupProPathCircles._leaflet_id
         }
     }
 
     // + 21-04-22 将 台风实时圆 add to map
     addTyphoonRealDataDiv2Map(tyRealDataCircle: TyphoonCircleStatus): void {
         const that = this
-        const mymap: any = this.$refs.basemap['mapObject']
+        const mymap: L.Map = this.$refs.basemap['mapObject']
         const typhoonDivHtml: string = tyRealDataCircle.toDivIconHtml()
 
         const typhoonDivIcon = L.divIcon({
@@ -2086,55 +1871,6 @@ export default class TyGroupMap extends mixins(
         this.center = [point.lat, point.lng]
     }
 
-    // 20-08-12 监听 当前的 targetOilModelData 的变化，若发生变化后则更新 自定义的 位置 marker
-    @Watch('targetOilModelData')
-    onOilModelData(res: CaseOilModel): void {
-        // 21-01-06 监听到 当前的 oilModelData变化后，将lat,lon 赋值给 this.initialLatlng
-        this.setLatlng([res.lat, res.lon])
-        this.setInitialLatlng([res.lat, res.lon])
-        this.addPositionMarker2Map([res.lat, res.lon])
-    }
-
-    addPositionMarker2Map(latlon: number[]): void {
-        const mymap: L.Map = this.$refs.basemap['mapObject']
-        this.makerLatlng = latlon
-        // TODO:[-] 20-07-15 暂时注释掉 pulse icon 因为会出现偏移
-        // const iconMarker = L.icon.pulse({ iconSize: [12, 12], color: 'red' })
-        // L.marker(valNew, { icon: iconMarker }).addTo(mymap)
-
-        if (this.iconMySelectedMarker !== null) {
-            mymap.removeLayer(this.iconMySelectedMarker)
-            mymap.removeLayer(this.iconMySelectedGisFormMarker)
-        }
-        const myIcon = new CustomerMarker()
-        const myIconGisForm = new CustomerGisFormMarker(latlon)
-        const myIconHtml = myIcon.toHtml()
-        const myMarkerIcon = L.divIcon({
-            className: 'my-marker',
-            html: myIconHtml,
-            iconAnchor: [6, 6]
-        })
-
-        // TODO:[*] 21-03-09 ERROR:
-        // [Vue warn]: Error in callback for watcher "getLatlng": "RangeError: Maximum call stack size exceeded"
-        const myDivIcon = L.marker([latlon[0], latlon[1]], {
-            icon: myMarkerIcon
-        }).addTo(mymap)
-        this.iconMySelectedMarker = myDivIcon
-
-        const myDivIconGisForm = L.marker([latlon[0], latlon[1]], {
-            icon: L.divIcon({
-                className: 'my-marker-gis-form',
-                html: myIconGisForm.toHtml(),
-                iconAnchor: [-30, 30]
-            })
-        }).addTo(mymap)
-        this.iconMySelectedGisFormMarker = myDivIconGisForm
-    }
-
-    // TODO:[*] 20-02-20 监听 store->map->mutations->GET_MAP_NOW
-    // @Mutation(GET_MAP_NOW, { namespace: 'map' }) getcurrent
-
     @Getter(GET_MAP_NOW, { namespace: 'map' }) getcurrent
 
     // @Debounce(2000)
@@ -2180,10 +1916,9 @@ export default class TyGroupMap extends mixins(
     }
 
     @Watch('getTyFieldOptions', { immediate: true, deep: true })
-    onTyFieldOptions(val: ITySurgeLayerOptions, oldVal: ITySurgeLayerOptions): void {
+    async onTyFieldOptions(val: ITySurgeLayerOptions, oldVal: ITySurgeLayerOptions): void {
         const that = this
         const mymap: any = this.$refs.basemap['mapObject']
-        // const scaleList: string[] | string = getColorScale('my-colour').scaleColorList
         const scaleList: string[] | string = val.scaleList
         if (this.checkSurgeOptions(val)) {
             // 当 tyGroupOptions 发生变更, tyCode | forecastDt | timeStamp 中一个或多个
@@ -2192,6 +1927,7 @@ export default class TyGroupMap extends mixins(
             // 点击向后台发送 获取逐时风暴增水场的请求
             // 请求参数包含 ty_code | ty_timestamp | forecast_dt
             this.clearUniquerRasterLayer()
+            this.clearSosurfaceLayer()
             const fieldSurgeGeoLayer = new FieldSurgeGeoLayer({
                 tyCode: val.tyCode,
                 tyTimestamp: val.tyTimeStamp,
@@ -2207,17 +1943,62 @@ export default class TyGroupMap extends mixins(
                 center: true,
                 type: 'success'
             })
-            fieldSurgeGeoLayer
-                .add2map(mymap, that.$message)
-                .then((res: { _leaflet_id: number }) => {
-                    // console.log(res)
+            const loadInstance = loading('等待加载等值面', {
+                fullscreen: true,
+                background: 'rgba(49, 59, 89, 0.733)'
+            })
+            const isLoadingRasterLayer =
+                val.rasterLayerType == RasterLayerEnum.RASTER_LAYER ? true : false
+            await fieldSurgeGeoLayer
+                .add2map(mymap, that.$message, isLoadingRasterLayer)
+                .then((_id) => {
                     this.setScaleRange(fieldSurgeGeoLayer.scaleRange || [])
-                    that.uniqueRasterLayerId = res._leaflet_id
-                    // that.uniqueRasterLayer = res
+                    that.uniqueRasterLayerId = _id
                 })
+            if (!isLoadingRasterLayer) {
+                const sosurfaceOptions: { colorScale?: string[]; valScale?: number[] } = {
+                    colorScale: [
+                        '#00429d',
+                        '#4771b2',
+                        '#73a2c6',
+                        '#a5d5d8',
+                        '#ffffe0',
+                        '#ffbcaf',
+                        '#f4777f',
+                        '#cf3759',
+                        '#93003a'
+                    ],
+                    valScale: [0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6]
+                }
+                const maxSosurface = new SurgeSosurface(
+                    fieldSurgeGeoLayer.tiffUrl,
+                    sosurfaceOptions
+                )
+                await maxSosurface.addSosurfaceToMap(mymap)
+
+                if (sosurfaceOptions.valScale !== undefined) {
+                    if (
+                        maxSosurface.geoOptions.valMax <
+                        sosurfaceOptions.valScale[sosurfaceOptions.valScale.length - 1]
+                    ) {
+                        sosurfaceOptions.valScale.push('max')
+                    } else {
+                        sosurfaceOptions.valScale.push(maxSosurface.geoOptions.valMax)
+                    }
+                }
+
+                this.setIsoSurgeColorScaleValRange(sosurfaceOptions.valScale)
+                this.setIsoSurgeColorScaleStrList(sosurfaceOptions.colorScale)
+                that.sosurfaceLayerId = maxSosurface.getLayerId()
+                that.surgeGridTitleLayerId = maxSosurface.getPointsTitleLayerId()
+                that.sosurfaceLayer = maxSosurface.getLayer()
+            }
+
+            loadInstance.close()
         } else if (!val.isShow && oldVal.isShow) {
             // 若未通过则清除 tyGroup layer
             this.clearUniquerRasterLayer()
+            this.clearSosurfaceLayer()
         }
     }
 
@@ -2259,17 +2040,17 @@ export default class TyGroupMap extends mixins(
     }
 
     @Watch('getTyMaxSurgeOpts', { immediate: true, deep: true })
-    onTyMaxSurgeOptions(val: ITySurgeLayerOptions, oldVal: ITySurgeLayerOptions): void {
+    async onTyMaxSurgeOptions(val: ITySurgeLayerOptions, oldVal: ITySurgeLayerOptions): void {
         const that = this
         const mymap: any = this.$refs.basemap['mapObject']
-        // const scaleList: string[] | string = getColorScale('my-colour').scaleColorList
         const scaleList: string[] | string = val.scaleList
         if (val.isShow && val.isShow === true) {
-            // if (this.uniqueRasterLayer) {
-            //     clearRasterFromMap(mymap, this.uniqueRasterLayer)
-            //     clearRas
-            // }
             this.clearUniquerRasterLayer()
+            this.clearSosurfaceLayer()
+            const loadInstance = loading('等待加载等值面', {
+                fullscreen: true,
+                background: 'rgba(49, 59, 89, 0.733)'
+            })
             // TODO:[-] 22-03-21 此处修改为使用新的 canvas 渲染 geotiff raster
             const surgeRasterLayer = new SurgeRasterGeoLayer({
                 tyCode: val.tyCode,
@@ -2281,16 +2062,54 @@ export default class TyGroupMap extends mixins(
                 customCoefficient: 0.8,
                 customCoeffMax: 1
             })
+            const isLoadingRasterLayer =
+                val.rasterLayerType == RasterLayerEnum.RASTER_LAYER ? true : false
+            await surgeRasterLayer
+                .add2map(mymap, that.$message, isLoadingRasterLayer)
+                .then((layerId) => {
+                    this.setScaleRange(surgeRasterLayer.scaleRange || [])
+                    this.uniqueRasterLayerId = layerId
+                })
+            if (!isLoadingRasterLayer) {
+                // TODO:[*] 22-06-02 添加等值面
+                const sosurfaceOptions: { colorScale?: string[]; valScale?: number[] } = {
+                    colorScale: [
+                        '#00429d',
+                        '#4771b2',
+                        '#73a2c6',
+                        '#a5d5d8',
+                        '#ffffe0',
+                        '#ffbcaf',
+                        '#f4777f',
+                        '#cf3759',
+                        '#93003a'
+                    ],
+                    valScale: [0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6]
+                }
+                const maxSosurface = new SurgeSosurface(surgeRasterLayer.tiffUrl, sosurfaceOptions)
+                await maxSosurface.addSosurfaceToMap(mymap)
 
-            surgeRasterLayer.add2map(mymap, that.$message).then((layerId) => {
-                // console.log(surgeRasterLayer)
-                this.setScaleRange(surgeRasterLayer.scaleRange || [])
-                // TODO:[*] 22-04-14 将返回 layer 修改为 layerId，需要测试
-                // this.uniqueRasterLayer = layer
-                this.uniqueRasterLayerId = layerId
-            })
+                if (sosurfaceOptions.valScale !== undefined) {
+                    if (
+                        maxSosurface.geoOptions.valMax <
+                        sosurfaceOptions.valScale[sosurfaceOptions.valScale.length - 1]
+                    ) {
+                        sosurfaceOptions.valScale.push('max')
+                    } else {
+                        sosurfaceOptions.valScale.push(maxSosurface.geoOptions.valMax)
+                    }
+                }
+
+                this.setIsoSurgeColorScaleValRange(sosurfaceOptions.valScale)
+                this.setIsoSurgeColorScaleStrList(sosurfaceOptions.colorScale)
+                that.sosurfaceLayerId = maxSosurface.getLayerId()
+                that.surgeGridTitleLayerId = maxSosurface.getPointsTitleLayerId()
+                that.sosurfaceLayer = maxSosurface.getLayer()
+            }
+            loadInstance.close()
         } else if (!val.isShow) {
             this.clearUniquerRasterLayer()
+            this.clearSosurfaceLayer()
         }
     }
 
@@ -2304,6 +2123,13 @@ export default class TyGroupMap extends mixins(
     @Mutation(SET_SHOW_STATION_ICON, { namespace: 'station' }) setShowStationIcon
 
     @Mutation(SET_SHOW_TYPHOON_LEGEND_ICON, { namespace: 'typhoon' }) setShowTyLegend
+
+    /** 设置当前 潮位等值面色标 实际值数组 */
+    @Mutation(SET_ISOSURGE_COLOR_SCALE_VAL_RANGE, { namespace: 'common' })
+    setIsoSurgeColorScaleValRange
+
+    @Mutation(SET_ISOSURGE_COLOR_SCALE_STR_LIST, { namespace: 'common' })
+    setIsoSurgeColorScaleStrList
 
     @Watch('tyProSurgeOptions', { immediate: true, deep: true })
     onTyProSurgeOptions(val: ITySurgeLayerOptions): void {
@@ -2445,11 +2271,22 @@ export default class TyGroupMap extends mixins(
         return isOk
     }
 
-    // 清除唯一的栅格图层——以后将所有清除 raster 均调用此方法
+    /**  清除唯一的栅格图层——以后将所有清除 raster 均调用此方法 */
     clearUniquerRasterLayer(): void {
         if (this.uniqueRasterLayerId !== DEFAULT_LAYER_ID) {
             this.clearLayerById(this.uniqueRasterLayerId)
             this.uniqueRasterLayerId = DEFAULT_LAYER_ID
+        }
+    }
+
+    /** 清除增水场等值面 layer */
+    clearSosurfaceLayer(): void {
+        const mymap: L.Map = this.$refs.basemap['mapObject']
+        if (this.sosurfaceLayerId !== DEFAULT_LAYER_ID) {
+            this.clearLayerById(this.sosurfaceLayerId)
+            this.clearLayerById(this.surgeGridTitleLayerId)
+            this.sosurfaceLayerId = DEFAULT_LAYER_ID
+            this.surgeGridTitleLayerId = DEFAULT_LAYER_ID
         }
     }
 
@@ -2556,7 +2393,10 @@ export default class TyGroupMap extends mixins(
         }
         // 添加至地图中
         const cmaPathLine = new TyCMAPathLine(mymap, val)
+
+        // TODO:[*] 22-05-30 注意此处修改尝试使用 canvas 渲染路径中心点(png)
         const cmaPathLineLayer = cmaPathLine.add2Map()
+        // cmaPathLine.add2MapByCanvas()
         const lastTyLatlng = cmaPathLine.getlastTyLatlng()
         if (lastTyLatlng) {
             this.center = [lastTyLatlng.lat, lastTyLatlng.lng]
@@ -2719,6 +2559,18 @@ export default class TyGroupMap extends mixins(
         })
     }
 
+    @Getter(GET_RASTER_LAYER_KEY, { namespace: 'map' })
+    getRasterLayerType: RasterLayerEnum
+
+    /** 监听 store -> GET_RASTER_LAYER_KEY 监听 raster layer 是否发生变化 */
+    @Watch('getRasterLayerType')
+    OnRasterLayerType(val: RasterLayerEnum): void {
+        // 监听到 raster layer 的显示设置发生变化 -> tyMaxSurgeOptions & tyFieldOptions & tyProSurgeOptions
+        this.tyMaxSurgeOptions.rasterLayerType = val
+        this.tyFieldOptions.rasterLayerType = val
+        this.tyProSurgeOptions.rasterLayerType = val
+    }
+
     // TODO:[-] 21-06-09
     @Debounce(700)
     @Watch('zoom')
@@ -2818,7 +2670,8 @@ export default class TyGroupMap extends mixins(
 @import '../../../styles/station/icon';
 // + 21-12-06 加入重写的 emelemtnui 样式
 @import '../../../styles/my-elementui/common';
-
+// + 22-06-06 引入格点数据图层的样式
+@import './style/isosurface';
 // TODO:[-] 21-06-10 TEST 加入了关于 mybasemap 的测试样式
 // #mybasemap {
 //     height: 1%;

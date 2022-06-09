@@ -720,6 +720,12 @@ class TyGroupCenterPathLine extends TyGroupPathLine {
         this.tyCenterPointsLayers = tyPointsLayers
     }
 
+    /**
+     * 添加中心路径圆点脉冲 (使用 group layer)
+     *
+     * @return {*}  {L.LayerGroup<any>}
+     * @memberof TyGroupCenterPathLine
+     */
     addCenterCirlePulsing2MapByGroup(): L.LayerGroup<any> {
         const tyCenterPointsLayersGroup = L.layerGroup([...this.tyCenterPointsLayers])
         tyCenterPointsLayersGroup.addTo(this.myMap)
@@ -1224,7 +1230,7 @@ class TyCMAPathLine {
         const tyPolylineForecast = this.initLineForecastLayer()
         const canvasMarkerLayer = new CanvasMarkerLayer().addTo(this.myMap)
         canvasMarkerLayer.addLayers(tyPointsList)
-        return new L.LayerGroup([...tyPolylineRealdata, tyPolylineForecast]).addTo(this.myMap)
+        return new L.LayerGroup([tyPolylineRealdata, tyPolylineForecast]).addTo(this.myMap)
     }
 
     getlastTyLatlng(): L.LatLng | null {

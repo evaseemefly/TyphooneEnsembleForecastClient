@@ -6,6 +6,9 @@ RBush是用于点和矩形的2D 空间索引的高性能JavaScript库。
 空间索引是用于点和矩形的特殊数据结构，它使您可以高效地执行查询，例如“边界框内的所有项目”（例如，比遍历所有项目快数百倍）。
 它最常用于地图和数据可视化中。
  git地址:https://github.com/mourner/rbush
+ TODO:[*] 22-05-30 测试 该 layer 无法 添加 divIcon 之前可以添加 icon 
+          本 canvas layer 只支持 img 类型的marker ,
+          参考:https://kael.top/2019/11/18/leaflet-canvas-marker/
 */
 const Rbush = require('rbush')
 // 尝试引入 leaflet
@@ -37,7 +40,7 @@ const CanvasMarkerLayer = (L.Layer ? L.Layer : L.Class).extend({
 
         markers.forEach(function(marker) {
             if (!(marker.options.pane === 'markerPane' && marker.options.icon)) {
-                console.error("Layer isn't a marker")
+                console.error('Layer isn\'t a marker')
                 return
             }
 
@@ -83,7 +86,7 @@ const CanvasMarkerLayer = (L.Layer ? L.Layer : L.Class).extend({
 
     addLayer: function(layer) {
         if (layer.options.pane === 'markerPane' && layer.options.icon) this.addMarker(layer)
-        else console.error("Layer isn't a marker")
+        else console.error('Layer isn\'t a marker')
     },
 
     addLayers: function(layers) {

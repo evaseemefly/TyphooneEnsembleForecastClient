@@ -6,7 +6,11 @@ import {
     GET_SCALE_RANGE,
     SET_SCALE_RANGE,
     GET_SHOW_OPTS_FORM,
-    SET_SHOW_OPTS_FORM
+    SET_SHOW_OPTS_FORM,
+    SET_ISOSURGE_COLOR_SCALE_VAL_RANGE,
+    GET_ISOSURGE_COLOR_SCALE_VAL_RANGE,
+    SET_ISOSURGE_COLOR_SCALE_STR_LIST,
+    GET_ISOSURGE_COLOR_SCALE_STR_LIST
 } from '../types'
 import { CaseTypeEnum } from '@/enum/case'
 import { DEFAULT_DICT_KEY, DEFAULT_SELECT_VAL } from '@/const/common'
@@ -21,6 +25,8 @@ interface Common {
     // color scale 的key
     scaleKey: string
     scaleRange: number[]
+    isoSurgeScaleValRange: number[]
+    isoSurgeScaleStrList: string[]
     isShowOptionsForm: boolean
 }
 
@@ -32,7 +38,9 @@ const state: Common = {
     productType: CaseTypeEnum.OIL,
     scaleKey: DEFAULT_SELECT_VAL,
     scaleRange: [],
-    isShowOptionsForm: false
+    isShowOptionsForm: false,
+    isoSurgeScaleStrList: [],
+    isoSurgeScaleValRange: []
 }
 const getters = {
     productType: (state) => state.productType,
@@ -46,6 +54,12 @@ const getters = {
     },
     [GET_SHOW_OPTS_FORM](state: Common): boolean {
         return state.isShowOptionsForm
+    },
+    [GET_ISOSURGE_COLOR_SCALE_VAL_RANGE](state: Common): number[] {
+        return state.isoSurgeScaleValRange
+    },
+    [GET_ISOSURGE_COLOR_SCALE_STR_LIST](state: Common): string[] {
+        return state.isoSurgeScaleStrList
     }
 }
 // 使用dispatch调用
@@ -76,6 +90,12 @@ const mutations = {
     },
     [SET_SHOW_OPTS_FORM](state: Common, val: boolean): void {
         state.isShowOptionsForm = val
+    },
+    [SET_ISOSURGE_COLOR_SCALE_VAL_RANGE](state: Common, range: number[]): void {
+        state.isoSurgeScaleValRange = range
+    },
+    [SET_ISOSURGE_COLOR_SCALE_STR_LIST](state: Common, scaleList: string[]): void {
+        state.isoSurgeScaleStrList = scaleList
     }
 }
 

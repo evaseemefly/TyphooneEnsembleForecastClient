@@ -1,5 +1,5 @@
 import { ProductEnum } from '@/enum/dict'
-import { LayerTypeEnum } from '@/enum/map'
+import { LayerTypeEnum, RasterLayerEnum } from '@/enum/map'
 import { AreaEnum } from '@/enum/area'
 import { DEFAULT_TYPHOON_GROUP_PATH_ID, DEFAULT_DATE } from '@/const/common'
 import { DEFAULTTYCODE, DEFAULTTIMESTAMP } from '@/const/typhoon'
@@ -118,7 +118,9 @@ const DefaultTyGroupPathOptions: ITyGroupPathOptions = {
 
 export interface ITyLayer extends ILayerDisplayOptions, ISurgeLayer {}
 
-export interface IRasterLayer extends ILayerDisplayOptions, ISurgeLayer, IScale {}
+export interface IRasterLayer extends ILayerDisplayOptions, ISurgeLayer, IScale {
+    rasterLayerType: RasterLayerEnum
+}
 /**
  * 台风增水配置接口
  *

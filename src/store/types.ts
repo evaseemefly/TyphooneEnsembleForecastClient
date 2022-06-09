@@ -32,6 +32,18 @@ export const GET_SCALE_KEY = 'GET_SCALE_KEY'
 export const SET_SCALE_RANGE = 'SET_SCALE_RANGE'
 export const GET_SCALE_RANGE = 'GET_SCALE_RANGE'
 
+/** 设置 潮位等值线 色标对应的值 range */
+export const SET_ISOSURGE_COLOR_SCALE_VAL_RANGE = 'SET_ISOSURGE_COLOR_SCALE_RANGE'
+/** 获取 潮位等值线 色标对应的值 range */
+
+export const GET_ISOSURGE_COLOR_SCALE_VAL_RANGE = 'GET_ISOSURGE_COLOR_SCALE_VAL_RANGE'
+
+/** 设置 潮位等值线 色标颜色str list */
+export const SET_ISOSURGE_COLOR_SCALE_STR_LIST = 'SET_ISOSURGE_COLOR_SCALE_STR_LIST'
+/** 获取 潮位等值线 色标颜色str list */
+
+export const GET_ISOSURGE_COLOR_SCALE_STR_LIST = 'GET_ISOSURGE_COLOR_SCALE_STR_LIST'
+
 // 产品的种类(主要是oil还是rescue)
 export const SET_PRODUCT_TYPE = 'SET_PRODUCT_TYPE'
 export const GET_PRODUCT_TYPE = 'GET_PRODUCT_TYPE'
@@ -55,6 +67,12 @@ export const GET_IS_INIT_LAYERS = 'GET_IS_INIT_LAYERS'
 // + 21-08-23 切换地图底图
 export const SET_BASE_MAP_KEY = 'SET_BASE_MAP_KEY'
 export const GET_BASE_MAP_KEY = 'GET_BASE_MAP_KEY'
+
+// + 22-06-08 切换栅格图层
+/** 设置栅格图层显示类型 */
+export const SET_RASTER_LAYER_KEY = 'SET_RASTER_LAYER_KEY'
+/** 获取栅格图层显示类型 */
+export const GET_RASTER_LAYER_KEY = 'GET_RASTER_LAYER_KEY'
 
 // map - 修改是否显示创建 oil case model
 export const SET_CREATE_OIL_CASE_MODAL = 'SET_CREATE_OIL_CASE_MODAL'

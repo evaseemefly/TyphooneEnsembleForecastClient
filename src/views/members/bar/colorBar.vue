@@ -1,5 +1,5 @@
 <template>
-    <div class="color-bar-list">
+    <div class="color-bar-list" v-show="isShow">
         <!-- 最终可行的办法，参考自: https://segmentfault.com/q/1010000037424499?utm_source=tag-newest -->
         <!-- 方式2:目前看不可行，https://stackoverflow.com/questions/59552974/how-can-i-bind-a-linear-gradient-background-property-made-up-of-dynamic-variable -->
         <!-- 此种方式可行 -->
@@ -97,6 +97,8 @@ import { Mutation, State, namespace, Getter } from 'vuex-class'
 import { IColorScale, ColorScales, IScale } from '@/const/colorBar'
 import { DEFAULT_DICT_KEY } from '@/const/common'
 import { SET_SCALE_KEY, GET_SCALE_RANGE } from '@/store/types'
+import { GET_RASTER_LAYER_KEY } from '@/store/types'
+import { RasterLayerEnum } from '@/enum/map'
 @Component({
     filters: {
         filterBackgroundColor(val: { key: string; scale: IScale }): string {
@@ -121,6 +123,7 @@ import { SET_SCALE_KEY, GET_SCALE_RANGE } from '@/store/types'
     }
 })
 export default class ColorBar extends Vue {
+    // isShow: boolean = false
     colorScales: { key: string; scale: IScale }[] = ColorScales
     selectedScaleIndex = DEFAULT_DICT_KEY
     colorRange: number[] = []
@@ -248,6 +251,12 @@ export default class ColorBar extends Vue {
         }
         // 注意需要将 range 按照当前的切分要求进行切分
         this.colorScales.forEach((temp) => (temp.scale.range = rangeList))
+    }
+
+    @Getter(GET_RASTER_LAYER_KEY, { namespace: 'map' }) getRasterLayerType
+
+    get isShow(): boolean {
+        return this.getRasterLayerType === RasterLayerEnum.RASTER_LAYER
     }
 }
 </script>
