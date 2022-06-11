@@ -3,6 +3,8 @@ import * as turf from '@turf/turf'
 import 'georaster'
 import { DEFAULT_LAYER_ID } from '@/const/common'
 import { max } from 'moment'
+import { Message } from 'element-ui'
+import { ElMessage } from 'element-ui/types/message'
 /**
  * 等值面实现类接口
  *
@@ -101,7 +103,11 @@ class SurgeSosurface implements ISosurface {
      * @returns {Promise<any>}
      * @memberof SurgeSosurface
      */
-    addSosurfaceToMap(map: L.Mapm, isShowTitle = true): Promise<any> {
+    addSosurfaceToMap(
+        map: L.Map,
+        errorCallBackFun: (ElMessage) => void,
+        isShowTitle = true
+    ): Promise<any> {
         const that = this
         return fetch(that.url, {
             method: 'GET',
@@ -111,7 +117,10 @@ class SurgeSosurface implements ISosurface {
                 return res.arrayBuffer()
             })
             .then((bufRes) => {
-                return parseGeoraster(bufRes)
+                // 注意若读取不存在的 tiff 会抛出异常
+                // Uncaught (in promise) TypeError: Invalid byte order value.
+                const res = parseGeoraster(bufRes)
+                return res
             })
             .then(
                 (parseRes: {
@@ -233,6 +242,10 @@ class SurgeSosurface implements ISosurface {
                     // return that._id
                 }
             )
+            .catch((err) => {
+                console.log(err)
+                errorCallBackFun(err)
+            })
     }
 
     /**

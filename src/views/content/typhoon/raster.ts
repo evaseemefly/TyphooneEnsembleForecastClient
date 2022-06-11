@@ -33,6 +33,7 @@ import 'georaster-layer-for-leaflet'
 // import * as GeoTIFF from 'geotiff'
 import GeoTIFF, { fromUrl, fromUrls, fromArrayBuffer, fromBlob } from 'geotiff'
 import * as plotty from 'plotty'
+import { ElMessage } from 'element-ui/types/message'
 // ---
 import { loadCurrentTif, loadFieldSurgeTif, loadProSurgeTif, loadMaxSurgeRange } from '@/api/geo'
 import { MaxSurge } from './surge'
@@ -434,6 +435,14 @@ class SurgeRasterGeoLayer {
         this.options = { ...this.options, ...options }
     }
 
+    /**
+     * 若加载错误则会返回 '' ,注意！
+     *
+     * @param {string} tyCode
+     * @param {string} tyTs
+     * @return {*}  {string}
+     * @memberof SurgeRasterGeoLayer
+     */
     public async getGeoTiff(tyCode: string, tyTs: string): string {
         const maxSurge = new MaxSurge(this.tyCode, this.tyTimestamp)
 
@@ -453,7 +462,7 @@ class SurgeRasterGeoLayer {
      */
     public async add2map(
         map: L.Map,
-        errorCallBackFun: (opt: { message: string; type: string }) => void,
+        errorCallBackFun: (ElMessage) => void,
         isShowRasterLayer = true
     ): Promise<number> {
         let layerId: number = DEFAULT_LAYER_ID
@@ -470,6 +479,10 @@ class SurgeRasterGeoLayer {
 
         // const awaitUrl = await maxSurge.getGeoTifUrl(this.tyCode, this.tyTimestamp)
         urlGeoTifUrl = await this.getGeoTiff(this.tyCode, this.tyTimestamp)
+        // + 22-06-11 此处加入一个手动抛出异常的操作,若需要加载的 geotiff 地址是一个 '' 空值，说明出现了异常直接抛出异常
+        if (urlGeoTifUrl === '') {
+            throw new Error('不存在指定geotiff路径')
+        }
         if (this._tiffUrl == null) {
             this._tiffUrl = urlGeoTifUrl
         }
@@ -728,7 +741,7 @@ class SurgeRasterTifLayer extends SurgeRasterGeoLayer {
 class FieldSurgeGeoLayer extends SurgeRasterGeoLayer {
     public async add2map(
         map: L.Map,
-        errorCallBackFun: (opt: { message: string; type: string }) => void,
+        errorCallBackFun: (ElMessage) => void,
         isShowRasterLayer = true
     ): Promise<number> {
         let addedLayer: L.Layer = null

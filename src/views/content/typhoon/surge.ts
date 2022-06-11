@@ -16,6 +16,14 @@ abstract class Surge implements ISurge {
 }
 
 class MaxSurge extends Surge {
+    /**
+     * - 22-06-11 注意此处存在一个bug若请求出现异常则会返回 '' 注意!
+     *
+     * @param {string} tyCode
+     * @param {string} tyTimeStamp
+     * @return {*}
+     * @memberof MaxSurge
+     */
     async getGeoTifUrl(tyCode: string, tyTimeStamp: string) {
         let tifUrl = ''
         try {
