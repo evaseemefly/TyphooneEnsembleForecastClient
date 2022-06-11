@@ -1,7 +1,7 @@
 <template>
     <div class="color-bar-list" v-show="isShow">
-        <transition name="color-bar-fade">
-            <el-tooltip class="item" effect="dark" content="增水场等值面色标" placement="top-start">
+        <el-tooltip class="item" effect="dark" content="增水场等值面色标" placement="top-start">
+            <transition name="color-bar-fade">
                 <div class="color-bar" v-show="isShowScaleBar">
                     <div class="color-bar-title font-align-center">
                         <div class="font-align-center">单位:m</div>
@@ -17,8 +17,9 @@
                         </div>
                     </div>
                 </div>
-            </el-tooltip>
-        </transition>
+                ya'zh
+            </transition>
+        </el-tooltip>
     </div>
 </template>
 <script lang="ts">
@@ -32,7 +33,8 @@ import { RasterLayerEnum } from '@/enum/map'
 import { GET_RASTER_LAYER_KEY } from '@/store/types'
 import {
     GET_ISOSURGE_COLOR_SCALE_VAL_RANGE,
-    GET_ISOSURGE_COLOR_SCALE_STR_LIST
+    GET_ISOSURGE_COLOR_SCALE_STR_LIST,
+    GET_IS_SHOW_RASTER_LEGEND
 } from '@/store/types'
 @Component({
     filters: {}
@@ -84,7 +86,7 @@ export default class ColorGridBar extends Vue {
         return isShow
     }
     get isShowScaleBar(): boolean {
-        return this.colorScalesList.length > 0
+        return this.colorScalesList.length > 0 && this.getIsShowRasterLegend
     }
 
     /** 监听 common -> GET_ISOSURGE_COLOR_SCALE_VAL_RANGE
@@ -92,6 +94,10 @@ export default class ColorGridBar extends Vue {
      */
     @Getter(GET_ISOSURGE_COLOR_SCALE_VAL_RANGE, { namespace: 'common' })
     getIsosurgeColorScaleValRange
+
+    /** 是否加载 raster 图例 */
+    @Getter(GET_IS_SHOW_RASTER_LEGEND, { namespace: 'map' })
+    getIsShowRasterLegend
 
     /** 监听 common -> GET_ISOSURGE_COLOR_SCALE_STR_LIST
      * 获取当前潮位等值面色标颜色str list

@@ -422,7 +422,8 @@ import {
     SET_SHOW_TYPHOON_LEGEND_ICON,
     SET_ISOSURGE_COLOR_SCALE_VAL_RANGE, // + 22-06-06
     SET_ISOSURGE_COLOR_SCALE_STR_LIST,
-    GET_RASTER_LAYER_KEY
+    GET_RASTER_LAYER_KEY,
+    SET_IS_SHOW_RASTER_LEGEND // + 22-06-10
 } from '@/store/types'
 import {
     DEFAULT_LAYER_ID,
@@ -1947,6 +1948,7 @@ export default class TyGroupMap extends mixins(
                 fullscreen: true,
                 background: 'rgba(49, 59, 89, 0.733)'
             })
+            this.setIsShowRasterLayerLegend(true)
             const isLoadingRasterLayer =
                 val.rasterLayerType == RasterLayerEnum.RASTER_LAYER ? true : false
             await fieldSurgeGeoLayer
@@ -2071,6 +2073,7 @@ export default class TyGroupMap extends mixins(
                     this.uniqueRasterLayerId = layerId
                 })
             if (!isLoadingRasterLayer) {
+                this.setIsShowRasterLayerLegend(true)
                 // TODO:[*] 22-06-02 添加等值面
                 const sosurfaceOptions: { colorScale?: string[]; valScale?: number[] } = {
                     colorScale: [
@@ -2130,6 +2133,10 @@ export default class TyGroupMap extends mixins(
 
     @Mutation(SET_ISOSURGE_COLOR_SCALE_STR_LIST, { namespace: 'common' })
     setIsoSurgeColorScaleStrList
+
+    /** 设置是否显示 raster layer 图例 */
+    @Mutation(SET_IS_SHOW_RASTER_LEGEND, { namespace: 'map' })
+    setIsShowRasterLayerLegend
 
     @Watch('tyProSurgeOptions', { immediate: true, deep: true })
     onTyProSurgeOptions(val: ITySurgeLayerOptions): void {
@@ -2274,6 +2281,7 @@ export default class TyGroupMap extends mixins(
     /**  清除唯一的栅格图层——以后将所有清除 raster 均调用此方法 */
     clearUniquerRasterLayer(): void {
         if (this.uniqueRasterLayerId !== DEFAULT_LAYER_ID) {
+            this.setIsShowRasterLayerLegend(false)
             this.clearLayerById(this.uniqueRasterLayerId)
             this.uniqueRasterLayerId = DEFAULT_LAYER_ID
         }
@@ -2283,6 +2291,7 @@ export default class TyGroupMap extends mixins(
     clearSosurfaceLayer(): void {
         const mymap: L.Map = this.$refs.basemap['mapObject']
         if (this.sosurfaceLayerId !== DEFAULT_LAYER_ID) {
+            this.setIsShowRasterLayerLegend(false)
             this.clearLayerById(this.sosurfaceLayerId)
             this.clearLayerById(this.surgeGridTitleLayerId)
             this.sosurfaceLayerId = DEFAULT_LAYER_ID

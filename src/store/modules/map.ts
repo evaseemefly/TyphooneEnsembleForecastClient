@@ -26,7 +26,9 @@ import {
     SET_BASE_MAP_KEY,
     GET_BASE_MAP_KEY,
     SET_RASTER_LAYER_KEY,
-    GET_RASTER_LAYER_KEY
+    GET_RASTER_LAYER_KEY,
+    SET_IS_SHOW_RASTER_LEGEND,
+    GET_IS_SHOW_RASTER_LEGEND
 } from '../types'
 export interface State {
     // range:number,
@@ -49,6 +51,9 @@ export interface State {
     // 是否需要重置 图层 layers
     isInitLayers: boolean
     rasterLayerType: RasterLayerEnum
+
+    /** 是否显示 raster图层的图例 */
+    isShowRasterLegend: boolean
 }
 
 // 用来存储应用状态的数据对象
@@ -72,7 +77,8 @@ const state: State = {
     // + 21-08-23 切换底图的key
     baseMapKey: MapLayerEnum.SIMPLE_MAP,
     isInitLayers: false,
-    rasterLayerType: RasterLayerEnum.ISOSURFACE_LAYER
+    rasterLayerType: RasterLayerEnum.ISOSURFACE_LAYER,
+    isShowRasterLegend: false
 }
 
 // 用来改变应用状态的函数
@@ -161,6 +167,9 @@ const mutations = {
 
     [SET_RASTER_LAYER_KEY](state: State, rasterLayerType: RasterLayerEnum): void {
         state.rasterLayerType = rasterLayerType
+    },
+    [SET_IS_SHOW_RASTER_LEGEND](state: State, isShowRasterLegend: boolean): void {
+        state.isShowRasterLegend = isShowRasterLegend
     }
 }
 
@@ -219,6 +228,9 @@ const getters = {
     },
     [GET_RASTER_LAYER_KEY]: (state: State): RasterLayerEnum => {
         return state.rasterLayerType
+    },
+    [GET_IS_SHOW_RASTER_LEGEND]: (state: State): boolean => {
+        return state.isShowRasterLegend
     }
 }
 

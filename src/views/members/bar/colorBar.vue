@@ -1,11 +1,12 @@
 <template>
-    <div class="color-bar-list" v-show="isShow">
-        <!-- 最终可行的办法，参考自: https://segmentfault.com/q/1010000037424499?utm_source=tag-newest -->
-        <!-- 方式2:目前看不可行，https://stackoverflow.com/questions/59552974/how-can-i-bind-a-linear-gradient-background-property-made-up-of-dynamic-variable -->
-        <!-- 此种方式可行 -->
-        <!-- <div class="color-bar-test" :style="{ backgroundImage: createBackgroundString() }"> -->
-        <!-- 此种方式不可行 -->
-        <!-- <div class="color-bar-test" :style="testColorStyle">
+    <transition name="color-bar-fade">
+        <div class="color-bar-list" v-show="isShow">
+            <!-- 最终可行的办法，参考自: https://segmentfault.com/q/1010000037424499?utm_source=tag-newest -->
+            <!-- 方式2:目前看不可行，https://stackoverflow.com/questions/59552974/how-can-i-bind-a-linear-gradient-background-property-made-up-of-dynamic-variable -->
+            <!-- 此种方式可行 -->
+            <!-- <div class="color-bar-test" :style="{ backgroundImage: createBackgroundString() }"> -->
+            <!-- 此种方式不可行 -->
+            <!-- <div class="color-bar-test" :style="testColorStyle">
             <span>m/s</span>
             <span>0</span>
             <span>0.2</span>
@@ -16,9 +17,9 @@
             <span>1.0</span>
             <span>1.2</span>
         </div> -->
-        <transition-group name="color-bar-fade">
-            <!-- 方式1: 不可行 -->
-            <!-- <div
+            <transition-group name="color-bar-fade">
+                <!-- 方式1: 不可行 -->
+                <!-- <div
                 class="color-bar"
                 v-for="(tempScale, index) in colorScales"
                 :key="tempScale.key"
@@ -31,34 +32,34 @@
                     tempRange
                 }}</span>
             </div> -->
-            <!-- 方式3: -->
-            <el-tooltip
-                v-for="(tempScale, index) in colorScales"
-                class="item"
-                effect="dark"
-                content="对于大于1.0m的增水会色标进行原值*0.8"
-                placement="top-start"
-                :key="tempScale.key"
-            >
-                <div
-                    class="color-bar"
+                <!-- 方式3: -->
+                <el-tooltip
+                    v-for="(tempScale, index) in colorScales"
+                    class="item"
+                    effect="dark"
+                    content="对于大于1.0m的增水会色标进行原值*0.8"
+                    placement="top-start"
                     :key="tempScale.key"
-                    @click="setSelectedScale(index)"
-                    v-show="showScale(index)"
                 >
-                    <div class="color-bar-title" :style="getBackgroundColorFirstStr(tempScale)">
-                        <span>单位:m</span>
+                    <div
+                        class="color-bar"
+                        :key="tempScale.key"
+                        @click="setSelectedScale(index)"
+                        v-show="showScale(index)"
+                    >
+                        <div class="color-bar-title" :style="getBackgroundColorFirstStr(tempScale)">
+                            <span>单位:m</span>
+                        </div>
+                        <div class="color-bar-content" :style="getCustomerStyleObj(tempScale)">
+                            <span v-for="tempRange in tempScale.scale.range" :key="tempRange.id">{{
+                                tempRange
+                            }}</span>
+                        </div>
                     </div>
-                    <div class="color-bar-content" :style="getCustomerStyleObj(tempScale)">
-                        <span v-for="tempRange in tempScale.scale.range" :key="tempRange.id">{{
-                            tempRange
-                        }}</span>
-                    </div>
-                </div>
-            </el-tooltip>
+                </el-tooltip>
 
-            <!-- 方式2: 可行 -->
-            <!-- <div
+                <!-- 方式2: 可行 -->
+                <!-- <div
                 class="color-bar"
                 v-for="(tempScale, index) in colorScales"
                 :key="tempScale.key"
@@ -71,9 +72,9 @@
                     tempRange
                 }}</span>
             </div> -->
-            <!-- --- -->
-            <!-- 动态绑定类，写在过滤器中会无法找到对应的  function -->
-            <!-- <div
+                <!-- --- -->
+                <!-- 动态绑定类，写在过滤器中会无法找到对应的  function -->
+                <!-- <div
                 class="color-bar"
                 v-for="(tempScale, index) in colorScales"
                 :key="tempScale.key"
@@ -86,8 +87,9 @@
                     tempRange
                 }}</span>
             </div> -->
-        </transition-group>
-    </div>
+            </transition-group>
+        </div>
+    </transition>
 </template>
 <script lang="ts">
 import { Prop, Vue, Watch } from 'vue-property-decorator'
