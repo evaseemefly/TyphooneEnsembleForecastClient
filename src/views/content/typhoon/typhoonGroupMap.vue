@@ -1958,7 +1958,7 @@ export default class TyGroupMap extends mixins(
                     that.uniqueRasterLayerId = _id
                 })
                 .then(async (_) => {
-                    if (!isLoadingRasterLayer) {
+                    if (!isLoadingRasterLayer && fieldSurgeGeoLayer.tiffUrl !== null) {
                         const sosurfaceOptions: { colorScale?: string[]; valScale?: number[] } = {
                             colorScale: [
                                 '#00429d',
@@ -2084,7 +2084,7 @@ export default class TyGroupMap extends mixins(
                     this.uniqueRasterLayerId = layerId
                 })
                 .then(async (_) => {
-                    if (!isLoadingRasterLayer) {
+                    if (!isLoadingRasterLayer && surgeRasterLayer.tiffUrl !== null) {
                         this.setIsShowRasterLayerLegend(true)
                         // TODO:[*] 22-06-02 添加等值面
                         const sosurfaceOptions: { colorScale?: string[]; valScale?: number[] } = {
@@ -2195,7 +2195,7 @@ export default class TyGroupMap extends mixins(
                     this.uniqueRasterLayerId = layerId
                 })
                 .then(async (_) => {
-                    if (!isLoadingRasterLayer) {
+                    if (!isLoadingRasterLayer && surgeRasterLayer.tiffUrl !== null) {
                         this.setIsShowRasterLayerLegend(true)
                         // TODO:[*] 22-06-02 添加等值面
                         const sosurfaceOptions: { colorScale?: string[]; valScale?: number[] } = {
@@ -2238,15 +2238,18 @@ export default class TyGroupMap extends mixins(
                     }
                 })
                 .then((_) => {
-                    loadInstance.close()
+                    // loadInstance.close()
                 })
                 .catch((err) => {
-                    loadInstance.close()
                     that.$message({
                         message: err,
                         center: true,
                         type: 'warning'
                     })
+                    loadInstance.close()
+                })
+                .finally((_) => {
+                    loadInstance.close()
                 })
         } else {
             this.clearUniquerRasterLayer()
