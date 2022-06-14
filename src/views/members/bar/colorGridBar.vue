@@ -17,7 +17,6 @@
                         </div>
                     </div>
                 </div>
-                ya'zh
             </transition>
         </el-tooltip>
     </div>

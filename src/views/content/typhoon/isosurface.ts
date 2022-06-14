@@ -82,9 +82,22 @@ class SurgeSosurface implements ISosurface {
 
     constructor(
         url: string,
-        options?: {
+        options: {
             colorScale?: string[]
             valScale?: number[]
+        } = {
+            colorScale: [
+                '#00429d',
+                '#4771b2',
+                '#73a2c6',
+                '#a5d5d8',
+                '#ffffe0',
+                '#ffbcaf',
+                '#f4777f',
+                '#cf3759',
+                '#93003a'
+            ],
+            valScale: [0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6]
         }
     ) {
         this.url = url
@@ -246,6 +259,31 @@ class SurgeSosurface implements ISosurface {
                 console.log(err)
                 errorCallBackFun(err)
             })
+    }
+
+    /**
+     * + 22-06-14
+     * 添加等值面至地图中，并返回色标
+     *
+     * @param {L.Map} map
+     * @param {(ElMessage) => void} errorCallBackFun
+     * @return {*}  {{ colorScale: string[]; valScale?: number[] }}
+     * @memberof SurgeSosurface
+     */
+    async addSosurface2MapbyScale(
+        map: L.Map,
+        errorCallBackFun: (ElMessage) => void
+    ): Promise<{ colorScale: string[]; valScale?: number[] }> {
+        await this.addSosurfaceToMap(map, errorCallBackFun)
+
+        if (this.options.valScale !== undefined) {
+            if (this.geoOptions.valMax < this.options.valScale[this.options.valScale.length - 1]) {
+                this.options.valScale.push('max')
+            } else {
+                this.options.valScale.push(this.geoOptions.valMax)
+            }
+        }
+        return this.options
     }
 
     /**
