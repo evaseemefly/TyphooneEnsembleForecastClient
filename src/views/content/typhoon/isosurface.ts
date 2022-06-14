@@ -19,7 +19,11 @@ export interface ISosurface {
      * @return {*}  {L.Layer}
      * @memberof ISosurface
      */
-    addSosurfaceToMap(): L.Layer
+    addSosurfaceToMap(
+        map: L.Map,
+        errorCallBackFun: (ElMessage) => void,
+        isShowTitle: boolean
+    ): Promise<void>
 
     /**
      * 获取等值面的layer id
@@ -120,7 +124,7 @@ class SurgeSosurface implements ISosurface {
         map: L.Map,
         errorCallBackFun: (ElMessage) => void,
         isShowTitle = true
-    ): Promise<any> {
+    ): Promise<void> {
         const that = this
         return fetch(that.url, {
             method: 'GET',
@@ -146,6 +150,8 @@ class SurgeSosurface implements ISosurface {
                     values: any[]
                     maxs: number[]
                     mins: number[]
+                    height: number
+                    width: number
                 }) => {
                     /*
                         height: 660
@@ -202,7 +208,7 @@ class SurgeSosurface implements ISosurface {
                     // y 660
                     for (let y = 0; y < parseRes.height; y++) {
                         // x 1080
-                        const xarr: number[] = []
+                        const xarr: number[][] = []
                         for (let x = 0; x < parseRes.width; x++) {
                             const obj: {
                                 type: string

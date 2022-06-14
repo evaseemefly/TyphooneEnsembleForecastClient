@@ -2090,22 +2090,6 @@ export default class TyGroupMap extends mixins(
                 })
                 .then(async (_) => {
                     if (!isLoadingRasterLayer && surgeRasterLayer.tiffUrl !== null) {
-                        // this.setIsShowRasterLayerLegend(true)
-                        // // TODO:[*] 22-06-02 添加等值面
-                        // const sosurfaceOptions: { colorScale?: string[]; valScale?: number[] } = {
-                        //     colorScale: [
-                        //         '#00429d',
-                        //         '#4771b2',
-                        //         '#73a2c6',
-                        //         '#a5d5d8',
-                        //         '#ffffe0',
-                        //         '#ffbcaf',
-                        //         '#f4777f',
-                        //         '#cf3759',
-                        //         '#93003a'
-                        //     ],
-                        //     valScale: [0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6]
-                        // }
                         const maxSosurface = new SurgeSosurface(
                             surgeRasterLayer.tiffUrl
                             // sosurfaceOptions
@@ -2115,17 +2099,6 @@ export default class TyGroupMap extends mixins(
                             mymap,
                             that.$message
                         )
-
-                        // if (sosurfaceOptions.valScale !== undefined) {
-                        //     if (
-                        //         maxSosurface.geoOptions.valMax <
-                        //         sosurfaceOptions.valScale[sosurfaceOptions.valScale.length - 1]
-                        //     ) {
-                        //         sosurfaceOptions.valScale.push('max')
-                        //     } else {
-                        //         sosurfaceOptions.valScale.push(maxSosurface.geoOptions.valMax)
-                        //     }
-                        // }
 
                         this.setIsoSurgeColorScaleValRange(sosurfaceOpts.valScale)
                         this.setIsoSurgeColorScaleStrList(sosurfaceOpts.colorScale)
@@ -2195,6 +2168,8 @@ export default class TyGroupMap extends mixins(
             })
             const isLoadingRasterLayer =
                 val.rasterLayerType == RasterLayerEnum.RASTER_LAYER ? true : false
+
+            this.setIsShowRasterLayerLegend(true)
             surgeRasterLayer
                 .add2map(mymap, that.$message, 0.5, val.layerType, isLoadingRasterLayer)
                 .then((layerId) => {
@@ -2204,39 +2179,53 @@ export default class TyGroupMap extends mixins(
                 })
                 .then(async (_) => {
                     if (!isLoadingRasterLayer && surgeRasterLayer.tiffUrl !== null) {
-                        this.setIsShowRasterLayerLegend(true)
                         // TODO:[*] 22-06-02 添加等值面
                         const sosurfaceOptions: { colorScale?: string[]; valScale?: number[] } = {
+                            // colorScale: [
+                            //     '#00429d',
+                            //     '#4771b2',
+                            //     '#73a2c6',
+                            //     '#a5d5d8',
+                            //     '#ffffe0',
+                            //     '#ffbcaf',
+                            //     '#f4777f',
+                            //     '#cf3759',
+                            //     '#93003a'
+                            // ],
+                            // colorScale: [
+                            //     'rgb(0,97,128)',
+                            //     'rgb(0,128,161)',
+                            //     'rgb(0,224,255)',
+                            //     'rgb(153,252,252)',
+                            //     'rgb(252,252,0)',
+                            //     'rgb(252,191,0)',
+                            //     'rgb(252,97,0)',
+                            //     'rgb(191,0,0)',
+                            //     'rgb(128,0,0)'
+                            // ],
                             colorScale: [
-                                '#00429d',
-                                '#4771b2',
-                                '#73a2c6',
-                                '#a5d5d8',
-                                '#ffffe0',
-                                '#ffbcaf',
-                                '#f4777f',
-                                '#cf3759',
-                                '#93003a'
+                                '#4575b4',
+                                '#74add1',
+                                '#abd9e9',
+                                '#e0f3f8',
+                                'rgb(252,252,0)',
+                                'rgb(252,191,0)',
+                                'rgb(252,97,0)',
+                                'rgb(191,0,0)',
+                                'rgb(128,0,0)'
                             ],
                             valScale: [20, 30, 40, 50, 60, 70, 80, 90, 100]
                         }
                         const maxSosurface = new SurgeSosurface(
                             surgeRasterLayer.tiffUrl,
                             sosurfaceOptions
+                            // sosurfaceOptions
                         )
                         // 此处会有可能出现错误，对于加载的地主不存在指定文件时会出现错误，但 catch 无法捕捉到
-                        await maxSosurface.addSosurfaceToMap(mymap, that.$message)
-
-                        if (sosurfaceOptions.valScale !== undefined) {
-                            if (
-                                maxSosurface.geoOptions.valMax <
-                                sosurfaceOptions.valScale[sosurfaceOptions.valScale.length - 1]
-                            ) {
-                                sosurfaceOptions.valScale.push('max')
-                            } else {
-                                sosurfaceOptions.valScale.push(maxSosurface.geoOptions.valMax)
-                            }
-                        }
+                        const sosurfaceOpts = await maxSosurface.addSosurface2MapbyScale(
+                            mymap,
+                            that.$message
+                        )
 
                         this.setIsoSurgeColorScaleValRange(sosurfaceOptions.valScale)
                         this.setIsoSurgeColorScaleStrList(sosurfaceOptions.colorScale)
