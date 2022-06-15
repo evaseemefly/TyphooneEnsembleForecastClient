@@ -352,7 +352,8 @@ import {
     ProSurgeGeoLayer,
     ProSurgeGeoLayerByGeotiffjsWay1,
     ProSurgeGeoLayerByGeotiffjsWay2,
-    SurgeRasterTifLayer
+    SurgeRasterTifLayer,
+    ISurgeRasterLayer
 } from '@/views/content/typhoon/raster'
 // TODO:[*] 21-04-28 + 脉冲 icon 用来示意海洋站所在位置
 import {
@@ -1962,20 +1963,6 @@ export default class TyGroupMap extends mixins(
                 .then(async (_) => {
                     if (!isLoadingRasterLayer && fieldSurgeGeoLayer.tiffUrl !== null) {
                         // TODO:[*] 22-06-14 以下部分进行封装
-                        // const sosurfaceOptions: { colorScale?: string[]; valScale?: number[] } = {
-                        //     colorScale: [
-                        //         '#00429d',
-                        //         '#4771b2',
-                        //         '#73a2c6',
-                        //         '#a5d5d8',
-                        //         '#ffffe0',
-                        //         '#ffbcaf',
-                        //         '#f4777f',
-                        //         '#cf3759',
-                        //         '#93003a'
-                        //     ],
-                        //     valScale: [0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6]
-                        // }
                         const maxSosurface = new SurgeSosurface(
                             fieldSurgeGeoLayer.tiffUrl
                             // sosurfaceOptions
@@ -1984,18 +1971,6 @@ export default class TyGroupMap extends mixins(
                             mymap,
                             that.$message
                         )
-
-                        // if (sosurfaceOptions.valScale !== undefined) {
-                        //     if (
-                        //         maxSosurface.geoOptions.valMax <
-                        //         sosurfaceOptions.valScale[sosurfaceOptions.valScale.length - 1]
-                        //     ) {
-                        //         sosurfaceOptions.valScale.push('max')
-                        //     } else {
-                        //         sosurfaceOptions.valScale.push(maxSosurface.geoOptions.valMax)
-                        //     }
-                        // }
-                        // 封装结束---
                         this.setIsoSurgeColorScaleValRange(sosurfaceOpts.valScale)
                         this.setIsoSurgeColorScaleStrList(sosurfaceOpts.colorScale)
                         that.sosurfaceLayerId = maxSosurface.getLayerId()
@@ -2021,6 +1996,8 @@ export default class TyGroupMap extends mixins(
         }
     }
 
+    async addSurgeLayer2Map(surgeRasterInstance: any): Promise<void> {}
+
     // TODO:[-] 21-05-19 根据监听当前的 tyGroupOptions 来确定 指定 tyGroupPath(center) 对应的时间与 tyCode,timeStamp
     @Watch('getTyGroupOptions', { immediate: true, deep: true })
     onTyGroupOptions(val: ITyGroupPathOptions, oldVal: ITyGroupPathOptions): void {
@@ -2038,14 +2015,6 @@ export default class TyGroupMap extends mixins(
                 this.loadGroupTyphoonLine(val.isShowOutlinePolyLayer, val.isShow)
             }
         }
-        // if (val.isShowOutlinePolyLayer != oldVal.isShowOutlinePolyLayer) {
-        //     if (!val.isShowOutlinePolyLayer) {
-        //         this.clearTyGroupOutlineGroupLayer()
-        //         // this.clearGroupLayer(this.currentGroupPathPolyLineLayerGroup)
-        //     } else if (val.isShow) {
-        //         this.loadGroupTyphoonLine(val.isShowOutlinePolyLayer)
-        //     }
-        // }
         if (val.isShowTyDetailForm != oldVal.isShowTyDetailForm) {
             if (!val.isShowTyDetailForm) {
                 this.clearTyRealDataLayer()
@@ -2081,6 +2050,7 @@ export default class TyGroupMap extends mixins(
                 customCoefficient: 0.8,
                 customCoeffMax: 1
             })
+
             const isLoadingRasterLayer =
                 val.rasterLayerType == RasterLayerEnum.RASTER_LAYER ? true : false
             this.setIsShowRasterLayerLegend(true)
@@ -2173,7 +2143,7 @@ export default class TyGroupMap extends mixins(
 
             this.setIsShowRasterLayerLegend(true)
             surgeRasterLayer
-                .add2map(mymap, that.$message, 0.5, val.layerType, isLoadingRasterLayer)
+                .add2map(mymap, that.$message, isLoadingRasterLayer, 0.5, val.layerType)
                 .then((layerId) => {
                     this.setScaleRange(surgeRasterLayer.scaleRange || [])
                     // this.uniqueRasterLayer = layer

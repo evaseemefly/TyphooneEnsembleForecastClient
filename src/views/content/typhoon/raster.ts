@@ -64,6 +64,34 @@ export interface IRaster {
     ): Promise<L.Layer>
 }
 
+/**
+ * + 22-06-15
+ * 潮位raster layer 接口
+ * @export
+ * @interface ISurgeRasterLayer
+ */
+export interface ISurgeRasterLayer {
+    /**
+     * 将 surge 栅格图层 添加至地图中
+     * 执行后可获取对应的 geotiff url
+     *
+     * @param {L.Map} map leaflet map
+     * @param {(ElMessage) => void} errorCallBackFun 出现错误的回调消息 func
+     * @param {boolean} isShowRasterLayer 是否显示 raster 图层
+     * @param {number} [pro] 概率
+     * @param {LayerTypeEnum} [coverageType] 加载的图层枚举
+     * @return {*}  {Promise<number>}
+     * @memberof ISurgeRasterLayer
+     */
+    add2map(
+        map: L.Map,
+        errorCallBackFun: (ElMessage) => void,
+        isShowRasterLayer: boolean,
+        pro?: number,
+        coverageType?: LayerTypeEnum
+    ): Promise<number>
+}
+
 class RasterBase {
     /**
      * name
@@ -309,7 +337,7 @@ class RasterGeoLayer implements IRaster {
  *
  * @class SurgeRasterGeoLayer
  */
-class SurgeRasterGeoLayer {
+class SurgeRasterGeoLayer implements ISurgeRasterLayer {
     options: {
         rasterLayer: L.Layer
 
@@ -738,7 +766,7 @@ class SurgeRasterTifLayer extends SurgeRasterGeoLayer {
  * @class FieldSurgeGeoLayer
  * @extends {SurgeRasterGeoLayer}
  */
-class FieldSurgeGeoLayer extends SurgeRasterGeoLayer {
+class FieldSurgeGeoLayer extends SurgeRasterGeoLayer implements ISurgeRasterLayer {
     public async add2map(
         map: L.Map,
         errorCallBackFun: (ElMessage) => void,
@@ -887,13 +915,13 @@ class FieldSurgeGeoLayer extends SurgeRasterGeoLayer {
  * @class ProSurgeGeoLayer
  * @extends {SurgeRasterGeoLayer}
  */
-class ProSurgeGeoLayer extends SurgeRasterGeoLayer {
+class ProSurgeGeoLayer extends SurgeRasterGeoLayer implements ISurgeRasterLayer {
     public async add2map(
         map: L.Map,
         errorCallBackFun: (ElMessage) => void,
-        pro: number,
-        coverageType: LayerTypeEnum,
-        isShowRasterLayer = true
+        isShowRasterLayer = true,
+        pro?: number,
+        coverageType?: LayerTypeEnum
     ): Promise<number> {
         let addedLayer: L.Layer = null
         let layerId: number = DEFAULT_LAYER_ID
