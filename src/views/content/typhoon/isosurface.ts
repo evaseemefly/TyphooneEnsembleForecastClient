@@ -43,9 +43,21 @@ export interface ISosurface {
  */
 class SurgeSosurface implements ISosurface {
     options: {
-        url: string
         colorScale: string[]
         valScale: number[]
+    } = {
+        colorScale: [
+            '#00429d',
+            '#4771b2',
+            '#73a2c6',
+            '#a5d5d8',
+            '#ffffe0',
+            '#ffbcaf',
+            '#f4777f',
+            '#cf3759',
+            '#93003a'
+        ],
+        valScale: [0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6]
     }
 
     /**
@@ -105,6 +117,7 @@ class SurgeSosurface implements ISosurface {
         }
     ) {
         this.url = url
+        // TODO:[*] 22-06-15 注意此处在输入参数中加入default的可选值，若只有一个赋值，另一个未赋值的话则会出现undefined将默认参数覆盖掉的情况
         this.options = { ...this.options, ...options }
         // this.map = map
     }

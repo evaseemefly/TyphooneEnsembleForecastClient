@@ -90,6 +90,30 @@ export interface ISurgeRasterLayer {
         pro?: number,
         coverageType?: LayerTypeEnum
     ): Promise<number>
+
+    /**
+     * 色标 list
+     *
+     * @type {(string[] | string)}
+     * @memberof ISurgeRasterLayer
+     */
+    scaleList: string[] | string
+
+    /**
+     * 色标范围
+     *
+     * @type {number[]}
+     * @memberof ISurgeRasterLayer
+     */
+    scaleRange: number[]
+
+    /**
+     * 获取 raster geotiff 的 url 地址
+     *
+     * @type {string}
+     * @memberof ISurgeRasterLayer
+     */
+    tiffUrl: string
 }
 
 class RasterBase {
@@ -422,7 +446,7 @@ class SurgeRasterGeoLayer implements ISurgeRasterLayer {
      * @memberof SurgeRasterGeoLayer
      */
     // scale = this.options.scale
-    get scaleList(): any {
+    get scaleList(): string[] | string {
         return this.options.scaleList
     }
     /**

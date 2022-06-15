@@ -1936,59 +1936,22 @@ export default class TyGroupMap extends mixins(
                 forecastDt: val.forecastDt,
                 scaleList: scaleList
             })
-            this.clearSurgeHourlyRasterLayer()
-            const showMsg = `加载台风code:${val.tyCode},预报时间:${moment(val.forecastDt).format(
-                'yyyy-MM-DD HH'
-            )}`
-            this.$message({
-                message: showMsg,
-                center: true,
-                type: 'success'
-            })
-            const loadInstance = loading('等待加载等值面', {
-                fullscreen: true,
-                background: 'rgba(49, 59, 89, 0.733)'
-            })
-            this.setIsShowRasterLayerLegend(true)
-
-            /** 是否加载栅格增水layer */
-            const isLoadingRasterLayer =
-                val.rasterLayerType == RasterLayerEnum.RASTER_LAYER ? true : false
-            await fieldSurgeGeoLayer
-                .add2map(mymap, that.$message, isLoadingRasterLayer)
-                .then((_id) => {
-                    this.setScaleRange(fieldSurgeGeoLayer.scaleRange || [])
-                    that.uniqueRasterLayerId = _id
-                })
-                .then(async (_) => {
-                    if (!isLoadingRasterLayer && fieldSurgeGeoLayer.tiffUrl !== null) {
-                        // TODO:[*] 22-06-14 以下部分进行封装
-                        const maxSosurface = new SurgeSosurface(
-                            fieldSurgeGeoLayer.tiffUrl
-                            // sosurfaceOptions
-                        )
-                        const sosurfaceOpts = await maxSosurface.addSosurface2MapbyScale(
-                            mymap,
-                            that.$message
-                        )
-                        this.setIsoSurgeColorScaleValRange(sosurfaceOpts.valScale)
-                        this.setIsoSurgeColorScaleStrList(sosurfaceOpts.colorScale)
-                        that.sosurfaceLayerId = maxSosurface.getLayerId()
-                        that.surgeGridTitleLayerId = maxSosurface.getPointsTitleLayerId()
-                        that.sosurfaceLayer = maxSosurface.getLayer()
-                    }
-                })
-                .then((_) => {
-                    loadInstance.close()
-                })
-                .catch((err) => {
-                    loadInstance.close()
-                    that.$message({
-                        message: err,
-                        center: true,
-                        type: 'warning'
-                    })
-                })
+            const sosurfaceOptions: { colorScale?: string[]; valScale?: number[] } = {
+                colorScale: [
+                    '#00429d',
+                    '#4771b2',
+                    '#73a2c6',
+                    '#a5d5d8',
+                    '#ffffe0',
+                    '#ffbcaf',
+                    '#f4777f',
+                    '#cf3759',
+                    '#93003a'
+                ],
+                valScale: [0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6]
+                // valScale: fieldSurgeGeoLayer.scaleRange
+            }
+            this.addSurgeRasterLayer2Map(val, fieldSurgeGeoLayer, sosurfaceOptions)
         } else if (!val.isShow && oldVal.isShow) {
             // 若未通过则清除 tyGroup layer
             this.clearUniquerRasterLayer()
@@ -1996,7 +1959,83 @@ export default class TyGroupMap extends mixins(
         }
     }
 
-    async addSurgeLayer2Map(surgeRasterInstance: any): Promise<void> {}
+    async addSurgeRasterLayer2Map(
+        val: ITySurgeLayerOptions,
+        surgeRasterInstance: ISurgeRasterLayer,
+        isosurfaceOpts: { colorScale?: string[]; valScale?: number[] }
+    ): Promise<void> {
+        const that = this
+        // console.log(`监听到tyMaxSurgeOptions:tyCode:${val.tyCode},tyTS:${val.tyTimeStamp}发生变化`)
+        const mymap: any = this.$refs.basemap['mapObject']
+        // const scaleList: string[] | string = getColorScale('my-colour').scaleColorList
+        const scaleList: string[] | string = val.scaleList
+        if (val.isShow) {
+            this.clearUniquerRasterLayer()
+            this.clearSosurfaceLayer()
+            const loadInstance = loading('等待加载等值面', {
+                fullscreen: true,
+                background: 'rgba(49, 59, 89, 0.733)'
+            })
+            const isLoadingRasterLayer =
+                val.rasterLayerType == RasterLayerEnum.RASTER_LAYER ? true : false
+
+            this.setIsShowRasterLayerLegend(true)
+            surgeRasterInstance
+                .add2map(mymap, that.$message, isLoadingRasterLayer, 0.5, val.layerType)
+                .then((layerId) => {
+                    this.setScaleRange(surgeRasterInstance.scaleRange || [])
+                    // this.uniqueRasterLayer = layer
+                    this.uniqueRasterLayerId = layerId
+                })
+                .then(async (_) => {
+                    if (!isLoadingRasterLayer && surgeRasterInstance.tiffUrl !== null) {
+                        // TODO:[*] 22-06-02 添加等值面
+
+                        const maxSosurface = new SurgeSosurface(
+                            surgeRasterInstance.tiffUrl,
+                            isosurfaceOpts
+                            // sosurfaceOptions
+                        )
+                        // 此处会有可能出现错误，对于加载的地主不存在指定文件时会出现错误，但 catch 无法捕捉到
+                        const sosurfaceOpts = await maxSosurface.addSosurface2MapbyScale(
+                            mymap,
+                            that.$message
+                        )
+                        const valScale =
+                            isosurfaceOpts.valScale !== undefined
+                                ? isosurfaceOpts.valScale
+                                : sosurfaceOpts.valScale
+                        const colorScale =
+                            isosurfaceOpts.colorScale !== undefined
+                                ? isosurfaceOpts.colorScale
+                                : sosurfaceOpts.colorScale
+
+                        this.setIsoSurgeColorScaleValRange(valScale)
+                        this.setIsoSurgeColorScaleStrList(colorScale)
+                        that.sosurfaceLayerId = maxSosurface.getLayerId()
+                        that.surgeGridTitleLayerId = maxSosurface.getPointsTitleLayerId()
+                        that.sosurfaceLayer = maxSosurface.getLayer()
+                    }
+                })
+                .then((_) => {
+                    // loadInstance.close()
+                })
+                .catch((err) => {
+                    that.$message({
+                        message: err,
+                        center: true,
+                        type: 'warning'
+                    })
+                    loadInstance.close()
+                })
+                .finally((_) => {
+                    loadInstance.close()
+                })
+        } else {
+            this.clearUniquerRasterLayer()
+            this.clearSosurfaceLayer()
+        }
+    }
 
     // TODO:[-] 21-05-19 根据监听当前的 tyGroupOptions 来确定 指定 tyGroupPath(center) 对应的时间与 tyCode,timeStamp
     @Watch('getTyGroupOptions', { immediate: true, deep: true })
@@ -2029,71 +2068,32 @@ export default class TyGroupMap extends mixins(
 
     @Watch('getTyMaxSurgeOpts', { immediate: true, deep: true })
     async onTyMaxSurgeOptions(val: ITySurgeLayerOptions): Promise<void> {
-        const that = this
-        const mymap: any = this.$refs.basemap['mapObject']
         const scaleList: string[] | string = val.scaleList
-        if (val.isShow && val.isShow === true) {
-            this.clearUniquerRasterLayer()
-            this.clearSosurfaceLayer()
-            const loadInstance = loading('等待加载等值面', {
-                fullscreen: true,
-                background: 'rgba(49, 59, 89, 0.733)'
-            })
-            // TODO:[-] 22-03-21 此处修改为使用新的 canvas 渲染 geotiff raster
-            const surgeRasterLayer = new SurgeRasterGeoLayer({
-                tyCode: val.tyCode,
-                tyTimestamp: val.tyTimeStamp,
-                forecastDt: this.forecastDt,
-                scaleList: scaleList,
-                customMin: 0, // 自定义下限为0
-                customMax: 2, // TODO:[-] 22-04-14 加入的自定义上限为2
-                customCoefficient: 0.8,
-                customCoeffMax: 1
-            })
-
-            const isLoadingRasterLayer =
-                val.rasterLayerType == RasterLayerEnum.RASTER_LAYER ? true : false
-            this.setIsShowRasterLayerLegend(true)
-            surgeRasterLayer
-                .add2map(mymap, that.$message, isLoadingRasterLayer)
-                .then((layerId) => {
-                    this.setScaleRange(surgeRasterLayer.scaleRange || [])
-                    this.uniqueRasterLayerId = layerId
-                })
-                .then(async (_) => {
-                    if (!isLoadingRasterLayer && surgeRasterLayer.tiffUrl !== null) {
-                        const maxSosurface = new SurgeSosurface(
-                            surgeRasterLayer.tiffUrl
-                            // sosurfaceOptions
-                        )
-                        // 此处会有可能出现错误，对于加载的地主不存在指定文件时会出现错误，但 catch 无法捕捉到
-                        const sosurfaceOpts = await maxSosurface.addSosurface2MapbyScale(
-                            mymap,
-                            that.$message
-                        )
-
-                        this.setIsoSurgeColorScaleValRange(sosurfaceOpts.valScale)
-                        this.setIsoSurgeColorScaleStrList(sosurfaceOpts.colorScale)
-                        that.sosurfaceLayerId = maxSosurface.getLayerId()
-                        that.surgeGridTitleLayerId = maxSosurface.getPointsTitleLayerId()
-                        that.sosurfaceLayer = maxSosurface.getLayer()
-                    }
-                })
-                .then((_) => {
-                    loadInstance.close()
-                })
-                .catch((err) => {
-                    loadInstance.close()
-                    that.$message({
-                        message: err,
-                        center: true,
-                        type: 'warning'
-                    })
-                })
-        } else if (!val.isShow) {
-            this.clearUniquerRasterLayer()
-            this.clearSosurfaceLayer()
+        const surgeRasterLayer = new SurgeRasterGeoLayer({
+            tyCode: val.tyCode,
+            tyTimestamp: val.tyTimeStamp,
+            forecastDt: this.forecastDt,
+            scaleList: scaleList,
+            customMin: 0, // 自定义下限为0
+            customMax: 2, // TODO:[-] 22-04-14 加入的自定义上限为2
+            customCoefficient: 0.8,
+            customCoeffMax: 1
+        })
+        const sosurfaceOptions: { colorScale?: string[]; valScale?: number[] } = {
+            colorScale: [
+                '#00429d',
+                '#4771b2',
+                '#73a2c6',
+                '#a5d5d8',
+                '#ffffe0',
+                '#ffbcaf',
+                '#f4777f',
+                '#cf3759',
+                '#93003a'
+            ],
+            valScale: [0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6]
         }
+        this.addSurgeRasterLayer2Map(val, surgeRasterLayer, sosurfaceOptions)
     }
 
     @Mutation(SET_SCALE_RANGE, { namespace: 'common' }) setScaleRange
@@ -2120,110 +2120,27 @@ export default class TyGroupMap extends mixins(
 
     @Watch('tyProSurgeOptions', { immediate: true, deep: true })
     onTyProSurgeOptions(val: ITySurgeLayerOptions): void {
-        const that = this
-        // console.log(`监听到tyMaxSurgeOptions:tyCode:${val.tyCode},tyTS:${val.tyTimeStamp}发生变化`)
-        const mymap: any = this.$refs.basemap['mapObject']
-        // const scaleList: string[] | string = getColorScale('my-colour').scaleColorList
-        const scaleList: string[] | string = val.scaleList
-        if (val.isShow) {
-            this.clearUniquerRasterLayer()
-            this.clearSosurfaceLayer()
-            const surgeRasterLayer = new ProSurgeGeoLayer({
-                tyCode: val.tyCode,
-                tyTimestamp: val.tyTimeStamp,
-                forecastDt: this.forecastDt,
-                scaleList: scaleList
-            })
-            const loadInstance = loading('等待加载等值面', {
-                fullscreen: true,
-                background: 'rgba(49, 59, 89, 0.733)'
-            })
-            const isLoadingRasterLayer =
-                val.rasterLayerType == RasterLayerEnum.RASTER_LAYER ? true : false
-
-            this.setIsShowRasterLayerLegend(true)
-            surgeRasterLayer
-                .add2map(mymap, that.$message, isLoadingRasterLayer, 0.5, val.layerType)
-                .then((layerId) => {
-                    this.setScaleRange(surgeRasterLayer.scaleRange || [])
-                    // this.uniqueRasterLayer = layer
-                    this.uniqueRasterLayerId = layerId
-                })
-                .then(async (_) => {
-                    if (!isLoadingRasterLayer && surgeRasterLayer.tiffUrl !== null) {
-                        // TODO:[*] 22-06-02 添加等值面
-                        const sosurfaceOptions: { colorScale?: string[]; valScale?: number[] } = {
-                            // colorScale: [
-                            //     '#00429d',
-                            //     '#4771b2',
-                            //     '#73a2c6',
-                            //     '#a5d5d8',
-                            //     '#ffffe0',
-                            //     '#ffbcaf',
-                            //     '#f4777f',
-                            //     '#cf3759',
-                            //     '#93003a'
-                            // ],
-                            // colorScale: [
-                            //     'rgb(0,97,128)',
-                            //     'rgb(0,128,161)',
-                            //     'rgb(0,224,255)',
-                            //     'rgb(153,252,252)',
-                            //     'rgb(252,252,0)',
-                            //     'rgb(252,191,0)',
-                            //     'rgb(252,97,0)',
-                            //     'rgb(191,0,0)',
-                            //     'rgb(128,0,0)'
-                            // ],
-                            colorScale: [
-                                '#4575b4',
-                                '#74add1',
-                                '#abd9e9',
-                                '#e0f3f8',
-                                'rgb(252,252,0)',
-                                'rgb(252,191,0)',
-                                'rgb(252,97,0)',
-                                'rgb(191,0,0)',
-                                'rgb(128,0,0)'
-                            ],
-                            valScale: [20, 30, 40, 50, 60, 70, 80, 90, 100]
-                        }
-                        const maxSosurface = new SurgeSosurface(
-                            surgeRasterLayer.tiffUrl,
-                            sosurfaceOptions
-                            // sosurfaceOptions
-                        )
-                        // 此处会有可能出现错误，对于加载的地主不存在指定文件时会出现错误，但 catch 无法捕捉到
-                        const sosurfaceOpts = await maxSosurface.addSosurface2MapbyScale(
-                            mymap,
-                            that.$message
-                        )
-
-                        this.setIsoSurgeColorScaleValRange(sosurfaceOptions.valScale)
-                        this.setIsoSurgeColorScaleStrList(sosurfaceOptions.colorScale)
-                        that.sosurfaceLayerId = maxSosurface.getLayerId()
-                        that.surgeGridTitleLayerId = maxSosurface.getPointsTitleLayerId()
-                        that.sosurfaceLayer = maxSosurface.getLayer()
-                    }
-                })
-                .then((_) => {
-                    // loadInstance.close()
-                })
-                .catch((err) => {
-                    that.$message({
-                        message: err,
-                        center: true,
-                        type: 'warning'
-                    })
-                    loadInstance.close()
-                })
-                .finally((_) => {
-                    loadInstance.close()
-                })
-        } else {
-            this.clearUniquerRasterLayer()
-            this.clearSosurfaceLayer()
+        const proSurgeInstance = new ProSurgeGeoLayer({
+            tyCode: val.tyCode,
+            tyTimestamp: val.tyTimeStamp,
+            forecastDt: this.forecastDt,
+            scaleList: val.scaleList
+        })
+        const sosurfaceOptions: { colorScale?: string[]; valScale?: number[] } = {
+            colorScale: [
+                '#4575b4',
+                '#74add1',
+                '#abd9e9',
+                '#e0f3f8',
+                'rgb(252,252,0)',
+                'rgb(252,191,0)',
+                'rgb(252,97,0)',
+                'rgb(191,0,0)',
+                'rgb(128,0,0)'
+            ],
+            valScale: [20, 30, 40, 50, 60, 70, 80, 90, 100]
         }
+        this.addSurgeRasterLayer2Map(val, proSurgeInstance, sosurfaceOptions)
     }
 
     // + 22-01-05 隐藏station icon 图层
