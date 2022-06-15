@@ -1949,6 +1949,8 @@ export default class TyGroupMap extends mixins(
                 background: 'rgba(49, 59, 89, 0.733)'
             })
             this.setIsShowRasterLayerLegend(true)
+
+            /** 是否加载栅格增水layer */
             const isLoadingRasterLayer =
                 val.rasterLayerType == RasterLayerEnum.RASTER_LAYER ? true : false
             await fieldSurgeGeoLayer
