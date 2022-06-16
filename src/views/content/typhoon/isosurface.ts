@@ -42,8 +42,28 @@ export interface ISosurface {
  * @implements {ISosurface}
  */
 class SurgeSosurface implements ISosurface {
+    /**
+     * 实际的色标 range 与 color list
+     *
+     * @type {{
+     *         colorScale: string[]
+     *         valScale: number[]
+     *     }}
+     * @memberof SurgeSosurface
+     */
     options: {
+        /**
+         * 实际的色标 color str
+         *
+         * @type {string[]}
+         */
         colorScale: string[]
+
+        /**
+         * 实际的色标 range ，会根据最大的值<=1.6 则会在最后添加一个`max`
+         *
+         * @type {number[]}
+         */
         valScale: number[]
     } = {
         colorScale: [
@@ -122,7 +142,22 @@ class SurgeSosurface implements ISosurface {
         // this.map = map
     }
 
+    /**
+     * 加载等值面 layer 的 id
+     *
+     * @private
+     * @type {number}
+     * @memberof SurgeSosurface
+     */
     private _id: number = DEFAULT_LAYER_ID
+
+    /**
+     * 加载的 gird title val layer 的 id
+     *
+     * @private
+     * @type {number}
+     * @memberof SurgeSosurface
+     */
     private _pointsTitleLayerId: number = DEFAULT_LAYER_ID
 
     /**
@@ -133,7 +168,7 @@ class SurgeSosurface implements ISosurface {
      * @returns {Promise<any>}
      * @memberof SurgeSosurface
      */
-    addSosurfaceToMap(
+    private addSosurfaceToMap(
         map: L.Map,
         errorCallBackFun: (ElMessage) => void,
         isShowTitle = true
@@ -269,7 +304,7 @@ class SurgeSosurface implements ISosurface {
                     that._id = layer._leaflet_id
                     // that._layer = layer
                     if (isShowTitle) {
-                        that._pointsTitleLayerId = that._addPointsTitle2Map(map, arr, width, height)
+                        that._pointsTitleLayerId = that.addPointsTitle2Map(map, arr, width, height)
                     }
                     // return that._id
                 }
@@ -419,7 +454,7 @@ class SurgeSosurface implements ISosurface {
                     that._id = layer._leaflet_id
                     // that._layer = layer
                     if (isShowTitle) {
-                        that._pointsTitleLayerId = that._addPointsTitle2Map(map, arr, width, height)
+                        that._pointsTitleLayerId = that.addPointsTitle2Map(map, arr, width, height)
                     }
                     // return that._id
                 }
@@ -427,13 +462,24 @@ class SurgeSosurface implements ISosurface {
     }
 
     /**
-     * 将 格点以div icon 的方式添加至 map 中 并返回
+     * 将 格点以div icon 的方式添加至 map 中 并返回 layer.id
      *
+     * @private
      * @param {L.Map} map
-     * @param {L.FeatureCollection} featureCollection
+     * @param {number[][]} points
+     * @param {number} width
+     * @param {number} height
+     * @param {{ ignoreVal: number }} [kwargs] 可选配置项, ignoreVal 为可选的显示 title val 的下限阈值
+     * @return {*}  {number}
      * @memberof SurgeSosurface
      */
-    _addPointsTitle2Map(map: L.Map, points: number[][], width: number, height: number): number {
+    private addPointsTitle2Map(
+        map: L.Map,
+        points: number[][],
+        width: number,
+        height: number,
+        kwargs?: { ignoreVal?: number }
+    ): number {
         const that = this
         const pointArr: {
             type: string
@@ -451,6 +497,9 @@ class SurgeSosurface implements ISosurface {
         const xStep = 30
         const yStep = 30
         const nanStamp = 'NaN'
+        /** 忽略添加title的值下限，小于此值则会设置 cls 为 'minor' */
+        const ignoreVal =
+            kwargs !== undefined && kwargs.ignoreVal !== undefined ? kwargs.ignoreVal : 0.2
         // y 660
         for (let y = 0; y < height; y = y + yStep) {
             // x 1080
@@ -485,7 +534,7 @@ class SurgeSosurface implements ISosurface {
         }
         // points -> featureCollection
         const pointsFeatureCollection = turf.featureCollection(pointArr)
-        console.log(pointsFeatureCollection)
+        // console.log(pointsFeatureCollection)
         const interpolate_options = {
             gridType: 'points',
             property: 'value',
@@ -505,7 +554,7 @@ class SurgeSosurface implements ISosurface {
                 //marker的icon文字
                 let defaultFontCls = 'default'
                 const surgeVal = feature.properties.value
-                if (surgeVal <= 0) {
+                if (surgeVal <= ignoreVal) {
                     defaultFontCls = 'minor'
                 } else {
                     defaultFontCls = 'major'
@@ -538,6 +587,12 @@ class SurgeSosurface implements ISosurface {
         return this._pointsTitleLayerId
     }
 
+    /**
+     * 获取等值线 layer
+     *
+     * @return {*}  {L.Layer}
+     * @memberof SurgeSosurface
+     */
     getLayer(): L.Layer {
         return this._layer
     }
@@ -550,7 +605,7 @@ class SurgeSosurface implements ISosurface {
      * @return {*}  {number[]} [lng,lat]
      * @memberof SurgeSosurface
      */
-    getGridCenterCoordinates(x: number, y: number): number[] {
+    private getGridCenterCoordinates(x: number, y: number): number[] {
         let lnglat: number[] = []
         lnglat = [
             this.geoOptions.xmin + x * this.geoOptions.pixelWidth,

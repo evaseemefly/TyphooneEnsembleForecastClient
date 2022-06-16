@@ -224,6 +224,7 @@
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 import { Getter, Mutation, State, namespace } from 'vuex-class'
 import { StationDrag } from '@/directives/drag'
+import { loading } from '@/common/common'
 import { createTyCase } from '@/api/task'
 import { getTargetTyCase, spiderTargetTyPathList } from '@/api/tyhoon'
 // STORE 常量
@@ -423,6 +424,10 @@ export default class CreateCaseForm extends Vue {
             ty_type: "TS"
         */
         //
+        const loadInstance = loading('等待加载等值面', {
+            fullscreen: true,
+            background: 'rgba(49, 59, 89, 0.733)'
+        })
         spiderTargetTyPathList(this.tyCode)
             .then(
                 (res: {
@@ -527,6 +532,7 @@ export default class CreateCaseForm extends Vue {
                 if (this.customerTyCMAList.length > 0) {
                     this.$message(`爬取台风编号:${this.tyCode}成功`)
                 }
+                loadInstance.close()
             })
     }
 
