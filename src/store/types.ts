@@ -31,6 +31,12 @@ export const GET_SCALE_KEY = 'GET_SCALE_KEY'
 // +21-08-20 color scale 的 range
 export const SET_SCALE_RANGE = 'SET_SCALE_RANGE'
 export const GET_SCALE_RANGE = 'GET_SCALE_RANGE'
+// + 22-06-16 color bar 的描述信息(提示信息)
+
+/** @type {*} color bar 的描述信息(提示信息)*/
+export const SET_SCALE_DESC = 'SET_SCALE_DESC'
+/** @type {*} color bar 的描述信息(提示信息)*/
+export const GET_SCALE_DESC = 'GET_SCALE_DESC'
 
 /** 设置 潮位等值线 色标对应的值 range */
 export const SET_ISOSURGE_COLOR_SCALE_VAL_RANGE = 'SET_ISOSURGE_COLOR_SCALE_RANGE'

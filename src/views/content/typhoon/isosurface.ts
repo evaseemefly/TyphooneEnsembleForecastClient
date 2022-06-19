@@ -321,14 +321,16 @@ class SurgeSosurface implements ISosurface {
      *
      * @param {L.Map} map
      * @param {(ElMessage) => void} errorCallBackFun
+     * @param { boolean } isShowGridTitle 是否加载格点title至地图
      * @return {*}  {{ colorScale: string[]; valScale?: number[] }}
      * @memberof SurgeSosurface
      */
     async addSosurface2MapbyScale(
         map: L.Map,
-        errorCallBackFun: (ElMessage) => void
+        errorCallBackFun: (ElMessage) => void,
+        isShowGridTitle = true
     ): Promise<{ colorScale: string[]; valScale?: number[] }> {
-        await this.addSosurfaceToMap(map, errorCallBackFun)
+        await this.addSosurfaceToMap(map, errorCallBackFun, isShowGridTitle)
 
         if (this.options.valScale !== undefined) {
             if (this.geoOptions.valMax < this.options.valScale[this.options.valScale.length - 1]) {
@@ -566,6 +568,10 @@ class SurgeSosurface implements ISosurface {
                     className: 'grid_font',
                     iconSize: 30
                 })
+                // 暂时不去掉小于等于忽略值的title
+                // if (surgeVal > ignoreVal) {
+
+                // }
                 return L.marker(latlng, { icon: myIcon })
             }
         }).addTo(map)

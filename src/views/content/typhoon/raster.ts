@@ -114,6 +114,14 @@ export interface ISurgeRasterLayer {
      * @memberof ISurgeRasterLayer
      */
     tiffUrl: string
+
+    /**
+     * 获取 raster 的描述信息
+     *
+     * @type {string}
+     * @memberof ISurgeRasterLayer
+     */
+    desc: string
 }
 
 class RasterBase {
@@ -387,6 +395,7 @@ class SurgeRasterGeoLayer implements ISurgeRasterLayer {
         customMax?: number
         customCoefficient?: number
         customCoeffMax?: number
+        desc?: string
     } = {
         rasterLayer: new L.Layer(),
 
@@ -439,6 +448,10 @@ class SurgeRasterGeoLayer implements ISurgeRasterLayer {
         return this.options.forecastDt
     }
 
+    get desc(): string {
+        return this.options.desc !== undefined ? this.options.desc : '色标'
+    }
+
     /**
      * + 21-08-19 新加入的 chroma.scale 色标变量，在构造函数中给与赋值
      *
@@ -483,6 +496,7 @@ class SurgeRasterGeoLayer implements ISurgeRasterLayer {
         customMax?: number
         customCoefficient?: number
         customCoeffMax?: number
+        desc?: string
     }) {
         this.options = { ...this.options, ...options }
     }

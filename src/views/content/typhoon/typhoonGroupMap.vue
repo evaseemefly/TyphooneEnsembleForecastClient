@@ -416,6 +416,7 @@ import {
     GET_SCALE_KEY,
     SET_SCALE_KEY,
     SET_SCALE_RANGE,
+    SET_SCALE_DESC,
     GET_BASE_MAP_KEY, // + 21-08-23 监听切换地图的 baseMapKey
     SET_MAP_NOW,
     GET_TY_GROUP_PATH_LATERS_OPTS, // +22-03-13 台风集合预报路径配置项
@@ -1933,13 +1934,67 @@ export default class TyGroupMap extends mixins(
                 tyCode: val.tyCode,
                 tyTimestamp: val.tyTimeStamp,
                 forecastDt: val.forecastDt,
-                scaleList: scaleList
+                scaleList: scaleList,
+                desc: '逐时增水场色标'
             })
             this.addSurgeRasterLayer2Map(val, fieldSurgeGeoLayer)
         } else if (!val.isShow && oldVal.isShow) {
             // 若未通过则清除 tyGroup layer
             this.clearUniquerRasterLayer()
             this.clearSosurfaceLayer()
+        }
+    }
+
+    @Watch('getTyMaxSurgeOpts', { immediate: true, deep: true })
+    async onTyMaxSurgeOptions(val: ITySurgeLayerOptions): Promise<void> {
+        const scaleList: string[] | string = val.scaleList
+        if (this.checkSurgeOptions(val)) {
+            this.clearUniquerRasterLayer()
+            this.clearSosurfaceLayer()
+            const surgeRasterLayer = new SurgeRasterGeoLayer({
+                tyCode: val.tyCode,
+                tyTimestamp: val.tyTimeStamp,
+                forecastDt: this.forecastDt,
+                scaleList: scaleList,
+                customMin: 0, // 自定义下限为0
+                customMax: 2, // TODO:[-] 22-04-14 加入的自定义上限为2
+                customCoefficient: 0.8,
+                customCoeffMax: 1,
+                desc: '对于大于1.0的原值,色标会对其乘0.8'
+            })
+            this.addSurgeRasterLayer2Map(val, surgeRasterLayer)
+        } else if (!val.isShow) {
+            // 若未通过则清除 tyGroup layer
+            this.clearUniquerRasterLayer()
+            this.clearSosurfaceLayer()
+        }
+    }
+
+    @Watch('tyProSurgeOptions', { immediate: true, deep: true })
+    onTyProSurgeOptions(val: ITySurgeLayerOptions): void {
+        if (this.checkSurgeOptions(val)) {
+            const proSurgeInstance = new ProSurgeGeoLayer({
+                tyCode: val.tyCode,
+                tyTimestamp: val.tyTimeStamp,
+                forecastDt: this.forecastDt,
+                scaleList: val.scaleList,
+                desc: '概率增水场色标'
+            })
+            const sosurfaceOptions: { colorScale?: string[]; valScale?: number[] } = {
+                colorScale: [
+                    '#4575b4',
+                    '#74add1',
+                    '#abd9e9',
+                    '#e0f3f8',
+                    'rgb(252,252,0)',
+                    'rgb(252,191,0)',
+                    'rgb(252,97,0)',
+                    'rgb(191,0,0)',
+                    'rgb(128,0,0)'
+                ],
+                valScale: [20, 30, 40, 50, 60, 70, 80, 90, 100]
+            }
+            this.addSurgeRasterLayer2Map(val, proSurgeInstance, sosurfaceOptions)
         }
     }
 
@@ -1976,7 +2031,9 @@ export default class TyGroupMap extends mixins(
                 .add2map(mymap, that.$message, isLoadingRasterLayer, 0.5, val.layerType)
                 .then((layerId) => {
                     // - 22-06-16 注意此处设置 scale 时可能会出现一致性错误
+                    // 为 raster 色标传递色标 range
                     this.setScaleRange(surgeRasterInstance.scaleRange || [])
+                    this.setScaleDesc(surgeRasterInstance.desc)
                     this.uniqueRasterLayerId = layerId
                 })
                 .then(async (_) => {
@@ -1990,7 +2047,8 @@ export default class TyGroupMap extends mixins(
                         // 此处会有可能出现错误，对于加载的地主不存在指定文件时会出现错误，但 catch 无法捕捉到
                         const sosurfaceOpts = await maxSosurface.addSosurface2MapbyScale(
                             mymap,
-                            that.$message
+                            that.$message,
+                            true
                         )
                         const valScale =
                             isosurfaceOpts.valScale !== undefined
@@ -2057,25 +2115,10 @@ export default class TyGroupMap extends mixins(
         return { ...this.tyMaxSurgeOptions }
     }
 
-    @Watch('getTyMaxSurgeOpts', { immediate: true, deep: true })
-    async onTyMaxSurgeOptions(val: ITySurgeLayerOptions): Promise<void> {
-        const scaleList: string[] | string = val.scaleList
-        if (this.checkSurgeOptions(val)) {
-            const surgeRasterLayer = new SurgeRasterGeoLayer({
-                tyCode: val.tyCode,
-                tyTimestamp: val.tyTimeStamp,
-                forecastDt: this.forecastDt,
-                scaleList: scaleList,
-                customMin: 0, // 自定义下限为0
-                customMax: 2, // TODO:[-] 22-04-14 加入的自定义上限为2
-                customCoefficient: 0.8,
-                customCoeffMax: 1
-            })
-            this.addSurgeRasterLayer2Map(val, surgeRasterLayer)
-        }
-    }
-
     @Mutation(SET_SCALE_RANGE, { namespace: 'common' }) setScaleRange
+
+    /** color bar 的描述信息 */
+    @Mutation(SET_SCALE_DESC, { namespace: 'common' }) setScaleDesc
 
     // + 22-01-05 重置 当前加载的图层
     @Mutation(SET_IS_INIT_LAYERS, { namespace: 'map' }) setInitLayers
@@ -2096,33 +2139,6 @@ export default class TyGroupMap extends mixins(
     /** 设置是否显示 raster layer 图例 */
     @Mutation(SET_IS_SHOW_RASTER_LEGEND, { namespace: 'map' })
     setIsShowRasterLayerLegend
-
-    @Watch('tyProSurgeOptions', { immediate: true, deep: true })
-    onTyProSurgeOptions(val: ITySurgeLayerOptions): void {
-        if (this.checkSurgeOptions(val)) {
-            const proSurgeInstance = new ProSurgeGeoLayer({
-                tyCode: val.tyCode,
-                tyTimestamp: val.tyTimeStamp,
-                forecastDt: this.forecastDt,
-                scaleList: val.scaleList
-            })
-            const sosurfaceOptions: { colorScale?: string[]; valScale?: number[] } = {
-                colorScale: [
-                    '#4575b4',
-                    '#74add1',
-                    '#abd9e9',
-                    '#e0f3f8',
-                    'rgb(252,252,0)',
-                    'rgb(252,191,0)',
-                    'rgb(252,97,0)',
-                    'rgb(191,0,0)',
-                    'rgb(128,0,0)'
-                ],
-                valScale: [20, 30, 40, 50, 60, 70, 80, 90, 100]
-            }
-            this.addSurgeRasterLayer2Map(val, proSurgeInstance, sosurfaceOptions)
-        }
-    }
 
     // + 22-01-05 隐藏station icon 图层
     hideStationLayer(): void {

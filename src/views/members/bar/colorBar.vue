@@ -37,7 +37,7 @@
                     v-for="(tempScale, index) in colorScales"
                     class="item"
                     effect="dark"
-                    content="对于大于1.0m的增水会色标进行原值*0.8"
+                    :content="colorBarDes"
                     placement="top-start"
                     :key="tempScale.key"
                 >
@@ -98,7 +98,7 @@ import { Mutation, State, namespace, Getter } from 'vuex-class'
 // 本项目
 import { IColorScale, ColorScales, IScale } from '@/const/colorBar'
 import { DEFAULT_DICT_KEY } from '@/const/common'
-import { SET_SCALE_KEY, GET_SCALE_RANGE } from '@/store/types'
+import { SET_SCALE_KEY, GET_SCALE_RANGE, GET_SCALE_DESC } from '@/store/types'
 import { GET_RASTER_LAYER_KEY } from '@/store/types'
 import { RasterLayerEnum } from '@/enum/map'
 @Component({
@@ -129,6 +129,7 @@ export default class ColorBar extends Vue {
     colorScales: { key: string; scale: IScale }[] = ColorScales
     selectedScaleIndex = DEFAULT_DICT_KEY
     colorRange: number[] = []
+    colorBarDes = ''
     splitNum = 6 // 对当前 range 进行切分的数量
     color1 = 'rgb(151, 75, 145)'
     angle = '50'
@@ -235,9 +236,17 @@ export default class ColorBar extends Vue {
         }
     }
 
+    @Watch('getColorScaleDesc')
+    OnColorBarDesc(desc: string): void {
+        this.colorBarDes = desc
+    }
+
     @Mutation(SET_SCALE_KEY, { namespace: 'common' }) setColorScaleKey
 
-    // + 21-08-20 监听 vuex -> color scale range
+    /** + 22-06-16 监听 color bar 的描述信息 */
+    @Getter(GET_SCALE_DESC, { namespace: 'common' }) getColorScaleDesc
+
+    /** + 21-08-20 监听 vuex -> color scale range */
     @Getter(GET_SCALE_RANGE, { namespace: 'common' }) getColorScaleRange
 
     @Watch('getColorScaleRange')

@@ -5,6 +5,8 @@ import {
     GET_SCALE_KEY,
     GET_SCALE_RANGE,
     SET_SCALE_RANGE,
+    SET_SCALE_DESC,
+    GET_SCALE_DESC,
     GET_SHOW_OPTS_FORM,
     SET_SHOW_OPTS_FORM,
     SET_ISOSURGE_COLOR_SCALE_VAL_RANGE,
@@ -28,6 +30,7 @@ interface Common {
     isoSurgeScaleValRange: number[]
     isoSurgeScaleStrList: string[]
     isShowOptionsForm: boolean
+    scaleDesc: string
 }
 
 // const actions={
@@ -40,7 +43,8 @@ const state: Common = {
     scaleRange: [],
     isShowOptionsForm: false,
     isoSurgeScaleStrList: [],
-    isoSurgeScaleValRange: []
+    isoSurgeScaleValRange: [],
+    scaleDesc: ''
 }
 const getters = {
     productType: (state) => state.productType,
@@ -60,6 +64,9 @@ const getters = {
     },
     [GET_ISOSURGE_COLOR_SCALE_STR_LIST](state: Common): string[] {
         return state.isoSurgeScaleStrList
+    },
+    [GET_SCALE_DESC](state: Common): string {
+        return state.scaleDesc
     }
 }
 // 使用dispatch调用
@@ -87,6 +94,9 @@ const mutations = {
     },
     [SET_SCALE_RANGE](state: Common, range: number[]): void {
         state.scaleRange = range
+    },
+    [SET_SCALE_DESC](state: Common, desc: string): void {
+        state.scaleDesc = desc
     },
     [SET_SHOW_OPTS_FORM](state: Common, val: boolean): void {
         state.isShowOptionsForm = val
