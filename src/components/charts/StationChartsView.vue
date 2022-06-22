@@ -171,6 +171,7 @@ export default class StationChartsView extends Vue {
         this.alertRed = DEFAULT_ALERT_TIDE
     }
 
+    /** 加载天文潮位list */
     async loadAstronomicTideList(tyCode: string, timestampStr: string, stationCode: string) {
         const that = this
         await getAstronomictideTideRealDataList(tyCode, timestampStr, stationCode).then((res) => {
@@ -259,6 +260,7 @@ export default class StationChartsView extends Vue {
         this.forecastSurgeValList = []
         this.forecastSurgeMaxList = []
         this.forecastSurgeMinList = []
+        this.forecastAstronomicTideList = []
     }
 
     initLine() {

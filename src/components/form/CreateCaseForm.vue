@@ -552,7 +552,8 @@ export default class CreateCaseForm extends Vue {
             bp: number
             isForecast: boolean
         } | null = null
-        const firstForecastTyPathIndex = this.customerTyCMAList.findIndex((temp) => {
+        /** 台风预报路径的index */
+        let firstForecastTyPathIndex = this.customerTyCMAList.findIndex((temp) => {
             return temp.isForecast === true
         })
         const tyForecastPathList = this.customerTyCMAList.filter((v) => {
@@ -569,6 +570,12 @@ export default class CreateCaseForm extends Vue {
         let tyRealPathList = this.customerTyCMAList.filter((item) => {
             return item.isForecast === false
         })
+        // 22-06-20 由于可能会出现最后一个实况的预报路径为[]的情况
+        // 若最后一个实况路径不包含预报路径则默认将 firstForecastTyPathIndex 设置为 customerTyCMAList 数组长度
+        firstForecastTyPathIndex =
+            firstForecastTyPathIndex >= 0
+                ? firstForecastTyPathIndex
+                : this.customerTyCMAList.length - 1
         if (firstForecastTyPathIndex >= 0) {
             firstForecastTyPath = this.customerTyCMAList[firstForecastTyPathIndex]
 
