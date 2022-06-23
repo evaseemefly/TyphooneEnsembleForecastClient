@@ -31,7 +31,8 @@ import moment from 'moment'
 import {
     getStationSurgeRealDataListAndRange,
     getAstronomictideTideRealDataList,
-    getStationAlert
+    getStationAlert,
+    getStationSurgeBaseLevelDiff
 } from '@/api/station'
 // 枚举
 import { AlertTideEnum } from '@/enum/surge'
@@ -152,15 +153,28 @@ export default class StationChartsView extends Vue {
             }
         })
         // + 21-08-24 信加入的加载 天文潮位数据
-        await this.loadAstronomicTideList(tyCode, timestampStr, stationCode)
-        // TODO:[-] 21-08-25 将 三类潮位 分别叠加 天文潮计算一个总潮位
-        if (this.isAdditionTide) {
-            this.add2AstornomicTid()
-        }
+        this.loadAstronomicTideList(tyCode, timestampStr, stationCode)
+            .then((_) => {
+                // TODO:[-] 21-08-25 将 三类潮位 分别叠加 天文潮计算一个总潮位
+                if (that.isAdditionTide) {
+                    that.add2AstornomicTid()
+                }
 
-        await this.loadAlertTideList(stationCode)
-        that.initChart()
-        this.isLoading = false
+                that.loadAlertTideList(stationCode).then((_) => {
+                    that.initChart()
+                })
+            })
+            .finally((_) => {
+                that.isLoading = false
+            })
+            .catch((err) => {
+                that.$message({
+                    message: err,
+                    center: true,
+                    type: 'warning'
+                })
+                that.isLoading = false
+            })
     }
 
     // + 22-02-21 新加入的对四色警戒潮位进行重置
@@ -174,30 +188,59 @@ export default class StationChartsView extends Vue {
     /** 加载天文潮位list */
     async loadAstronomicTideList(tyCode: string, timestampStr: string, stationCode: string) {
         const that = this
-        await getAstronomictideTideRealDataList(tyCode, timestampStr, stationCode).then((res) => {
-            if (res.status == 200) {
-                /*
-                {
-                    "station_code": "CWH",
-                    "forecast_dt": "2020-09-15T09:00:00Z",
-                    "surge": 171.0
-                },
-                */
-                if (res.data.length > 0) {
-                    // TODO:[-] - 22-05-10 注意此处每次需要清空一下
-                    that.forecastAstronomicTideList = []
-                    res.data.forEach(
-                        (item: { station_code: string; surge: number; forecast_dt: string }) => {
-                            that.forecastAstronomicTideList.push(item.surge)
-                        }
-                    )
-                    // that.initChart()
+        let surgeDiff = 0
+        await getStationSurgeBaseLevelDiff(stationCode).then(
+            (diffRes: { status: number; data: { station_code: string; surge_diff: number } }) => {
+                if (diffRes.status == 200) {
+                    /** 基面的差值 */
+                    surgeDiff = diffRes.data.surge_diff
                 }
             }
-        })
+        )
+        await getAstronomictideTideRealDataList(tyCode, timestampStr, stationCode)
+            .then((res) => {
+                if (res.status == 200) {
+                    /*
+                    {
+                        "station_code": "CWH",
+                        "forecast_dt": "2020-09-15T09:00:00Z",
+                        "surge": 171.0
+                    },
+                    */
+
+                    if (res.data.length > 0) {
+                        // TODO:[-] - 22-05-10 注意此处每次需要清空一下
+                        // TODO:[*] - 22-06-23 + 加入了获取基面差值的请求
+                        that.forecastAstronomicTideList = []
+                        res.data.forEach(
+                            (item: {
+                                station_code: string
+                                surge: number
+                                forecast_dt: string
+                            }) => {
+                                that.forecastAstronomicTideList.push(item.surge - surgeDiff)
+                            }
+                        )
+                        // that.initChart()
+                    }
+                }
+            })
+            .then((res) => {
+                getStationSurgeBaseLevelDiff(stationCode).then(
+                    (diffRes: {
+                        status: number
+                        data: { station_code: string; surge_diff: number }
+                    }) => {
+                        // if (diffRes.status == 200) {
+                        //     /** 基面的差值 */
+                        //     const surgeDiff: number = diffRes.data.surge_diff
+                        // }
+                    }
+                )
+            })
     }
 
-    async loadAlertTideList(stationCode: string): void {
+    async loadAlertTideList(stationCode: string): Promise<void> {
         await getStationAlert(stationCode).then((res) => {
             if (res.status === 200) {
                 res.data.forEach(

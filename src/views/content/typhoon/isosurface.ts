@@ -77,7 +77,8 @@ class SurgeSosurface implements ISosurface {
             '#cf3759',
             '#93003a'
         ],
-        valScale: [0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6]
+
+        valScale: [0.6, 0.8, 1.0, 1.4, 1.8, 2.0, 2.4, 2.8]
     }
 
     /**
@@ -133,7 +134,7 @@ class SurgeSosurface implements ISosurface {
                 '#cf3759',
                 '#93003a'
             ],
-            valScale: [0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6]
+            valScale: [0.6, 0.8, 1.0, 1.4, 1.8, 2.0, 2.4, 2.8]
         }
     ) {
         this.url = url

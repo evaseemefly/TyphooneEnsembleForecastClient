@@ -9,7 +9,8 @@ export interface IScale {
 
 const DEFAULT_COLOR_INDEX = -1
 const DEFAULT_COLOR_KEY = 'my-colour'
-const DEFAULT_RANGE = [0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2]
+// const DEFAULT_RANGE = [0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2]
+const DEFAULT_RANGE = [0.6, 1.0, 1.4, 1.8, 2.2, 2.6, 3.0]
 const DEFAULT_COLOR_SCALE: IScale = {
     range: DEFAULT_RANGE,
     scaleColorList: [

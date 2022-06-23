@@ -208,6 +208,23 @@ const getStationAlert = (tyCode: string) => {
     })
 }
 
+/**
+ * + 22-06-23
+ * 获取对应站的基面转换差值
+ *
+ * @param {string} stationCode
+ * @return {*}
+ */
+const getStationSurgeBaseLevelDiff = (stationCode: string) => {
+    const url = `${host}${area}/station/baseLevelDiff`
+    return axios.get(url, {
+        headers: authHeader(),
+        params: {
+            station_code: stationCode
+        }
+    })
+}
+
 export {
     getStationListByGroupPath,
     getStationSurgeRangeListByGroupPath,
@@ -217,5 +234,6 @@ export {
     getStationSurgeRealDataQuarterList,
     getStaticStationList,
     getCenterPathStationMaxSurgeList,
-    getAllPathStationMaxSurgeList
+    getAllPathStationMaxSurgeList,
+    getStationSurgeBaseLevelDiff
 }
