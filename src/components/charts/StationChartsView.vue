@@ -32,13 +32,15 @@ import {
     getStationSurgeRealDataListAndRange,
     getAstronomictideTideRealDataList,
     getStationAlert,
-    getStationSurgeBaseLevelDiff
+    getStationSurgeBaseLevelDiff,
+    getStationD85SurgeDiff
 } from '@/api/station'
 // 枚举
 import { AlertTideEnum } from '@/enum/surge'
 import { DEFAULTTYCODE, DEFAULTTIMESTAMP } from '@/const/typhoon'
-import { DEFAULT_ALERT_TIDE } from '@/const/surge'
+import { DEFAULT_ALERT_TIDE, DEFAULT_SURGE_DIFF } from '@/const/surge'
 import { DEFAULT_STATION_CODE, DEFAULT_STATION_NAME } from '@/const/station'
+import station from '@/store/modules/station'
 
 const formatNumber = (val: number): string => {
     return val.toFixed(2)
@@ -74,6 +76,8 @@ export default class StationChartsView extends Vue {
     alertYellow: number = DEFAULT_ALERT_TIDE
     alertOrange: number = DEFAULT_ALERT_TIDE
     alertRed: number = DEFAULT_ALERT_TIDE
+    surgeDiff: number | null = DEFAULT_SURGE_DIFF
+    d85Diff: number | null = DEFAULT_SURGE_DIFF
 
     isLoading = false // 是否在加载， true - 在加载状态 ; false - 未在加载
     screenHeight = 0
@@ -118,6 +122,10 @@ export default class StationChartsView extends Vue {
         }
     }
 
+    /** 加载海洋站潮位实时数据
+     *  会调用 loadAstronomicTideList (加载天文潮位,加载天文潮位时获取基面差值)
+     *
+     */
     async loadStationSurgeRealDataListAndRange(
         tyCode: string,
         timestampStr: string,
@@ -189,14 +197,23 @@ export default class StationChartsView extends Vue {
     async loadAstronomicTideList(tyCode: string, timestampStr: string, stationCode: string) {
         const that = this
         let surgeDiff = 0
-        await getStationSurgeBaseLevelDiff(stationCode).then(
-            (diffRes: { status: number; data: { station_code: string; surge_diff: number } }) => {
-                if (diffRes.status == 200) {
-                    /** 基面的差值 */
-                    surgeDiff = diffRes.data.surge_diff
+        // this.surgeDiff = DEFAULT_SURGE_DIFF
+        await getStationSurgeBaseLevelDiff(stationCode)
+            .then(
+                (diffRes: {
+                    status: number
+                    data: { station_code: string; surge_diff: number }
+                }) => {
+                    if (diffRes.status == 200) {
+                        /** 基面的差值 */
+                        surgeDiff = diffRes.data.surge_diff
+                        // that.surgeDiff = surgeDiff
+                    }
                 }
-            }
-        )
+            )
+            .catch((err) => {
+                that.surgeDiff = DEFAULT_SURGE_DIFF
+            })
         await getAstronomictideTideRealDataList(tyCode, timestampStr, stationCode)
             .then((res) => {
                 if (res.status == 200) {
@@ -240,32 +257,60 @@ export default class StationChartsView extends Vue {
             })
     }
 
+    /** 加载警戒潮位集合 */
     async loadAlertTideList(stationCode: string): Promise<void> {
+        const that = this
         await getStationAlert(stationCode).then((res) => {
             if (res.status === 200) {
-                res.data.forEach(
-                    (val: { station_code: string; tide: number; alert: AlertTideEnum }) => {
-                        /*
+                getStationD85SurgeDiff(stationCode).then(
+                    (d85res: {
+                        status: number
+                        data: { station_code: string; d85_diff: number | null }
+                    }) => {
+                        if (d85res.status == 200) {
+                            that.d85Diff = d85res.data.d85_diff
+                        }
+                        res.data.forEach(
+                            (val: { station_code: string; tide: number; alert: AlertTideEnum }) => {
+                                /*
                             {
                                 "station_code": "CWH",
                                 "tide": 443.0,
                                 "alert": 5001
                             },
                         */
-                        switch (true) {
-                            case val.alert === AlertTideEnum.BLUE:
-                                this.alertBlue = val.tide
-                                break
-                            case val.alert === AlertTideEnum.YELLOW:
-                                this.alertYellow = val.tide
-                                break
-                            case val.alert === AlertTideEnum.ORANGE:
-                                this.alertOrange = val.tide
-                                break
-                            case val.alert === AlertTideEnum.RED:
-                                this.alertRed = val.tide
-                                break
-                        }
+                                switch (true) {
+                                    case val.alert === AlertTideEnum.BLUE:
+                                        this.alertBlue =
+                                            that.d85Diff != null &&
+                                            that.d85Diff !== DEFAULT_SURGE_DIFF
+                                                ? val.tide - that.d85Diff
+                                                : val.tide
+                                        break
+                                    case val.alert === AlertTideEnum.YELLOW:
+                                        this.alertYellow =
+                                            that.d85Diff != null &&
+                                            that.d85Diff !== DEFAULT_SURGE_DIFF
+                                                ? val.tide - that.d85Diff
+                                                : val.tide
+                                        break
+                                    case val.alert === AlertTideEnum.ORANGE:
+                                        this.alertOrange =
+                                            that.d85Diff != null &&
+                                            that.d85Diff !== DEFAULT_SURGE_DIFF
+                                                ? val.tide - that.d85Diff
+                                                : val.tide
+                                        break
+                                    case val.alert === AlertTideEnum.RED:
+                                        this.alertRed =
+                                            that.d85Diff != null &&
+                                            that.d85Diff !== DEFAULT_SURGE_DIFF
+                                                ? val.tide - that.d85Diff
+                                                : val.tide
+                                        break
+                                }
+                            }
+                        )
                     }
                 )
             }

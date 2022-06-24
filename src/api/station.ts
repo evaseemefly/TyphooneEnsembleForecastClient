@@ -225,6 +225,15 @@ const getStationSurgeBaseLevelDiff = (stationCode: string) => {
     })
 }
 
+const getStationD85SurgeDiff = (stationCode: string) => {
+    const url = `${host}${area}/station/d85`
+    return axios.get(url, {
+        headers: authHeader(),
+        params: {
+            station_code: stationCode
+        }
+    })
+}
 export {
     getStationListByGroupPath,
     getStationSurgeRangeListByGroupPath,
@@ -235,5 +244,6 @@ export {
     getStaticStationList,
     getCenterPathStationMaxSurgeList,
     getAllPathStationMaxSurgeList,
-    getStationSurgeBaseLevelDiff
+    getStationSurgeBaseLevelDiff,
+    getStationD85SurgeDiff
 }
