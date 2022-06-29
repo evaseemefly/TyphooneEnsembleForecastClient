@@ -774,6 +774,7 @@ export default class StationChartsView extends Vue {
                 return !Number.isNaN(val)
             })
         )
+        const isAdd = this.isAdditionTide
         yAxisMin = Math.min(...[surgeMin, astoronomicTideMin])
 
         return parseFloat(yAxisMin.toFixed(1)) - MARGIN_BOTTOM
