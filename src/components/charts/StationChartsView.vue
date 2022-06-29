@@ -168,9 +168,13 @@ export default class StationChartsView extends Vue {
                     that.add2AstornomicTid()
                 }
 
-                that.loadAlertTideList(stationCode).then((_) => {
-                    that.initChart()
-                })
+                that.loadAlertTideList(stationCode)
+                    // .then((res) => {
+                    //     console.log(res)
+                    // })
+                    .finally((_) => {
+                        that.initChart()
+                    })
             })
             .finally((_) => {
                 that.isLoading = false
@@ -260,9 +264,9 @@ export default class StationChartsView extends Vue {
     /** 加载警戒潮位集合 */
     async loadAlertTideList(stationCode: string): Promise<void> {
         const that = this
-        await getStationAlert(stationCode).then((res) => {
+        return getStationAlert(stationCode).then((res): Promise<void> | undefined => {
             if (res.status === 200) {
-                getStationD85SurgeDiff(stationCode).then(
+                return getStationD85SurgeDiff(stationCode).then(
                     (d85res: {
                         status: number
                         data: { station_code: string; d85_diff: number | null }
@@ -273,12 +277,12 @@ export default class StationChartsView extends Vue {
                         res.data.forEach(
                             (val: { station_code: string; tide: number; alert: AlertTideEnum }) => {
                                 /*
-                            {
-                                "station_code": "CWH",
-                                "tide": 443.0,
-                                "alert": 5001
-                            },
-                        */
+                                {
+                                    "station_code": "CWH",
+                                    "tide": 443.0,
+                                    "alert": 5001
+                                },
+                            */
                                 switch (true) {
                                     case val.alert === AlertTideEnum.BLUE:
                                         this.alertBlue =
@@ -317,6 +321,7 @@ export default class StationChartsView extends Vue {
         })
     }
 
+    /** 叠加天文潮 */
     add2AstornomicTid(): void {
         const that = this
         this.forecastAstronomicTideList.map((val, index) => {
@@ -330,6 +335,7 @@ export default class StationChartsView extends Vue {
         })
     }
 
+    /** 清除天文潮 */
     wipe2AstornomicTide(): void {
         const that = this
         this.forecastAstronomicTideList.map((val, index) => {
@@ -444,7 +450,9 @@ export default class StationChartsView extends Vue {
                                 color: '#f8f8f7', //字体颜色
                                 fontSize: 12 //字体大小
                             }
-                        }
+                        },
+                        min: that.yAxisMin,
+                        max: that.yAxisMax
                         // scale: true
                     }
                 ],
@@ -715,6 +723,60 @@ export default class StationChartsView extends Vue {
         //     this.size.divWidth = this.sizeDefault.divWidth
         //     this.size.divHeight = this.sizeDefault.divHeight
         // }
+    }
+
+    /** 获取y轴上限 */
+    get yAxisMax(): number {
+        /** 距离chart顶部的距离 */
+        const MARGIN_TOP = 20
+        let yAxisMax = 0
+        const surgeMax = Math.max(
+            ...this.forecastSurgeMaxList.filter((val) => {
+                return !Number.isNaN(val)
+            })
+        )
+        const astoronomicTideMax = Math.max(
+            ...this.forecastAstronomicTideList.filter((val) => {
+                return !Number.isNaN(val)
+            })
+        )
+        const alertTide =
+            this.alertRed != DEFAULT_ALERT_TIDE
+                ? this.alertRed
+                : this.alertOrange != DEFAULT_ALERT_TIDE
+                ? this.alertOrange
+                : this.alertYellow != DEFAULT_ALERT_TIDE
+                ? this.alertYellow
+                : this.alertBlue != DEFAULT_ALERT_TIDE
+                ? this.alertBlue
+                : 0
+        yAxisMax = Math.max(
+            this.isAdditionTide ? surgeMax : 0,
+            !this.isAdditionTide ? astoronomicTideMax : 0,
+            this.isAdditionTide ? alertTide : 0
+        )
+        return parseFloat(yAxisMax.toFixed(1)) + MARGIN_TOP
+    }
+
+    /** TODO:[*] 22-06-29 注意此处虽然更新了 forecastSurgeMinList 但不会触发此计算方法
+     * 获取y轴下限 */
+    get yAxisMin(): number {
+        /** 距离chart底部的距离 */
+        const MARGIN_BOTTOM = 20
+        let yAxisMin = 0
+        const surgeMin = Math.min(
+            ...this.forecastSurgeMinList.filter((val) => {
+                return !Number.isNaN(val)
+            })
+        )
+        const astoronomicTideMin = Math.min(
+            ...this.forecastAstronomicTideList.filter((val) => {
+                return !Number.isNaN(val)
+            })
+        )
+        yAxisMin = Math.min(...[surgeMin, astoronomicTideMin])
+
+        return parseFloat(yAxisMin.toFixed(1)) - MARGIN_BOTTOM
     }
 }
 </script>
