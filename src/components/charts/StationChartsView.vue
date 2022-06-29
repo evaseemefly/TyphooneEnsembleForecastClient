@@ -65,11 +65,18 @@ export default class StationChartsView extends Vue {
     toResize: boolean
 
     forecastDateList: Date[] = []
+    /** 中间路径的预报潮位值(若isAdditionTide=true —— 则是 = 增水值+天文潮位) */
     forecastSurgeValList: number[] = []
+
+    /** 预报潮位的最大值集合 */
     forecastSurgeMaxList: number[] = []
+
+    /** 预报潮位的最小值集合 */
     forecastSurgeMinList: number[] = []
     // + 22-05-06 最大值与最小值的差
     forecastSurgediffList: number[] = []
+
+    /** 天文潮集合(-基面) */
     forecastAstronomicTideList: number[] = []
     // 22-02-21 注意四色警戒潮位是对应的总潮位值
     alertBlue: number = DEFAULT_ALERT_TIDE
@@ -77,6 +84,8 @@ export default class StationChartsView extends Vue {
     alertOrange: number = DEFAULT_ALERT_TIDE
     alertRed: number = DEFAULT_ALERT_TIDE
     surgeDiff: number | null = DEFAULT_SURGE_DIFF
+
+    /** 85基面的差值 */
     d85Diff: number | null = DEFAULT_SURGE_DIFF
 
     isLoading = false // 是否在加载， true - 在加载状态 ; false - 未在加载
@@ -283,34 +292,24 @@ export default class StationChartsView extends Vue {
                                     "alert": 5001
                                 },
                             */
+                                // TODO:[*] 22-06-29 此处存在问题:有的站存在 d85diff 与 四色警戒潮位均为 null 的情况
+                                const alertTide =
+                                    that.d85Diff != null && that.d85Diff !== DEFAULT_SURGE_DIFF
+                                        ? val.tide - that.d85Diff
+                                        : val.tide
                                 switch (true) {
                                     case val.alert === AlertTideEnum.BLUE:
-                                        this.alertBlue =
-                                            that.d85Diff != null &&
-                                            that.d85Diff !== DEFAULT_SURGE_DIFF
-                                                ? val.tide - that.d85Diff
-                                                : val.tide
+                                        that.alertBlue = alertTide
+
                                         break
                                     case val.alert === AlertTideEnum.YELLOW:
-                                        this.alertYellow =
-                                            that.d85Diff != null &&
-                                            that.d85Diff !== DEFAULT_SURGE_DIFF
-                                                ? val.tide - that.d85Diff
-                                                : val.tide
+                                        that.alertYellow = alertTide
                                         break
                                     case val.alert === AlertTideEnum.ORANGE:
-                                        this.alertOrange =
-                                            that.d85Diff != null &&
-                                            that.d85Diff !== DEFAULT_SURGE_DIFF
-                                                ? val.tide - that.d85Diff
-                                                : val.tide
+                                        that.alertOrange = alertTide
                                         break
                                     case val.alert === AlertTideEnum.RED:
-                                        this.alertRed =
-                                            that.d85Diff != null &&
-                                            that.d85Diff !== DEFAULT_SURGE_DIFF
-                                                ? val.tide - that.d85Diff
-                                                : val.tide
+                                        that.alertRed = alertTide
                                         break
                                 }
                             }
@@ -369,7 +368,8 @@ export default class StationChartsView extends Vue {
         }
     }
 
-    initChart() {
+    /** 初始化 chart */
+    initChart(): void {
         const that = this
         const nodeDiv = document.getElementById('station_charts')
         if (nodeDiv) {
