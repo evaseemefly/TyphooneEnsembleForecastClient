@@ -1732,6 +1732,7 @@ export default class TyGroupMap extends mixins(
     // 找到当前时间对应的 tyGroup 对应的 realdata,信息,并添加至map
     // 21-08-15 加入差值
     // isShowTyRealDataForm 是否显示台风当前信息框
+    // TODO:[*] 22-06-30 此处出现了bug!
     addTyTargetDtRealData2Map(targetDt: Date, isShowTyRealDataForm = false): void {
         const that = this
         const mymap: any = this.$refs.basemap['mapObject']

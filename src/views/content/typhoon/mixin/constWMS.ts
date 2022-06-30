@@ -76,7 +76,7 @@ class WMSMixin extends Vue {
         'https://map.geoq.cn/arcgis/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/{z}/{y}/{x}'
     // leaflet 右下角的文字显示
     attribution =
-        'powered by Ocean Flow © 2022 <a href="https://github.com/evaseemefly">evaseemefly & nmefc</a> '
+        'powered by Ocean Flow © 2022 authors: <a href="https://github.com/evaseemefly">evaseemefly</a> & <a href="limj@nmefc.cn"> limj</a> | nmefc '
 
     surgeForecastAreaPolygon = null
     surgeForecastAreaPolygonOpts = {
