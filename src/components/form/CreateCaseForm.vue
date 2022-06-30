@@ -262,6 +262,16 @@ const checkCustomerTyList = (
     return isOk
 }
 
+/** 台风预报路径接口 */
+interface IPathType {
+    forecastDt: Date
+    lat: number
+    lon: number
+    bp: number
+    isForecast: boolean
+    tyType: string
+}
+
 @Component({
     directives: {
         // drag: Draggable
@@ -281,15 +291,7 @@ export default class CreateCaseForm extends Vue {
         { hours: 96, radius: 150 },
         { hours: 120, radius: 180 }
     ]
-    customerTyCMAList: {
-        forecastDt: Date
-        lat: number
-        lon: number
-        bp: number
-        isForecast: boolean
-        tyType: string
-        // radius: number
-    }[] = []
+    customerTyCMAList: IPathType[] = []
     forecastAreaList = [
         {
             value: AreaEnum.NULL,
@@ -540,6 +542,8 @@ export default class CreateCaseForm extends Vue {
     /*
         step1:找到第一个预报时刻
         step2:将第一个预报时刻之前的台风实况路径均取间隔6小时的实况
+        TODO:[*] 22-06-30 
+        step3:将第一个预报时刻起之后的所有预报时刻修改为时间间隔6小时
     */
     standardizing(desc: boolean): void {
         // 1- 将台风路径列表按照时间升序排序，越近的越靠后
@@ -559,13 +563,7 @@ export default class CreateCaseForm extends Vue {
         const tyForecastPathList = this.customerTyCMAList.filter((v) => {
             return v.isForecast === true
         })
-        const newTyRealPathList: {
-            forecastDt: Date
-            lat: number
-            lon: number
-            bp: number
-            isForecast: boolean
-        }[] = []
+        const newTyRealPathList: IPathType[] = []
         // 3- 取出之前的台风实况路径
         let tyRealPathList = this.customerTyCMAList.filter((item) => {
             return item.isForecast === false
@@ -598,8 +596,55 @@ export default class CreateCaseForm extends Vue {
                 }
             }
         }
+        // + 22-06-30 将预报路径修改为时间间隔6小时(若时间间隔超过6小时则进行差值)
+        // step4:
+        /** 一小时=多少毫秒 */
+        const UNITHOURS = 1000 * 60 * 60
+        /** 标准化后(6hour)的预报台风路径集合 */
+        const standForecastPathList: IPathType[] = []
+        /** 加密后(1hour)的台风预报路径集合 */
+        const retrenchForecastPathList: IPathType[] = []
+        // step4-1 生成加密后的预报台风路径集合
+        for (let i = 0; i < tyForecastPathList.length - 1; i++) {
+            /* 
+                遍历数组，判断两个毗连的时间的时间间隔
+                思路:按照最小间隔先进行差值然后跳步提取
+            */
+            /** 临近时间的时间差(单位:毫秒) */
+            const tempPath = tyForecastPathList[i]
+            /** 临近间隔的时间差(单位毫秒) */
+            const tempDtDiff =
+                tyForecastPathList[i + 1].forecastDt.getTime() -
+                tyForecastPathList[i].forecastDt.getTime()
+            /** 临近间隔的时间差(单位小时) */
+            const intervalHours = tempDtDiff / UNITHOURS
+            const unitLat =
+                (tyForecastPathList[i + 1].lat - tyForecastPathList[i].lat) / intervalHours
+            const unitLon =
+                (tyForecastPathList[i + 1].lon - tyForecastPathList[i].lon) / intervalHours
+            const unitBp = (tyForecastPathList[i + 1].bp - tyForecastPathList[i].bp) / intervalHours
+            /** 当前 i 差值后的路径集合 */
+            const tempPathList: IPathType[] = []
+            for (let diffIndex = 0; diffIndex < intervalHours; diffIndex++) {
+                const tempTyForecastPath = {
+                    forecastDt: new Date(tempPath.forecastDt.getTime() + diffIndex * UNITHOURS),
+                    lat: tempPath.lat + diffIndex * unitLat,
+                    lon: tempPath.lon + diffIndex * unitLon,
+                    bp: tempPath.bp + diffIndex * unitBp,
+                    isForecast: tempPath.isForecast,
+                    tyType: tempPath.tyType
+                    // radius: number
+                }
+                tempPathList.push(tempTyForecastPath)
+            }
+            retrenchForecastPathList.push(...tempPathList)
+        }
+        // step4-2 按照6小时为时间间隔获取对应的预报台风路径集合
+        for (let i = 0; i < retrenchForecastPathList.length / 6; i++) {
+            standForecastPathList.push(retrenchForecastPathList[i * 6])
+        }
         // 3-3 将实况列表+预报路径列表拼接
-        const mergeTyPathList = [...tyForecastPathList, ...newTyRealPathList]
+        const mergeTyPathList = [...standForecastPathList, ...newTyRealPathList]
         if (desc) {
             mergeTyPathList.sort((a, b) => {
                 return a.forecastDt.getTime() - b.forecastDt.getTime()
