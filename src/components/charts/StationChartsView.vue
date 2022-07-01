@@ -730,16 +730,20 @@ export default class StationChartsView extends Vue {
         /** 距离chart顶部的距离 */
         const MARGIN_TOP = 20
         let yAxisMax = 0
+        /** 最大增水值 */
         const surgeMax = Math.max(
             ...this.forecastSurgeMaxList.filter((val) => {
                 return !Number.isNaN(val)
             })
         )
+
+        /** 天文潮最大值 */
         const astoronomicTideMax = Math.max(
             ...this.forecastAstronomicTideList.filter((val) => {
                 return !Number.isNaN(val)
             })
         )
+        /** 警戒潮位值(最大) */
         const alertTide =
             this.alertRed != DEFAULT_ALERT_TIDE
                 ? this.alertRed
@@ -750,11 +754,7 @@ export default class StationChartsView extends Vue {
                 : this.alertBlue != DEFAULT_ALERT_TIDE
                 ? this.alertBlue
                 : 0
-        yAxisMax = Math.max(
-            this.isAdditionTide ? surgeMax : 0,
-            !this.isAdditionTide ? astoronomicTideMax : 0,
-            this.isAdditionTide ? alertTide : 0
-        )
+        yAxisMax = Math.max(surgeMax, astoronomicTideMax, this.isAdditionTide ? alertTide : 0)
         return parseFloat(yAxisMax.toFixed(1)) + MARGIN_TOP
     }
 
