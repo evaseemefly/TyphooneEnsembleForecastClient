@@ -497,12 +497,12 @@ class SurgeSosurface implements ISosurface {
 
         //   height = height / 10;
         //   width = width / 10;
-        const xStep = 30
-        const yStep = 30
+        const xStep = 15
+        const yStep = 15
         const nanStamp = 'NaN'
         /** 忽略添加title的值下限，小于此值则会设置 cls 为 'minor' */
         const ignoreVal =
-            kwargs !== undefined && kwargs.ignoreVal !== undefined ? kwargs.ignoreVal : 0.2
+            kwargs !== undefined && kwargs.ignoreVal !== undefined ? kwargs.ignoreVal : 0.5
         // y 660
         for (let y = 0; y < height; y = y + yStep) {
             // x 1080
@@ -524,7 +524,7 @@ class SurgeSosurface implements ISosurface {
                     }
                 }
                 const pointVal = points[y][x].toFixed(1)
-                if (pointVal !== nanStamp) {
+                if (pointVal !== nanStamp && parseFloat(pointVal) > ignoreVal) {
                     obj.properties = { value: pointVal } //网格中心点数值
                     obj.geometry.coordinates = that.getGridCenterCoordinates(x, y) //网格中心点坐标
                     pointArr.push(obj)
