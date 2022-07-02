@@ -122,7 +122,7 @@ class TyGroupPathLine {
     public tyGroupPolyLineLayer: L.Layer[]
     polyColor = DEFAULT_COLOR
     tyGroupProPathCircles: { lat: number; lon: number; radius: number }[] = []
-    private
+
     // tyCenterPath:any
 
     /**
@@ -768,6 +768,7 @@ class TyGroupCenterPathLine extends TyGroupPathLine {
                             indexDate,
                             centerPathCount
                         )
+                        // TODO:[*] 22-07-02 出现了计算时间小时24小时，会出现只有一个台风概率圆集合的情况
                         if (tempProPathRadius !== 0) {
                             this.tyGroupProPathCircles.push({
                                 lat: tempRealdata.lat,
@@ -841,6 +842,7 @@ class TyGroupCenterPathLine extends TyGroupPathLine {
                             indexDate,
                             centerPathCount
                         )
+
                         if (tempProPathRadius !== 0) {
                             this.tyGroupProPathCircles.push({
                                 lat: tempRealdata.lat,

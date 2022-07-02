@@ -60,7 +60,7 @@
                         <button
                             type="button"
                             class="el-button el-button--primary"
-                            @click="spiderTy"
+                            @click="checkStand"
                         >
                             检查<i class="fas fa-spell-check"></i>
                         </button>
@@ -233,16 +233,7 @@ import { GET_CREATE_FORM } from '@/store/types'
 import { SET_GEO_COVERAGEID, SET_TYPHOON_PATH_LIST } from '@/store/types'
 import { AreaEnum } from '@/enum/area'
 
-const checkCustomerTyList = (
-    tyList: {
-        forecastDt: Date
-        lat: number
-        lon: number
-        bp: number
-        isForecast: boolean
-        // radius: number
-    }[]
-): boolean => {
+const checkCustomerTyList = (tyList: IPathType[]): boolean => {
     let isOk = false
     // 升序排列
     const sortedTyList = tyList.sort((a, b) => {
@@ -262,6 +253,18 @@ const checkCustomerTyList = (
     return isOk
 }
 
+/** 判断台风的起止时间是否大于24小时 */
+const checkTyDateRange = (tyList: IPathType[]): boolean => {
+    const isOk = false
+    // 将台风路径进行升序排列
+    const sortedTyList = tyList.sort((a, b) => {
+        return b.forecastDt.getTime() - a.forecastDt.getTime() > 0
+    })
+    const startDt = sortedTyList[0].forecastDt
+    const endDt = sortedTyList[sortedTyList.length - 1].forecastDt
+    return (endDt.getTime() - startDt.getTime()) / (1000 * 60 * 60) > 24
+}
+
 /** 台风预报路径接口 */
 interface IPathType {
     forecastDt: Date
@@ -269,7 +272,7 @@ interface IPathType {
     lon: number
     bp: number
     isForecast: boolean
-    tyType: string
+    tyType?: string
 }
 
 @Component({
@@ -542,7 +545,7 @@ export default class CreateCaseForm extends Vue {
     /*
         step1:找到第一个预报时刻
         step2:将第一个预报时刻之前的台风实况路径均取间隔6小时的实况
-        TODO:[*] 22-06-30 
+        TODO:[*] 22-06-30
         step3:将第一个预报时刻起之后的所有预报时刻修改为时间间隔6小时
     */
     standardizing(desc: boolean): void {
@@ -606,7 +609,7 @@ export default class CreateCaseForm extends Vue {
         const retrenchForecastPathList: IPathType[] = []
         // step4-1 生成加密后的预报台风路径集合
         for (let i = 0; i < tyForecastPathList.length - 1; i++) {
-            /* 
+            /*
                 遍历数组，判断两个毗连的时间的时间间隔
                 思路:按照最小间隔先进行差值然后跳步提取
             */
@@ -680,7 +683,19 @@ export default class CreateCaseForm extends Vue {
         return this.deviationRadiusNumberList.length
     }
 
-    // + 21-09-15 提交当前页面中的信息
+    /** 判断提交数据是否标准 */
+    checkStand(): void {
+        if (!checkCustomerTyList(this.customerTyCMAList)) {
+            this.$confirm('提交的起止时间间隔需要在120小时内')
+            return
+        }
+        if (!checkTyDateRange(this.customerTyCMAList)) {
+            this.$confirm('提交的起止时间间隔需要大于24小时')
+            return
+        }
+    }
+
+    /** + 21-09-15 提交当前页面中的信息 */
     commit(): void {
         const that = this
         const postData = {
@@ -694,6 +709,10 @@ export default class CreateCaseForm extends Vue {
         }
         if (!checkCustomerTyList(this.customerTyCMAList)) {
             this.$confirm('提交的起止时间间隔需要在120小时内')
+            return
+        }
+        if (!checkTyDateRange(this.customerTyCMAList)) {
+            this.$confirm('提交的起止时间间隔需要大于24小时')
             return
         }
         this.$confirm('请确认是否要提交计算作业, 是否继续?', '提示', {
