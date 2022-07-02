@@ -233,6 +233,7 @@ import { GET_CREATE_FORM } from '@/store/types'
 import { SET_GEO_COVERAGEID, SET_TYPHOON_PATH_LIST } from '@/store/types'
 import { AreaEnum } from '@/enum/area'
 
+/** 判断台风的起止时间是否<= 24*5 若>返回 false */
 const checkCustomerTyList = (tyList: IPathType[]): boolean => {
     let isOk = false
     // 升序排列
@@ -253,7 +254,7 @@ const checkCustomerTyList = (tyList: IPathType[]): boolean => {
     return isOk
 }
 
-/** 判断台风的起止时间是否大于24小时 */
+/** 判断台风的起止时间是否>24小时 若<=则返回 false */
 const checkTyDateRange = (tyList: IPathType[]): boolean => {
     const isOk = false
     // 将台风路径进行升序排列
