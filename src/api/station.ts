@@ -143,6 +143,41 @@ const getStationSurgeRealDataListAndRange = (
 }
 
 /**
+ * + 22-07-04 获取指定 case 的 潮位数据 (聚合 group path)
+ * @param tyCode
+ * @param timestampStr
+ * @param stationCode
+ * @returns demo:{{
+        "gp_id": 14361,
+        "list_realdata": [
+            {
+                "ty_code": "2203",
+                "gp_id": 14361,
+                "station_code": "QZH",
+                "forecast_index": 0,
+                "forecast_dt": "2022-07-01T13:00:00Z",
+                "surge": 0.0
+            }
+        ]
+    },}
+ */
+const getSurgeRealDataListByGroupPath = (
+    tyCode: string,
+    timestampStr: string,
+    stationCode: string
+) => {
+    const url = `${host}${area}/station/group/reallist/list`
+    return axios.get(url, {
+        headers: authHeader(),
+        params: {
+            ty_code: tyCode,
+            timestamp: timestampStr,
+            station_code: stationCode
+        }
+    })
+}
+
+/**
  * + 21-08-24
  * 获取天文潮数据列表
  *
@@ -245,5 +280,6 @@ export {
     getCenterPathStationMaxSurgeList,
     getAllPathStationMaxSurgeList,
     getStationSurgeBaseLevelDiff,
-    getStationD85SurgeDiff
+    getStationD85SurgeDiff,
+    getSurgeRealDataListByGroupPath
 }

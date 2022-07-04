@@ -42,6 +42,7 @@
                     :timestampStr="timestampStr"
                     :stationName="stationName"
                     :toResize="toResize"
+                    :isGroup="isGroup"
                 ></component>
             </div>
         </div>
@@ -65,7 +66,11 @@ import { DefaultStationOptions } from '@/views/content/station/types'
     directives: {
         // drag: Draggable
     },
-    components: { 'station-chart': StationChartsView, 'quarter-view': QuarterView }
+    components: {
+        'station-chart': StationChartsView,
+        'quarter-view': QuarterView,
+        'station-group-chart': StationChartsView
+    }
 })
 export default class TabContent extends Vue {
     @Prop()
@@ -89,12 +94,14 @@ export default class TabContent extends Vue {
         divWidth: 660,
         divHeight: 445
     }
-    subTitles: Array<{ title: string; index: number; componetName: string }> = [
-        { title: '潮位站预报', index: 0, componetName: 'station-chart' },
-        { title: '潮位分析数据', index: 1, componetName: 'quarter-view' }
+    subTitles: Array<{ title: string; index: number; componetName: string; isGroup: boolean }> = [
+        { title: '潮位站预报', index: 0, componetName: 'station-chart', isGroup: false },
+        { title: '潮位分析数据', index: 1, componetName: 'quarter-view', isGroup: false },
+        { title: '潮位站-集合预报', index: 2, componetName: 'station-group-chart', isGroup: true }
     ]
     dragCls: StationDrag
     toResize = false
+    isGroup = false
     subTitleIndex = 0
     quarterList: {
         stationCode: string
@@ -388,6 +395,7 @@ export default class TabContent extends Vue {
     }
 
     get getActiveCompName() {
+        this.isGroup = this.subTitles[this.subTitleIndex].isGroup
         return this.subTitles[this.subTitleIndex].componetName
     }
 

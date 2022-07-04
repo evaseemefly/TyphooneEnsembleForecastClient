@@ -33,7 +33,8 @@ import {
     getAstronomictideTideRealDataList,
     getStationAlert,
     getStationSurgeBaseLevelDiff,
-    getStationD85SurgeDiff
+    getStationD85SurgeDiff,
+    getSurgeRealDataListByGroupPath
 } from '@/api/station'
 // 枚举
 import { AlertTideEnum } from '@/enum/surge'
@@ -63,6 +64,10 @@ export default class StationChartsView extends Vue {
     timestampStr: string
     @Prop()
     toResize: boolean
+
+    /** 是否为集合路径 */
+    @Prop()
+    isGroup: boolean
 
     forecastDateList: Date[] = []
     /** 中间路径的预报潮位值(若isAdditionTide=true —— 则是 = 增水值+天文潮位) */
@@ -99,6 +104,9 @@ export default class StationChartsView extends Vue {
         divWidth: 660,
         divHeight: 445
     }
+
+    /** + 22-07-04 潮位数据(通过 grouppath)聚合 */
+    surgeByGroupPath: { gpId: number; listSurge: Array<number> }[] = []
     myChart: echarts.ECharts = null
 
     mounted() {
@@ -124,7 +132,8 @@ export default class StationChartsView extends Vue {
             this.loadStationSurgeRealDataListAndRange(
                 this.tyCode,
                 this.timestampStr,
-                this.stationCode
+                this.stationCode,
+                this.isGroup
             ).then((_) => {
                 // this.isLoading = false
             })
@@ -138,7 +147,8 @@ export default class StationChartsView extends Vue {
     async loadStationSurgeRealDataListAndRange(
         tyCode: string,
         timestampStr: string,
-        stationCode: string
+        stationCode: string,
+        isGroup = false
     ) {
         const that = this
         that.isLoading = true
@@ -164,6 +174,45 @@ export default class StationChartsView extends Vue {
                             that.forecastSurgeMaxList.push(item.surge_max)
                             that.forecastSurgeMinList.push(item.surge_min)
                             that.forecastSurgediffList.push(item.surge_max - item.surge_min)
+                        }
+                    )
+                }
+                if (isGroup) {
+                    getSurgeRealDataListByGroupPath(tyCode, timestampStr, stationCode).then(
+                        (res: {
+                            status: number
+                            data: Array<{ gp_id: number; list_realdata: Array<{ surge: number }> }>
+                        }) => {
+                            if (res.status == 200) {
+                                /*
+                                {
+                                    "gp_id": 14361,
+                                    "list_realdata": [
+                                        {
+                                            "ty_code": "2203",
+                                            "gp_id": 14361,
+                                            "station_code": "QZH",
+                                            "forecast_index": 0,
+                                            "forecast_dt": "2022-07-01T13:00:00Z",
+                                            "surge": 0.0
+                                        }
+                                    ]
+                                },
+                                */
+                                if (res.data.length > 0) {
+                                    res.data.forEach((temp) => {
+                                        const tempListRealdata: Array<number> = []
+                                        temp.list_realdata.forEach((element) => {
+                                            tempListRealdata.push(element.surge)
+                                        })
+                                        const tempSurgeObj = {
+                                            gpId: temp.gp_id,
+                                            listSurge: tempListRealdata
+                                        }
+                                        that.surgeByGroupPath.push(tempSurgeObj)
+                                    })
+                                }
+                            }
                         }
                     )
                 }
@@ -678,7 +727,12 @@ export default class StationChartsView extends Vue {
                 message: `加载海洋站:${val.stationCode}潮位数据`,
                 type: 'success'
             })
-            this.loadStationSurgeRealDataListAndRange(val.tyCode, val.timestampStr, val.stationCode)
+            this.loadStationSurgeRealDataListAndRange(
+                val.tyCode,
+                val.timestampStr,
+                val.stationCode,
+                this.isGroup
+            )
         }
     }
 
