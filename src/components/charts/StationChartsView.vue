@@ -178,6 +178,7 @@ export default class StationChartsView extends Vue {
                     )
                 }
                 if (isGroup) {
+                    this.surgeByGroupPath = []
                     getSurgeRealDataListByGroupPath(tyCode, timestampStr, stationCode).then(
                         (res: {
                             status: number
@@ -423,6 +424,7 @@ export default class StationChartsView extends Vue {
         const nodeDiv = document.getElementById('station_charts')
         if (nodeDiv) {
             const myChart: echarts.ECharts = echarts.init(nodeDiv)
+            // this.surgeByGroupPath = []
             const option = {
                 title: {
                     text: `${that.stationName}`,
@@ -703,6 +705,25 @@ export default class StationChartsView extends Vue {
                     }
                 ]
             }
+            // TODO:[-] 22-07-05 加入多条集合路径曲线
+            const lineStyle = {
+                width: 1,
+                opacity: 0.5
+            }
+            if (this.surgeByGroupPath.length > 0) {
+                this.surgeByGroupPath.forEach((temp) => {
+                    const tempSeries = {
+                        name: temp.gpId,
+                        data: [...temp.listSurge],
+                        type: 'line',
+                        smooth: true,
+                        Symbol: 'none',
+                        symbolSize: 0,
+                        lineStyle: lineStyle
+                    }
+                    option.series.push(tempSeries)
+                })
+            }
             myChart.setOption(option)
             if (!this.myChart) {
                 this.myChart = myChart
@@ -733,6 +754,7 @@ export default class StationChartsView extends Vue {
                 val.stationCode,
                 this.isGroup
             )
+            this.initChart()
         }
     }
 
