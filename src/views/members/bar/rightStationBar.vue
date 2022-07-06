@@ -61,6 +61,7 @@ import { DEFAULT_STATION_CODE, DEFAULT_STATION_NAME } from '@/const/station'
 import QuarterView from '@/components/charts/QuarterChartView.vue'
 // import StationCharts from '@/views/members/charts/StationCharts.vue'
 import StationChartsView from '@/components/charts/StationChartsView.vue'
+import StationGroupChartsView from '@/components/charts/StationGroupChartsView.vue'
 import { DefaultStationOptions } from '@/views/content/station/types'
 @Component({
     directives: {
@@ -69,7 +70,7 @@ import { DefaultStationOptions } from '@/views/content/station/types'
     components: {
         'station-chart': StationChartsView,
         'quarter-view': QuarterView,
-        'station-group-chart': StationChartsView
+        'station-group-chart': StationGroupChartsView
     }
 })
 export default class TabContent extends Vue {

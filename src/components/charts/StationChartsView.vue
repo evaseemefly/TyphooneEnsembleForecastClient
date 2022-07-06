@@ -435,6 +435,7 @@ export default class StationChartsView extends Vue {
                 },
                 tooltip: {
                     trigger: 'axis',
+                    showContent: true,
                     axisPointer: {
                         type: 'cross',
                         label: {
@@ -512,20 +513,19 @@ export default class StationChartsView extends Vue {
                         name: '最小值',
                         type: 'line',
                         // areaStyle: { color: '#e74c3c' },
-                        areaStyle: {
-                            opacity: 0.5,
-                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                                {
-                                    offset: 0,
-                                    color: 'rgba(255, 0, 135)'
-                                },
-                                {
-                                    offset: 1,
-                                    color: 'rgba(135, 0, 157)'
-                                }
-                            ])
-                            // origin: 'end'
-                        },
+                        // areaStyle: {
+                        //     opacity: 0.2,
+                        //     color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        //         {
+                        //             offset: 0,
+                        //             color: 'rgba(255, 0, 135)'
+                        //         },
+                        //         {
+                        //             offset: 1,
+                        //             color: 'rgba(135, 0, 157)'
+                        //         }
+                        //     ])
+                        // },
                         itemStyle: {
                             formatter: function(params) {
                                 return params.toFixed(2)
@@ -543,7 +543,7 @@ export default class StationChartsView extends Vue {
                         type: 'line',
                         areaStyle: { color: '#e67e22' },
                         areaStyle: {
-                            opacity: 0.8,
+                            opacity: 0.4,
                             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
                                 {
                                     offset: 0,
@@ -566,19 +566,19 @@ export default class StationChartsView extends Vue {
                     {
                         name: '最大值',
                         type: 'line',
-                        areaStyle: {
-                            opacity: 0.5,
-                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                                {
-                                    offset: 0,
-                                    color: 'rgb(55, 162, 255)'
-                                },
-                                {
-                                    offset: 1,
-                                    color: 'rgb(116, 21, 219)'
-                                }
-                            ])
-                        },
+                        // areaStyle: {
+                        //     opacity: 0.2,
+                        //     color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        //         {
+                        //             offset: 0,
+                        //             color: 'rgb(55, 162, 255)'
+                        //         },
+                        //         {
+                        //             offset: 1,
+                        //             color: 'rgb(116, 21, 219)'
+                        //         }
+                        //     ])
+                        // },
                         itemStyle: {
                             formatter: function(params) {
                                 return params.toFixed(2)
