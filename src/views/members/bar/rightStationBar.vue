@@ -96,8 +96,8 @@ export default class TabContent extends Vue {
         divHeight: 445
     }
     subTitles: Array<{ title: string; index: number; componetName: string; isGroup: boolean }> = [
-        { title: '潮位站预报', index: 0, componetName: 'station-chart', isGroup: false },
-        { title: '潮位分析数据', index: 1, componetName: 'quarter-view', isGroup: false },
+        { title: '潮位站-预报', index: 0, componetName: 'station-chart', isGroup: false },
+        { title: '潮位站-箱式图', index: 1, componetName: 'quarter-view', isGroup: false },
         { title: '潮位站-集合预报', index: 2, componetName: 'station-group-chart', isGroup: true }
     ]
     dragCls: StationDrag

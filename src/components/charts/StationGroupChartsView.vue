@@ -6,7 +6,12 @@
         element-loading-spinner="el-icon-loading"
         element-loading-background="#16a084bb"
     >
-        <el-switch v-model="isAdditionTide" active-text="总潮位" inactive-text="风暴增水">
+        <el-switch
+            disabled="!isGroup"
+            v-model="isAdditionTide"
+            active-text="总潮位"
+            inactive-text="风暴增水"
+        >
         </el-switch>
         <div id="station_charts"></div>
     </div>
@@ -20,7 +25,7 @@ import * as echarts from 'echarts'
 @Component({})
 export default class StationGroupChartsView extends StationChartsView {
     mydata: any = null
-    mounted() {}
+    // mounted() {}
     /** 初始化 chart */
     initChart(): void {
         const that = this
@@ -55,7 +60,7 @@ export default class StationGroupChartsView extends StationChartsView {
                     valueFormatter: (val) => val.toFixed(1)
                 },
                 legend: {
-                    data: ['最大值', '中间预测路径值', '最小值', '天文潮位'],
+                    data: ['中间预测路径值', '天文潮位'],
                     itemStyle: {
                         color: '#f8f8f7'
                     },
@@ -108,59 +113,16 @@ export default class StationGroupChartsView extends StationChartsView {
                 ],
                 series: [
                     {
-                        name: '最小值',
-                        type: 'line',
-                        itemStyle: {
-                            formatter: function(params) {
-                                return params.toFixed(2)
-                            }
-                        },
-
-                        lineStyle: { color: 'rgba(255, 0, 135)' },
-
-                        data: that.forecastSurgeMinList,
-                        showSymbol: false,
-                        smooth: true
-                    },
-                    {
                         name: '中间预测路径值',
                         type: 'line',
-
-                        areaStyle: {
-                            opacity: 0.4,
-                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                                {
-                                    offset: 0,
-                                    color: 'rgba(255, 191, 0)'
-                                },
-                                {
-                                    offset: 1,
-                                    color: 'rgba(224, 62, 76)'
-                                }
-                            ])
-                        },
-                        lineStyle: { color: 'rgba(255, 191, 0)' },
+                        lineStyle: { color: 'rgba(255, 191, 0)', width: 5, opacity: 0.8 },
                         emphasis: {
                             focus: 'series'
                         },
                         data: that.forecastSurgeValList,
                         showSymbol: false,
-                        smooth: true
-                    },
-                    {
-                        name: '最大值',
-                        type: 'line',
-                        itemStyle: {
-                            formatter: function(params) {
-                                return params.toFixed(2)
-                            }
-                        },
-
-                        lineStyle: { color: 'rgba(1, 191, 236)' },
-                        data: that.forecastSurgeMaxList,
-                        showSymbol: false,
-                        smooth: true
-                        // stack: 'confidence-band'
+                        smooth: true,
+                        zlevel: 9999
                     },
 
                     {
@@ -272,9 +234,6 @@ export default class StationGroupChartsView extends StationChartsView {
                 this.myChart = myChart
             }
         }
-    }
-    get computedTest() {
-        return null
     }
 }
 </script>

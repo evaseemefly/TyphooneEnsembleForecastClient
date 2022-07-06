@@ -17,6 +17,7 @@
         element-loading-spinner="el-icon-loading"
         element-loading-background="#16a084bb"
     >
+        <!-- 对于非集合路径才提供叠加天文潮位的选项 -->
         <el-switch v-model="isAdditionTide" active-text="总潮位" inactive-text="风暴增水">
         </el-switch>
         <div id="station_charts"></div>
@@ -69,6 +70,7 @@ export default class StationChartsView extends Vue {
     @Prop()
     isGroup: boolean
 
+    // isSwitchOn = true
     forecastDateList: Date[] = []
     /** 中间路径的预报潮位值(若isAdditionTide=true —— 则是 = 增水值+天文潮位) */
     forecastSurgeValList: number[] = []
@@ -179,7 +181,7 @@ export default class StationChartsView extends Vue {
                 }
                 if (isGroup) {
                     this.surgeByGroupPath = []
-                    getSurgeRealDataListByGroupPath(tyCode, timestampStr, stationCode).then(
+                    return getSurgeRealDataListByGroupPath(tyCode, timestampStr, stationCode).then(
                         (res: {
                             status: number
                             data: Array<{ gp_id: number; list_realdata: Array<{ surge: number }> }>
@@ -220,7 +222,7 @@ export default class StationChartsView extends Vue {
             }
         })
         // + 21-08-24 信加入的加载 天文潮位数据
-        this.loadAstronomicTideList(tyCode, timestampStr, stationCode)
+        await this.loadAstronomicTideList(tyCode, timestampStr, stationCode)
             .then((_) => {
                 // TODO:[-] 21-08-25 将 三类潮位 分别叠加 天文潮计算一个总潮位
                 if (that.isAdditionTide) {
@@ -231,9 +233,7 @@ export default class StationChartsView extends Vue {
                     // .then((res) => {
                     //     console.log(res)
                     // })
-                    .finally((_) => {
-                        that.initChart()
-                    })
+                    .finally((_) => {})
             })
             .finally((_) => {
                 that.isLoading = false
@@ -246,6 +246,8 @@ export default class StationChartsView extends Vue {
                 })
                 that.isLoading = false
             })
+
+        that.initChart()
     }
 
     // + 22-02-21 新加入的对四色警戒潮位进行重置
@@ -382,6 +384,9 @@ export default class StationChartsView extends Vue {
         this.forecastAstronomicTideList.map((val, index) => {
             that.forecastSurgeMinList[index] += val
         })
+        // if(this.surgeByGroupPath.length>0){
+
+        // }
     }
 
     /** 清除天文潮 */
