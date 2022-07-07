@@ -107,14 +107,31 @@ export default class StationGroupChartsView extends StationChartsView {
                         min: that.yAxisMin,
                         max: that.yAxisMax,
                         axisLine: {
+                            // 注意 axisLine 为坐标轴轴线，而非刻度线
                             lineStyle: {
                                 normal: {
                                     type: 'dotted',
                                     width: 3
                                 }
                             }
+                        },
+                        splitLine: {
+                            show: true,
+                            lineStyle: {
+                                color: '#f8f8f7',
+                                type: 'solid',
+                                opacity: 0.7
+                            }
+                        },
+                        minorSplitLine: {
+                            show: true,
+                            lineStyle: {
+                                color: '#eee',
+                                width: 1,
+                                type: 'dashed',
+                                opacity: 0.2
+                            }
                         }
-                        // scale: true
                     }
                 ],
                 series: [
