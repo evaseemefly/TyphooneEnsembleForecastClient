@@ -96,6 +96,8 @@ export default class StationGroupChartsView extends StationChartsView {
                         nameTextStyle: {
                             color: '#f8f8f7'
                         },
+                        splitNumber: 10,
+                        minInterval: 20,
                         axisLabel: {
                             textStyle: {
                                 color: '#f8f8f7', //字体颜色
@@ -103,7 +105,15 @@ export default class StationGroupChartsView extends StationChartsView {
                             }
                         },
                         min: that.yAxisMin,
-                        max: that.yAxisMax
+                        max: that.yAxisMax,
+                        axisLine: {
+                            lineStyle: {
+                                normal: {
+                                    type: 'dotted',
+                                    width: 3
+                                }
+                            }
+                        }
                         // scale: true
                     }
                 ],
