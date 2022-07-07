@@ -36,6 +36,7 @@ export default class StationGroupChartsView extends StationChartsView {
                         color: '#f8f8f7'
                     }
                 },
+                // 目前仍需要加入 tooltip 实现点击显示xy坐标对应的值
                 tooltip: {
                     // axisPointer: {
                     //     type: 'cross',
@@ -111,22 +112,32 @@ export default class StationGroupChartsView extends StationChartsView {
                         name: '中间预测路径值',
                         type: 'line',
                         lineStyle: { color: 'rgba(255, 191, 0)', width: 5, opacity: 0.8 },
-                        emphasis: {
-                            focus: 'series'
-                        },
+                        // emphasis: {
+                        //     focus: 'series'
+                        // },
                         data: that.forecastSurgeValList,
                         showSymbol: false,
                         smooth: true,
-                        zlevel: 9999
+                        zlevel: 9999,
+                        emphasis: {
+                            scale: false,
+                            disabled: true // true 移入不高亮折线
+                        },
+                        silent: true
                     },
 
                     {
                         name: '天文潮位',
                         type: 'line',
                         lineStyle: { color: 'rgba(0, 221, 255)' },
+                        // emphasis: {
+                        //     focus: 'series'
+                        // },
                         emphasis: {
-                            focus: 'series'
+                            scale: false,
+                            disabled: true // true 移入不高亮折线
                         },
+                        silent: true,
                         data: that.forecastAstronomicTideList,
                         smooth: true
                     },
@@ -219,7 +230,15 @@ export default class StationGroupChartsView extends StationChartsView {
                         smooth: true,
                         Symbol: 'none',
                         symbolSize: 0,
-                        lineStyle: lineStyle
+                        lineStyle: lineStyle,
+                        // TODO:[-] 22-07-07 去掉鼠标移入折线高亮显示
+                        // 参考: https://blog.csdn.net/weixin_29491885/article/details/113870075
+                        // 官方api: https://echarts.apache.org/zh/option.html#series-line.emphasis
+                        emphasis: {
+                            scale: false,
+                            disabled: true // true 移入不高亮折线
+                        },
+                        silent: true //图形是否不响应和触发鼠标事件，默认为 false，即响应和触发鼠标事件。
                     }
                     option.series.push(tempSeries)
                 })
