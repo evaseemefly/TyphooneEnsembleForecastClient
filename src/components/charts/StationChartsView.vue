@@ -151,7 +151,7 @@ export default class StationChartsView extends Vue {
         timestampStr: string,
         stationCode: string,
         isGroup = false
-    ) {
+    ): Promise<void> {
         const that = this
         that.isLoading = true
         this.resetAlertLevels()
@@ -184,7 +184,7 @@ export default class StationChartsView extends Vue {
                     return getSurgeRealDataListByGroupPath(tyCode, timestampStr, stationCode).then(
                         (res: {
                             status: number
-                            data: Array<{ gp_id: number; list_realdata: Array<{ surge: number }> }>
+                            data: Array<{ gp_id: number; list_realdata: Array<{ surge: string }> }>
                         }) => {
                             if (res.status == 200) {
                                 /*
@@ -206,7 +206,7 @@ export default class StationChartsView extends Vue {
                                     res.data.forEach((temp) => {
                                         const tempListRealdata: Array<number> = []
                                         temp.list_realdata.forEach((element) => {
-                                            tempListRealdata.push(element.surge)
+                                            tempListRealdata.push(parseFloat(element.surge))
                                         })
                                         const tempSurgeObj = {
                                             gpId: temp.gp_id,
@@ -226,7 +226,7 @@ export default class StationChartsView extends Vue {
             .then((_) => {
                 // TODO:[-] 21-08-25 将 三类潮位 分别叠加 天文潮计算一个总潮位
                 if (that.isAdditionTide) {
-                    that.add2AstornomicTid()
+                    that.add2AstornomicTid(isGroup)
                 }
 
                 that.loadAlertTideList(stationCode)
@@ -259,7 +259,11 @@ export default class StationChartsView extends Vue {
     }
 
     /** 加载天文潮位list */
-    async loadAstronomicTideList(tyCode: string, timestampStr: string, stationCode: string) {
+    async loadAstronomicTideList(
+        tyCode: string,
+        timestampStr: string,
+        stationCode: string
+    ): Promise<void> {
         const that = this
         let surgeDiff = 0
         // this.surgeDiff = DEFAULT_SURGE_DIFF
@@ -372,34 +376,41 @@ export default class StationChartsView extends Vue {
         })
     }
 
-    /** 叠加天文潮 */
-    add2AstornomicTid(): void {
+    /** 叠加天文潮
+     * - 22-07-07 加入了根据 isAddGroupSurge 判断是否对  this.surgeByGroupPath => listSurge 叠加天文潮位
+     */
+    add2AstornomicTid(isAddGroupSurge = false): void {
         const that = this
         this.forecastAstronomicTideList.map((val, index) => {
             that.forecastSurgeValList[index] += val
-        })
-        this.forecastAstronomicTideList.map((val, index) => {
             that.forecastSurgeMaxList[index] += val
-        })
-        this.forecastAstronomicTideList.map((val, index) => {
             that.forecastSurgeMinList[index] += val
+            if (isAddGroupSurge && this.surgeByGroupPath.length > 0) {
+                this.surgeByGroupPath.forEach((group) => {
+                    group.listSurge[index] += val
+                })
+            }
         })
-        // if(this.surgeByGroupPath.length>0){
+        // this.forecastAstronomicTideList.map((val, index) => {
 
-        // }
+        // })
+        // this.forecastAstronomicTideList.map((val, index) => {
+
+        // })
     }
 
     /** 清除天文潮 */
-    wipe2AstornomicTide(): void {
+    wipe2AstornomicTide(isAddGroupSurge = false): void {
         const that = this
         this.forecastAstronomicTideList.map((val, index) => {
             that.forecastSurgeValList[index] -= val
-        })
-        this.forecastAstronomicTideList.map((val, index) => {
             that.forecastSurgeMaxList[index] -= val
-        })
-        this.forecastAstronomicTideList.map((val, index) => {
             that.forecastSurgeMinList[index] -= val
+            if (isAddGroupSurge && this.surgeByGroupPath.length > 0) {
+                this.surgeByGroupPath.forEach((group) => {
+                    group.listSurge[index] -= val
+                })
+            }
         })
     }
 
@@ -766,11 +777,11 @@ export default class StationChartsView extends Vue {
     @Watch('isAdditionTide')
     onIsAdditionTide(isAdd: boolean): void {
         if (isAdd) {
-            this.add2AstornomicTid()
+            this.add2AstornomicTid(this.isGroup)
         } else {
             // 若不是叠加后的潮位，不需要叠加四色警戒潮位，四色警戒潮位只对应总潮位
             // this.resetAlertLevels()
-            this.wipe2AstornomicTide()
+            this.wipe2AstornomicTide(this.isGroup)
         }
         this.initChart()
     }

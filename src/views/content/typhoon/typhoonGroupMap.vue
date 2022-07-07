@@ -806,7 +806,7 @@ export default class TyGroupMap extends mixins(
         // TODO：[-] 21-05-10 注意 mac 的tyId=1 | 5750 tyId=3
         // + 21-07-25 暂时去掉 以下部分
         // const testTyphoonId = 8
-        // this.testGetAddTyGroupPath2Map(testTyphoonId)
+        // this.addTyGroupPath2Map(testTyphoonId)
         // // TODO:[*] 21-04-28 暂时加入的加载 海洋站位置的 测试
         // this.loadStationList(this.zoom)
         // // TODO:[*] 21-04-30 测试 加入的测试加载台风最大增水
@@ -1284,8 +1284,8 @@ export default class TyGroupMap extends mixins(
         }
     }
 
-    // loadTy
-    testGetAddTyGroupPath2Map(tyId: number): void {
+    /** 添加当前tyId 的台风的集合路径至map */
+    addTyGroupPath2Map(tyId: number): void {
         const that = this
         // TODO:[-] 21-10-18 非中间路径的台风集合预报路径集合
         const arrTyComplexGroupRealdata: Array<TyphoonComplexGroupRealDataMidModel> = []
@@ -1526,7 +1526,7 @@ export default class TyGroupMap extends mixins(
         }
     }
 
-    // 加载中间路径的 polyline 与 center
+    /** 加载中间路径的 polyline 与 center */
     loadCenterTyphoonPoints(): void {
         const mymap: any = this.$refs.basemap['mapObject']
         this.clearLayerById(this.currentCenterPathLineLayerId)
@@ -2179,7 +2179,7 @@ export default class TyGroupMap extends mixins(
             })
             this.clearGroupPathAllLayer()
 
-            this.testGetAddTyGroupPath2Map(testTyphoonId)
+            this.addTyGroupPath2Map(testTyphoonId)
 
             // TODO:[*] 21-04-28 暂时加入的加载 海洋站位置的 测试
             this.clearSurgeAllGroupLayers()

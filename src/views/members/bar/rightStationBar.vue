@@ -18,9 +18,10 @@
         <div class="my-detail-form">
             <div class="sub-titles">
                 <div
-                    :class="
-                        index == subTitleIndex ? 'actived my-sub-title' : 'unactived my-sub-title'
-                    "
+                    :class="[
+                        index == subTitleIndex ? 'actived my-sub-title' : 'unactived my-sub-title',
+                        item.disabled ? 'disabled' : ''
+                    ]"
                     :key="index"
                     @click="checkSubTitle(index)"
                     v-for="(item, index) in subTitles"
@@ -95,10 +96,34 @@ export default class TabContent extends Vue {
         divWidth: 660,
         divHeight: 445
     }
-    subTitles: Array<{ title: string; index: number; componetName: string; isGroup: boolean }> = [
-        { title: '潮位站-预报', index: 0, componetName: 'station-chart', isGroup: false },
-        { title: '潮位站-箱式图', index: 1, componetName: 'quarter-view', isGroup: false },
-        { title: '潮位站-集合预报', index: 2, componetName: 'station-group-chart', isGroup: true }
+    subTitles: Array<{
+        title: string
+        index: number
+        componetName: string
+        isGroup: boolean
+        disabled: boolean
+    }> = [
+        {
+            title: '潮位站-预报',
+            index: 0,
+            componetName: 'station-chart',
+            isGroup: false,
+            disabled: false
+        },
+        {
+            title: '潮位站-箱式图',
+            index: 1,
+            componetName: 'quarter-view',
+            isGroup: false,
+            disabled: true
+        },
+        {
+            title: '潮位站-集合预报',
+            index: 2,
+            componetName: 'station-group-chart',
+            isGroup: true,
+            disabled: false
+        }
     ]
     dragCls: StationDrag
     toResize = false
@@ -166,6 +191,7 @@ export default class TabContent extends Vue {
         }
     }
 
+    /** 加载潮位百分位数 */
     loadStationRealDataQuarterList(tyCode: string, stationCode: string, timestampStr: string) {
         this.quarterList = []
         return getStationSurgeRealDataQuarterList(tyCode, timestampStr, stationCode).then((res) => {
@@ -214,7 +240,9 @@ export default class TabContent extends Vue {
     }
 
     checkSubTitle(index: number): void {
-        this.subTitleIndex = index
+        if (!this.subTitles[index].disabled) {
+            this.subTitleIndex = index
+        }
     }
 
     initCharts(): void {

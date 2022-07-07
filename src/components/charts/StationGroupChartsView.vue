@@ -6,12 +6,7 @@
         element-loading-spinner="el-icon-loading"
         element-loading-background="#16a084bb"
     >
-        <el-switch
-            disabled="!isGroup"
-            v-model="isAdditionTide"
-            active-text="总潮位"
-            inactive-text="风暴增水"
-        >
+        <el-switch v-model="isAdditionTide" active-text="总潮位" inactive-text="风暴增水">
         </el-switch>
         <div id="station_charts"></div>
     </div>
