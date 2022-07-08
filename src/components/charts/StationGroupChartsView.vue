@@ -37,24 +37,26 @@ export default class StationGroupChartsView extends StationChartsView {
                     }
                 },
                 // 目前仍需要加入 tooltip 实现点击显示xy坐标对应的值
+                // 以下为 22-07-08 备份
                 tooltip: {
-                    // axisPointer: {
-                    //     type: 'cross',
-                    //     label: {
-                    //         backgroundColor: '#d4e257'
-                    //     }
-                    // },
                     show: true,
                     trigger: 'none',
                     showContent: false,
                     axisPointer: {
                         type: 'cross',
-                        snap: false
+                        snap: false // 坐标轴指示器是否自动吸附到点上。默认自动判断。
                         // label:true
                     },
-                    triggerOn: 'click',
-                    valueFormatter: (val) => val.toFixed(1)
+                    triggerOn: 'click'
+                    // valueFormatter: (val) => val.toFixed(1)
                 },
+                // tooltip: {
+                //     trigger: 'none',
+                //     axisPointer: {
+                //         type: 'cross',
+                //         snap: false
+                //     }
+                // },
                 legend: {
                     data: ['中间预测路径值', '天文潮位'],
                     itemStyle: {
@@ -73,6 +75,12 @@ export default class StationGroupChartsView extends StationChartsView {
                     bottom: '3%',
                     containLabel: true
                 },
+                // TODO:[-] 22-07-08 尝试修改坐标指示器
+                // axisPointer: {
+                //     label: {
+                //         show: true
+                //     }
+                // },
                 xAxis: [
                     {
                         type: 'category',
@@ -106,6 +114,9 @@ export default class StationGroupChartsView extends StationChartsView {
                         },
                         min: that.yAxisMin,
                         max: that.yAxisMax,
+                        axisPointer: {
+                            show: false // - 22-07-08 取消了y轴的指示器的显示
+                        },
                         axisLine: {
                             // 注意 axisLine 为坐标轴轴线，而非刻度线
                             lineStyle: {
@@ -118,18 +129,20 @@ export default class StationGroupChartsView extends StationChartsView {
                         splitLine: {
                             show: true,
                             lineStyle: {
-                                color: '#f8f8f7',
+                                color: '#95a5a6',
                                 type: 'solid',
                                 opacity: 0.7
                             }
                         },
+                        // grid 区域的次分割线
+                        // 参考api:https://echarts.apache.org/zh/option.html#yAxis.minorSplitLine
                         minorSplitLine: {
                             show: true,
                             lineStyle: {
-                                color: '#eee',
+                                color: '#7f8c8d',
                                 width: 1,
-                                type: 'dashed',
-                                opacity: 0.2
+                                type: [3, 6],
+                                opacity: 0.4
                             }
                         }
                     }
@@ -156,7 +169,13 @@ export default class StationGroupChartsView extends StationChartsView {
                     {
                         name: '天文潮位',
                         type: 'line',
-                        lineStyle: { color: 'rgba(0, 221, 255)' },
+                        lineStyle: { color: '#3498db' },
+                        // 折点的样式
+                        symbol: 'emptyCircle',
+                        symbolSize: 5,
+                        itemStyle: {
+                            color: '#3498db'
+                        },
                         // emphasis: {
                         //     focus: 'series'
                         // },
@@ -164,6 +183,7 @@ export default class StationGroupChartsView extends StationChartsView {
                             scale: false,
                             disabled: true // true 移入不高亮折线
                         },
+                        zlevel: 9999, // 暂时设置天文潮位的 zlevel 暂时解决了 天文潮隐藏在其他 series 下点击出现的样式上的bug
                         silent: true,
                         data: that.forecastAstronomicTideList,
                         smooth: true
@@ -254,7 +274,7 @@ export default class StationGroupChartsView extends StationChartsView {
                         name: temp.gpId,
                         data: [...temp.listSurge],
                         type: 'line',
-                        smooth: true,
+                        smooth: true, // 是否平滑曲线
                         Symbol: 'none',
                         symbolSize: 0,
                         lineStyle: lineStyle,
@@ -265,6 +285,8 @@ export default class StationGroupChartsView extends StationChartsView {
                             scale: false,
                             disabled: true // true 移入不高亮折线
                         },
+
+                        animation: false, // 关闭动画
                         silent: true //图形是否不响应和触发鼠标事件，默认为 false，即响应和触发鼠标事件。
                     }
                     option.series.push(tempSeries)

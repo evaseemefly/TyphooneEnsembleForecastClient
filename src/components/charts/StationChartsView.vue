@@ -794,7 +794,7 @@ export default class StationChartsView extends Vue {
         const forecastDtFormatList: string[] = []
         if (this.forecastDateList.length > 0) {
             this.forecastDateList.forEach((dt: Date) => {
-                forecastDtFormatList.push(moment(dt).format('MM/DD/HH:mm'))
+                forecastDtFormatList.push(moment(dt).format('MM/DD HH'))
             })
         }
         return forecastDtFormatList
