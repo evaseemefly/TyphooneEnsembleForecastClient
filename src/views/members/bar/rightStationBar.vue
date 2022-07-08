@@ -115,7 +115,7 @@ export default class TabContent extends Vue {
             index: 1,
             componetName: 'quarter-view',
             isGroup: false,
-            disabled: true
+            disabled: false
         },
         {
             title: '潮位站-集合预报',

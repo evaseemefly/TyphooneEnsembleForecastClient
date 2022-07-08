@@ -94,7 +94,8 @@ export default class StationGroupChartsView extends StationChartsView {
                             textStyle: {
                                 color: '#f8f8f7', //字体颜色
                                 fontSize: 12 //字体大小
-                            }
+                            },
+                            formatter: function(val) {}
                         }
                     }
                 ],

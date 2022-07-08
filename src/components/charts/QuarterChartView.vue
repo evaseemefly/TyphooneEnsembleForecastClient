@@ -10,9 +10,19 @@ import * as echarts from 'echarts'
 import * as elementResizeDetectorMaker from 'element-resize-detector'
 import moment from 'moment'
 import { getStationSurgeRealDataQuarterList } from '@/api/station'
+import {
+    getStationSurgeRealDataListAndRange,
+    getAstronomictideTideRealDataList,
+    getStationAlert,
+    getStationSurgeBaseLevelDiff,
+    getStationD85SurgeDiff,
+    getSurgeRealDataListByGroupPath
+} from '@/api/station'
 import { Draggable } from '@/directives/drag'
 import { DEFAULT_TIMESTAMP, DEFAULT_STATION_CODE } from '@/const/common'
 import { DEFAULTTYCODE } from '@/const/typhoon'
+// + 22-07-08 尝试在前端生成百分位数
+import { std, quantile } from '@/common/math'
 @Component({
     directives: {
         drag: Draggable
@@ -47,9 +57,12 @@ export default class QuarterView extends Vue {
         medianVal: number
         forecastDt: Date
     }[] = []
+
+    forecastDateList: Date[] = []
     isLoading = false // 是否在加载， true - 在加载状态 ; false - 未在加载
     mydata: any = null
     myChart: echarts.ECharts = null
+    surgeByGroupPath: { gpId: number; listSurge: Array<number> }[] = []
     mounted() {
         console.log('QuarterChartView mounted!')
         const that = this
@@ -80,6 +93,7 @@ export default class QuarterView extends Vue {
             this.stationCode !== DEFAULT_STATION_CODE &&
             this.timestampStr !== DEFAULT_TIMESTAMP
         ) {
+            // this.loadQuarterCharts(this.tyCode, this.stationCode, this.timestampStr)
             this.loadQuarterCharts(this.tyCode, this.stationCode, this.timestampStr)
         }
     }
@@ -151,12 +165,124 @@ export default class QuarterView extends Vue {
     loadQuarterCharts(tyCode: string, stationCode: string, timestampStr: string) {
         const that = this
         this.isLoading = true
-        this.loadStationRealDataQuarterList(tyCode, stationCode, timestampStr)
-            .then((res) => {
+        this.loadStationSurgeRealDataListAndRange(tyCode, timestampStr, stationCode, true).then(
+            (_) => {
                 this.initCharts()
-            })
+            }
+        )
+        // this.loadStationRealDataQuarterList(tyCode, stationCode, timestampStr)
+        //     .then((res) => {
+        //         this.initCharts()
+        //     })
+        //     .then((_) => {
+        //         that.isLoading = false
+        //     })
+    }
+
+    /** 加载海洋站潮位实时数据
+     *  会调用 loadAstronomicTideList (加载天文潮位,加载天文潮位时获取基面差值)
+     *
+     */
+    async loadStationSurgeRealDataListAndRange(
+        tyCode: string,
+        timestampStr: string,
+        stationCode: string,
+        isGroup = false
+    ): Promise<void> {
+        const that = this
+        that.isLoading = true
+        await getStationSurgeRealDataListAndRange(tyCode, timestampStr, stationCode).then((res) => {
+            if (res.status == 200) {
+                // eg:
+                // forecast_dt: "2020-09-15T17:00:00Z"
+                // surge: 0
+                // surge_max: 0
+                // surge_min: 0
+                // console.log(res.data)
+                if (res.data.length > 0) {
+                    res.data.forEach(
+                        (item: {
+                            forecast_dt: string
+                            surge: number
+                            surge_max: number
+                            surge_min: number
+                        }) => {
+                            that.forecastDateList.push(new Date(item.forecast_dt))
+                        }
+                    )
+                }
+            }
+        })
+        await getSurgeRealDataListByGroupPath(tyCode, timestampStr, stationCode)
+            .then(
+                (res: {
+                    status: number
+                    data: Array<{ gp_id: number; list_realdata: Array<{ surge: string }> }>
+                }) => {
+                    if (res.status == 200) {
+                        /*
+                        {
+                            "gp_id": 14361,
+                            "list_realdata": [
+                                {
+                                    "ty_code": "2203",
+                                    "gp_id": 14361,
+                                    "station_code": "QZH",
+                                    "forecast_index": 0,
+                                    "forecast_dt": "2022-07-01T13:00:00Z",
+                                    "surge": 0.0
+                                }
+                            ]
+                        },
+                    */
+                        if (res.data.length > 0) {
+                            res.data.forEach((temp) => {
+                                const tempListRealdata: Array<number> = []
+                                temp.list_realdata.forEach((element) => {
+                                    tempListRealdata.push(parseFloat(element.surge))
+                                })
+                                const tempSurgeObj = {
+                                    gpId: temp.gp_id,
+                                    listSurge: tempListRealdata
+                                }
+                                that.surgeByGroupPath.push(tempSurgeObj)
+                            })
+                        }
+                    }
+                }
+            )
             .then((_) => {
-                that.isLoading = false
+                let count = 0
+                // step1: 纵向提取
+                // 获取数组长度
+                if (that.surgeByGroupPath.length > 0) {
+                    count = that.surgeByGroupPath[0].listSurge.length
+                }
+                // 将145条路径的同一时刻的surge提取
+                const commonDtSurgeList: { index: number; surgeList: Array<number> }[] = []
+                for (let index = 0; index < count; index++) {
+                    const tempCommDtSurgeList: number[] = []
+                    that.surgeByGroupPath.forEach((element) => {
+                        tempCommDtSurgeList.push(element.listSurge[index])
+                    })
+                    commonDtSurgeList.push({ index: index, surgeList: tempCommDtSurgeList })
+                }
+                commonDtSurgeList.forEach((element, index) => {
+                    const quarterVal = quantile(element.surgeList, 0.25)
+                    const threeQuartersVal = quantile(element.surgeList, 0.75)
+                    const medianVal = quantile(element.surgeList, 0.5)
+                    const max = Math.max(...element.surgeList)
+                    const min = Math.min(...element.surgeList)
+                    that.quarterList.push({
+                        stationCode: that.stationCode,
+                        max: max,
+                        min: min,
+                        quarterVal: quarterVal,
+                        threeQuartersVal: threeQuartersVal,
+                        medianVal: medianVal,
+                        forecastDt: that.forecastDateList[index]
+                    })
+                })
             })
     }
 
