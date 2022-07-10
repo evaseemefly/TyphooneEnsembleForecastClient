@@ -1,6 +1,13 @@
 <template>
     <!-- <div id="station_quarter_charts" style=""></div> -->
-    <div id="station_quarter_form" style="">
+    <div
+        id="station_quarter_form"
+        v-loading="isLoading"
+        element-loading-spinner="el-icon-loading"
+        element-loading-background="#16a084bb"
+    >
+        <!-- <el-switch v-model="isAdditionTide" active-text="总潮位" inactive-text="风暴增水">
+        </el-switch> -->
         <div id="station_quarter_charts"></div>
     </div>
 </template>
@@ -38,6 +45,7 @@ export default class QuarterView extends Vue {
     @Prop()
     toResize: boolean
     isExpanded = false
+    isAdditionTide = false
     screenHeight = 0
     screenWidth = 0
     size: { divWidth: number; divHeight: number } = {
@@ -284,6 +292,7 @@ export default class QuarterView extends Vue {
                     })
                 })
             })
+        that.isLoading = false
     }
 
     initCharts(): void {
