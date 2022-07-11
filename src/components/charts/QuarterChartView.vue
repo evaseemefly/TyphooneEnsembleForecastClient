@@ -56,6 +56,8 @@ export default class QuarterView extends Vue {
         divWidth: 400,
         divHeight: 400
     }
+
+    /** 分位数集合 */
     quarterList: {
         stationCode: string
         max: number
@@ -199,6 +201,8 @@ export default class QuarterView extends Vue {
     ): Promise<void> {
         const that = this
         that.isLoading = true
+        this.forecastDateList = []
+        this.quarterList = []
         await getStationSurgeRealDataListAndRange(tyCode, timestampStr, stationCode).then((res) => {
             if (res.status == 200) {
                 // eg:
