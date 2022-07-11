@@ -1,13 +1,18 @@
 <template>
     <div class="dateBar resize-element" ref="datebar">
-        <div class="progress-line" @mouseover="overProgressLine" @click="setTimeBar">
+        <div class="progress-line" @click="setTimeBar">
             <div id="played" class="played" style="width: 10px;"></div>
-            <div class="avbl"></div>
+            <div class="avbl flicker"></div>
             <i style="left: 85.6454px;"></i>
         </div>
         <div id="playpause" @click="timerRecovery" class="play-pause iconfont clickable off"></div>
         <div id="calendar">
-            <div class="calendar_interval" :class="!isShowTimeBar ? 'disabled' : ''">
+            <div
+                class="calendar_interval"
+                :class="!isShowTimeBar ? 'disabled' : ''"
+                @mouseover="overProgressLine"
+                @click="setTimeBar"
+            >
                 <div
                     v-for="item in allDateList"
                     :key="item.id"
@@ -377,7 +382,9 @@ export default class TimeBar extends mixins(ResizeMixin) {
         // TODO:[-] 21-01-20 在外侧获取 event.currentTarget.clientWidth
         // -> div.progress-line 的宽度
         // ERROR:此处传递给 delayMoveProgressLine 方法的 event 缺失了部分的信息？
+
         const progressLineWidth: number = event.currentTarget.clientWidth
+        // console.log(progressLineWidth)
         this.delayMoveProgressLine(event, progressLineWidth)
     }
 
@@ -404,7 +411,7 @@ export default class TimeBar extends mixins(ResizeMixin) {
         // TODO:[*] 19-09-10 修改格子的间隔为每小时一个格子
         const cellWidth = this.hoursCellWidth
         // 3 获取鼠标选中的点的位置
-        const lenTarget = event.offsetX
+        const lenTarget = event.layerX
         // 4 然后获取该位置属于的格子
         const indexTarget = lenTarget / cellWidth
         const indexTargetCell = parseInt(indexTarget.toString())
@@ -472,7 +479,7 @@ export default class TimeBar extends mixins(ResizeMixin) {
         let progressLineWidth = 0
         if (this.verifyDate(currentDate)) {
             // 在预报范围内
-            progressLineWidth = event.offsetX
+            progressLineWidth = event.layerX
         } else {
             progressLineWidth = this.getCurrentProgressLineWidth(currentDate)
         }
@@ -487,7 +494,7 @@ export default class TimeBar extends mixins(ResizeMixin) {
         const msg = document.getElementById('msg')
         if (msg != null) {
             msg.style.display = 'block'
-            msg.style.left = event.offsetX + 10 + '.px'
+            msg.style.left = event.layerX + 10 + '.px'
             // msg.style.top = e.clientY - 35 + ".px";
             // 注意在vue组件中，若使用绝对定位，若在style中使用了scoped，则这个绝对定位是针对当前组件而言的
             msg.style.top = event.offsetY - 45 + '.px'
@@ -918,6 +925,7 @@ export default class TimeBar extends mixins(ResizeMixin) {
 }
 .calendar_interval {
     position: absolute;
+    cursor: pointer;
     // background-color: #5d585899;
 }
 .calendar_interval div {
@@ -1072,5 +1080,38 @@ export default class TimeBar extends mixins(ResizeMixin) {
     font-weight: bold;
     text-shadow: 2px 2px 10px rgb(220, 243, 14);
     border-radius: 2px;
+}
+.progress-line .flicker {
+    // background: #1bc5a3;
+    // animation: transform_flicker 3s ease-in-out infinite;
+}
+.flicker ::after {
+    background: #1bc5a3;
+    animation: transform_flicker 2.2s ease-in-out infinite;
+}
+
+.flicker ::before {
+    background: #1bc5a3;
+    animation: transform_flicker 2.2s ease-in-out infinite;
+}
+
+@keyframes transform_flicker {
+    0% {
+        opacity: 0.2;
+        filter: alpha(opacity=20);
+        // transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.5;
+        filter: alpha(opacity=50);
+        // transform: scale(1.05);
+    }
+
+    100% {
+        opacity: 0.2;
+        filter: alpha(opacity=20);
+        // transform: scale(1);
+    }
 }
 </style>
