@@ -494,7 +494,7 @@ export default class TimeBar extends mixins(ResizeMixin) {
         const msg = document.getElementById('msg')
         if (msg != null) {
             msg.style.display = 'block'
-            msg.style.left = event.layerX + 10 + '.px'
+            msg.style.left = progressLineWidth + 10 + '.px'
             // msg.style.top = e.clientY - 35 + ".px";
             // 注意在vue组件中，若使用绝对定位，若在style中使用了scoped，则这个绝对定位是针对当前组件而言的
             msg.style.top = event.offsetY - 45 + '.px'
