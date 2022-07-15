@@ -50,7 +50,7 @@
                                 <tr
                                     v-for="(item, index) in tyGroupCaseList"
                                     :key="index"
-                                    :class="item.active ? 'active' : ''"
+                                    :class="item.active ? 'active' : 'unactive'"
                                     @click="selectTyGroup(item)"
                                 >
                                     <!-- <th scope="row">{{ item.key }}</th> -->
@@ -95,7 +95,7 @@ export default class TyphoonSearch extends Vue {
         timestamp: string
         tyCode: string
         tyId: number
-        activate: boolean
+        active: boolean
     }[] = []
     selectedTyGroupMid: {
         gmtCreated: Date
@@ -207,15 +207,26 @@ export default class TyphoonSearch extends Vue {
     }): void {
         // TODO:[-] 21-07-28 选中指定的集合预报路径集，修改 tyId 与 tyCode + timestamp
         val.active = !val.active
+        // 若为选中当前选项，则需要清除集合中其他对象的选中状态
         if (val.active) {
             this.selectedTyId = val.tyId
             this.selectedTyCode = val.tyCode
             this.selectedTyTimeStampStr = val.timestamp
+            this.unSelectCaseList(val.tyId)
         } else {
             this.selectedTyId = DEFAULT_TYPHOON_ID
             this.selectedTyCode = DEFAULTTYCODE
             this.selectedTyTimeStampStr = DEFAULTTIMESTAMP
         }
+    }
+
+    /** + 22-07-15 从当前 this.tyGroupCaseList 中剔除非传入 tyId 的其他项*/
+    unSelectCaseList(tyId: number): void {
+        this.tyGroupCaseList.map((temp) => {
+            if (temp.tyId != tyId) {
+                temp.active = false
+            }
+        })
     }
 
     // + 22-01-07 新加入的 compute 计算属性用来处理 v-mode 无法直接加入过滤器的问题
