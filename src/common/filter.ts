@@ -1,6 +1,7 @@
 import moment from 'moment'
 import { DEFAULTTYCODE } from '@/const/typhoon'
 import { DEFAULT_DATE } from '@/const/common'
+import { AreaEnum, getAreaName } from '@/enum/area'
 /**
  * 将时间转换为指定的格式(str)
  *
@@ -84,6 +85,11 @@ const formatTyphoonCode = (val: string) => {
     return tyCodeStr
 }
 
+/** 获取区域名称 */
+const formatAreaName = (val: AreaEnum) => {
+    return getAreaName(val)
+}
+
 export {
     fortmatData2YMDH,
     fortmatData2YMDHM,
@@ -93,5 +99,6 @@ export {
     formatDir,
     fortmatTyCode,
     fortmatDate2YMD,
-    formatTyphoonCode
+    formatTyphoonCode,
+    formatAreaName
 }

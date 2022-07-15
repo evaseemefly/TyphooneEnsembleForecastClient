@@ -44,6 +44,7 @@
                                     <th scope="col">台风编号</th>
                                     <th scope="col">时间戳</th>
                                     <th scope="col">创建时间</th>
+                                    <th scope="col">区域</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -57,6 +58,7 @@
                                     <td>{{ item.tyCode }}</td>
                                     <td>{{ item.timestamp }}</td>
                                     <td>{{ item.gmtCreated | fortmatData2YMDHM }}</td>
+                                    <td>{{ item.area | formatAreaName }}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -79,9 +81,16 @@ import {
 } from '@/const/common'
 import { DEFAULTTIMESTAMP, DEFAULTTYCODE } from '@/const/typhoon'
 import { SET_TYPHOON_CODE, SET_TYPHOON_ID, SET_TYPHOON_TIMESTAMP } from '@/store/types'
-import { fortmatData2YMDH, fortmatData2YMDHM, formatTyphoonCode } from '@/common/filter'
+import {
+    fortmatData2YMDH,
+    fortmatData2YMDHM,
+    formatTyphoonCode,
+    formatAreaName
+} from '@/common/filter'
+import { AreaEnum } from '@/enum/area'
+import area from '@turf/area'
 @Component({
-    filters: { fortmatData2YMDH, fortmatData2YMDHM }
+    filters: { fortmatData2YMDH, fortmatData2YMDHM, formatAreaName }
 })
 export default class TyphoonSearch extends Vue {
     /*
@@ -96,6 +105,7 @@ export default class TyphoonSearch extends Vue {
         tyCode: string
         tyId: number
         active: boolean
+        area: AreaEnum
     }[] = []
     selectedTyGroupMid: {
         gmtCreated: Date
@@ -149,6 +159,7 @@ export default class TyphoonSearch extends Vue {
             tyCode: string
             tyId: number
             active: boolean
+            area: AreaEnum
         }[] = []
         getTyCaseListByTyCode(tyCode)
             .then(
@@ -159,6 +170,7 @@ export default class TyphoonSearch extends Vue {
                         timestamp: string
                         ty_code: string
                         ty_id: number
+                        area: number
                     }[]
                 }) => {
                     if (res.status === 200) {
@@ -177,7 +189,8 @@ export default class TyphoonSearch extends Vue {
                                     timestamp: temp.timestamp,
                                     tyCode: temp.ty_code,
                                     tyId: temp.ty_id,
-                                    active: false
+                                    active: false,
+                                    area: temp.area
                                 })
                             })
                         }

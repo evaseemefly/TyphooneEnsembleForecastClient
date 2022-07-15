@@ -24,4 +24,27 @@ const getAreaVal = (x: AreaEnum, index: number): string => {
     return getEnumVal<AreaEnum>(x, index)
 }
 
-export { getAreaVal }
+/**
+ * @description 根据传入的区域枚举获取对应的区域名称
+ * @author (Set the text for this tag by adding docthis.authorName to your settings file.)
+ * @date 15/07/2022
+ * @param {AreaEnum} x
+ * @returns {*}  {string}
+ */
+const getAreaName = (x: AreaEnum): string => {
+    let name = '区域1'
+    switch (x) {
+        case AreaEnum.BOHAISEA:
+            name = '区域1'
+            break
+        case AreaEnum.EASTCHINASEA:
+            name = '区域2'
+            break
+        case AreaEnum.NULL:
+            name = '区域3'
+            break
+    }
+    return name
+}
+
+export { getAreaVal, getAreaName }
