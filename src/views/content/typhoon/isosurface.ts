@@ -180,6 +180,8 @@ class SurgeSosurface implements ISosurface {
             mode: 'cors'
         })
             .then((res) => {
+                // TODO:[*] 22-07-29
+                // TypeError: Failed to execute 'arrayBuffer' on 'Response': body stream already read
                 return res.arrayBuffer()
             })
             .then((bufRes) => {
