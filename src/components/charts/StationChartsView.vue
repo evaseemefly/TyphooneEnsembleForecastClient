@@ -90,6 +90,7 @@ export default class StationChartsView extends Vue {
     alertYellow: number = DEFAULT_ALERT_TIDE
     alertOrange: number = DEFAULT_ALERT_TIDE
     alertRed: number = DEFAULT_ALERT_TIDE
+    /** 与基面的差值(目前就是距离85高程的差值) */
     surgeDiff: number | null = DEFAULT_SURGE_DIFF
 
     /** 85基面的差值 */
@@ -265,18 +266,18 @@ export default class StationChartsView extends Vue {
         stationCode: string
     ): Promise<void> {
         const that = this
+        /** 潮位距离基面的差值，此处就是85高程的差值 */
         let surgeDiff = 0
         // this.surgeDiff = DEFAULT_SURGE_DIFF
-        await getStationSurgeBaseLevelDiff(stationCode)
+        // TODO:[*] 22-08-15 此处是否需要修改为 getStationD85SurgeDiff
+        // 由于天文潮位是水尺基面，需要转换为85高程基面
+        await getStationD85SurgeDiff(stationCode)
             .then(
-                (diffRes: {
-                    status: number
-                    data: { station_code: string; surge_diff: number }
-                }) => {
+                (diffRes: { status: number; data: { station_code: string; d85_diff: number } }) => {
                     if (diffRes.status == 200) {
                         /** 基面的差值 */
-                        surgeDiff = diffRes.data.surge_diff
-                        // that.surgeDiff = surgeDiff
+                        surgeDiff = diffRes.data.d85_diff
+                        that.surgeDiff = surgeDiff
                     }
                 }
             )
@@ -304,6 +305,7 @@ export default class StationChartsView extends Vue {
                                 surge: number
                                 forecast_dt: string
                             }) => {
+                                // TODO:[-] 22-08-15 注意此处天文潮需要减去 85基面的差值
                                 that.forecastAstronomicTideList.push(item.surge - surgeDiff)
                             }
                         )

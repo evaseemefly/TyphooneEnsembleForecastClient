@@ -30,6 +30,7 @@ import { DEFAULT_TIMESTAMP, DEFAULT_STATION_CODE } from '@/const/common'
 import { DEFAULTTYCODE } from '@/const/typhoon'
 // + 22-07-08 尝试在前端生成百分位数
 import { std, quantile } from '@/common/math'
+import { DEFAULT_SURGE_DIFF } from '@/const/surge'
 @Component({
     directives: {
         drag: Draggable
@@ -131,22 +132,39 @@ export default class QuarterView extends Vue {
 
     loadStationRealDataQuarterList(tyCode: string, stationCode: string, timestampStr: string) {
         this.quarterList = []
-        return getStationSurgeRealDataQuarterList(tyCode, timestampStr, stationCode).then((res) => {
-            if (res.status === 200) {
-                console.log(res.data)
-                if (res.data.length > 0) {
-                    res.data.forEach(
-                        (element: {
-                            forecast_dt: string
-                            median_val: number
-                            quarter_val: number
-                            three_quarters_val: number
-                            station_code: string
-                            ty_code: string
-                            max_val: number
-                            min_val: number
-                        }) => {
-                            /*
+        return getStationD85SurgeDiff(stationCode)
+            .then(
+                (d85res: {
+                    status: number
+                    data: { station_code: string; d85_diff: number | null }
+                }) => {
+                    let d85 = 0
+                    if (d85res.status === 200) {
+                        if (d85res.data.d85_diff !== null) {
+                            d85 = d85res.data.d85_diff
+                        }
+                    }
+                    return d85
+                }
+            )
+            .then((d85: number) => {
+                getStationSurgeRealDataQuarterList(tyCode, timestampStr, stationCode).then(
+                    (res) => {
+                        if (res.status === 200) {
+                            console.log(res.data)
+                            if (res.data.length > 0) {
+                                res.data.forEach(
+                                    (element: {
+                                        forecast_dt: string
+                                        median_val: number
+                                        quarter_val: number
+                                        three_quarters_val: number
+                                        station_code: string
+                                        ty_code: string
+                                        max_val: number
+                                        min_val: number
+                                    }) => {
+                                        /*
                                 forecast_dt: "2020-09-15T09:00:00Z"
                                 forecast_index: 0
                                 median_val: 0
@@ -155,21 +173,23 @@ export default class QuarterView extends Vue {
                                 three_quarters_val: 0
                                 ty_code: "2022"
                             */
-                            const pushTemp = {
-                                stationCode: element.station_code,
-                                quarterVal: element.quarter_val,
-                                threeQuartersVal: element.three_quarters_val,
-                                medianVal: element.median_val,
-                                forecastDt: new Date(element.forecast_dt),
-                                max: element.max_val,
-                                min: element.min_val
+                                        const pushTemp = {
+                                            stationCode: element.station_code,
+                                            quarterVal: element.quarter_val - d85,
+                                            threeQuartersVal: element.three_quarters_val - d85,
+                                            medianVal: element.median_val - d85,
+                                            forecastDt: new Date(element.forecast_dt),
+                                            max: element.max_val - d85,
+                                            min: element.min_val - d85
+                                        }
+                                        this.quarterList.push(pushTemp)
+                                    }
+                                )
                             }
-                            this.quarterList.push(pushTemp)
                         }
-                    )
-                }
-            }
-        })
+                    }
+                )
+            })
     }
 
     loadQuarterCharts(tyCode: string, stationCode: string, timestampStr: string) {
@@ -203,6 +223,25 @@ export default class QuarterView extends Vue {
         that.isLoading = true
         this.forecastDateList = []
         this.quarterList = []
+        let d85 = DEFAULT_SURGE_DIFF
+        await getStationD85SurgeDiff(stationCode)
+            .then(
+                (d85res: {
+                    status: number
+                    data: { station_code: string; d85_diff: number | null }
+                }) => {
+                    let d85 = 0
+                    if (d85res.status === 200) {
+                        if (d85res.data.d85_diff !== null) {
+                            d85 = d85res.data.d85_diff
+                        }
+                    }
+                    return d85
+                }
+            )
+            .then((val) => {
+                d85 = val
+            })
         await getStationSurgeRealDataListAndRange(tyCode, timestampStr, stationCode).then((res) => {
             if (res.status == 200) {
                 // eg:
@@ -287,11 +326,11 @@ export default class QuarterView extends Vue {
                     const min = Math.min(...element.surgeList)
                     that.quarterList.push({
                         stationCode: that.stationCode,
-                        max: max,
-                        min: min,
-                        quarterVal: quarterVal,
-                        threeQuartersVal: threeQuartersVal,
-                        medianVal: medianVal,
+                        max: max - d85,
+                        min: min - d85,
+                        quarterVal: quarterVal - d85,
+                        threeQuartersVal: threeQuartersVal - d85,
+                        medianVal: medianVal - d85,
                         forecastDt: that.forecastDateList[index]
                     })
                 })
