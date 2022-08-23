@@ -60,7 +60,7 @@
                         <button
                             type="button"
                             class="el-button el-button--primary"
-                            @click="checkStand"
+                            @click="checkStandard"
                         >
                             检查<i class="fas fa-spell-check"></i>
                         </button>
@@ -81,6 +81,7 @@
                         <div
                             class="base-card-row tiled mini row-flex-space-around"
                             v-for="(item, index) in customerTyCMAList"
+                            :class="getRowErrorCls(index)"
                             :key="item.key"
                         >
                             <i class="el-icon-circle-plus" @click="addCustomerTyCMA"></i>
@@ -223,6 +224,7 @@
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 import { Getter, Mutation, State, namespace } from 'vuex-class'
+import moment from 'moment'
 import { StationDrag } from '@/directives/drag'
 import { loading } from '@/common/common'
 import { createTyCase } from '@/api/task'
@@ -264,6 +266,25 @@ const checkTyDateRange = (tyList: IPathType[]): boolean => {
     const startDt = sortedTyList[0].forecastDt
     const endDt = sortedTyList[sortedTyList.length - 1].forecastDt
     return (endDt.getTime() - startDt.getTime()) / (1000 * 60 * 60) > 24
+}
+
+/** 返回 first 间隔不为 6 hour 的index */
+const checkTyPathInterval = (tyList: IPathType[]): number => {
+    let pathIndex = -1
+    /** 时间间隔 6小时 */
+    const sixHour: number = 1000 * 60 * 60 * 6
+    for (let index = 0; index < tyList.length - 1; index++) {
+        /** 当前路径 */
+        const currentPath: IPathType = tyList[index]
+        /** 下一个路径 */
+        const nextPath: IPathType = tyList[index + 1]
+        // 求两个时间的差，若不等于6小时，则跳出，并将当前index 赋值给 index
+        const interval = nextPath.forecastDt - currentPath.forecastDt
+        if (interval !== sixHour) {
+            pathIndex = index
+        }
+    }
+    return pathIndex
 }
 
 /** 台风预报路径接口 */
@@ -336,6 +357,9 @@ export default class CreateCaseForm extends Vue {
     }
     // @Prop()
     isShow = false
+
+    /** 出现时间间隔错误的 path index */
+    errorPathIndex = -1
 
     // toClose = false
     // isClosed = true
@@ -685,7 +709,7 @@ export default class CreateCaseForm extends Vue {
     }
 
     /** 判断提交数据是否标准 */
-    checkStand(): void {
+    checkStandard(): void {
         if (!checkCustomerTyList(this.customerTyCMAList)) {
             this.$confirm('提交的起止时间间隔需要在120小时内')
             return
@@ -694,6 +718,26 @@ export default class CreateCaseForm extends Vue {
             this.$confirm('提交的起止时间间隔需要大于24小时')
             return
         }
+        this.errorPathIndex = checkTyPathInterval(this.customerTyCMAList)
+        if (this.errorPathIndex !== -1) {
+            /** 第一次出现时间间隔错误的路径信息 */
+            const errorPath = this.customerTyCMAList[this.errorPathIndex]
+
+            this.$confirm(
+                `请检查${moment(errorPath.forecastDt).format(
+                    'yyyy-MM-DD HH:mm'
+                )}路径与前后的时间间隔`
+            )
+        }
+    }
+
+    /** 根据当前 tyCMAList index 获取是否为 error 行 */
+    getRowErrorCls(index: number): string {
+        let clsStr = ''
+        if (index !== -1 && index == this.errorPathIndex) {
+            clsStr = 'row-error'
+        }
+        return clsStr
     }
 
     /** + 21-09-15 提交当前页面中的信息 */
@@ -766,11 +810,13 @@ export default class CreateCaseForm extends Vue {
         // console.log(this.customerTyCMAList)
         const tempCustomerTyCMA = { ...this.customerTyCMAList[this.customerTyCMAList.length - 1] }
         this.customerTyCMAList.push(tempCustomerTyCMA)
+        this.errorPathIndex = -1
     }
 
     // 在 customerTyCMAList 中取出最后一组对象
     deleteCustomerTyCMA(index: number): void {
         this.customerTyCMAList.splice(index, 1)
+        this.errorPathIndex = -1
     }
 }
 </script>
@@ -814,6 +860,9 @@ export default class CreateCaseForm extends Vue {
         overflow-y: scroll;
         .base-card-row {
             line-height: 2.5rem;
+        }
+        .row-error {
+            background: rgba(255, 0, 0, 0.715);
         }
     }
     // 底部 footer

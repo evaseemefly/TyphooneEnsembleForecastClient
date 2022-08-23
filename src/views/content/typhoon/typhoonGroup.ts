@@ -1340,7 +1340,7 @@ class TyCMAPathLine {
         const forecastTyIndex: number = this.tyPathList.findIndex((temp) => {
             return temp.isForecast
         })
-        if (forecastTyIndex >= 0) {
+        if (forecastTyIndex > 0) {
             const lastRealTy = this.tyPathList[forecastTyIndex - 1]
             latLngs.push(new L.LatLng(lastRealTy.lat, lastRealTy.lon))
             this.tyPathList.forEach((temp) => {
