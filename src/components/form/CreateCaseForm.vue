@@ -709,14 +709,14 @@ export default class CreateCaseForm extends Vue {
     }
 
     /** 判断提交数据是否标准 */
-    checkStandard(): void {
+    checkStandard(): boolean {
         if (!checkCustomerTyList(this.customerTyCMAList)) {
             this.$confirm('提交的起止时间间隔需要在120小时内')
-            return
+            return false
         }
         if (!checkTyDateRange(this.customerTyCMAList)) {
             this.$confirm('提交的起止时间间隔需要大于24小时')
-            return
+            return false
         }
         this.errorPathIndex = checkTyPathInterval(this.customerTyCMAList)
         if (this.errorPathIndex !== -1) {
@@ -728,7 +728,13 @@ export default class CreateCaseForm extends Vue {
                     'yyyy-MM-DD HH:mm'
                 )}路径与前后的时间间隔`
             )
+            return false
         }
+        if (this.selectForecastAreaVal == AreaEnum.NULL) {
+            this.$confirm('请选择预报区域')
+            return false
+        }
+        return true
     }
 
     /** 根据当前 tyCMAList index 获取是否为 error 行 */
@@ -752,52 +758,47 @@ export default class CreateCaseForm extends Vue {
             deviation_radius_list: this.deviationRadiusNumberList,
             forecast_area: this.selectForecastAreaVal
         }
-        if (!checkCustomerTyList(this.customerTyCMAList)) {
-            this.$confirm('提交的起止时间间隔需要在120小时内')
-            return
-        }
-        if (!checkTyDateRange(this.customerTyCMAList)) {
-            this.$confirm('提交的起止时间间隔需要大于24小时')
-            return
-        }
-        this.$confirm('请确认是否要提交计算作业, 是否继续?', '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning'
-        })
-            .then(() => {
-                createTyCase(postData).then(
-                    (res: { data: { ty_code: string; timestamp: string }; status: number }) => {
-                        if (res.status === 200) {
-                            // TODO:[-] 21-12-01 注意此处修改了后台逻辑，会返回 task_id
-                            this.$message('提交成功')
+        const isOk = this.checkStandard()
+        if (isOk) {
+            this.$confirm('请确认是否要提交计算作业, 是否继续?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            })
+                .then(() => {
+                    createTyCase(postData).then(
+                        (res: { data: { ty_code: string; timestamp: string }; status: number }) => {
+                            if (res.status === 200) {
+                                // TODO:[-] 21-12-01 注意此处修改了后台逻辑，会返回 task_id
+                                this.$message('提交成功')
 
-                            const tyCode = res.data.ty_code
-                            const timestamp = res.data.timestamp
-                            // TODO:[*] 21-12-02 由于提交作业后作业可能会等待或运行一段时间
-                            // getTargetTyCase(tyCode, timestamp).then((res: { data: { id: number } }) => {
-                            //     const tyId = res.data.id
-                            //     that.selectCoverageId(tyId)
-                            // })
-                            // console.log(res.data)
-                        } else {
-                            this.$message.error('创建作业错误！')
+                                const tyCode = res.data.ty_code
+                                const timestamp = res.data.timestamp
+                                // TODO:[*] 21-12-02 由于提交作业后作业可能会等待或运行一段时间
+                                // getTargetTyCase(tyCode, timestamp).then((res: { data: { id: number } }) => {
+                                //     const tyId = res.data.id
+                                //     that.selectCoverageId(tyId)
+                                // })
+                                // console.log(res.data)
+                            } else {
+                                this.$message.error('创建作业错误！')
+                            }
                         }
-                    }
-                )
-                this.$message({
-                    type: 'success',
-                    message: '作业提交成功!'
+                    )
+                    this.$message({
+                        type: 'success',
+                        message: '作业提交成功!'
+                    })
+                    this.isShow = false
                 })
-                this.isShow = false
-            })
-            .catch(() => {
-                this.$message({
-                    type: 'info',
-                    message: '已取消提交!'
+                .catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消提交!'
+                    })
+                    this.isShow = false
                 })
-                this.isShow = false
-            })
+        }
     }
 
     @Mutation(SET_GEO_COVERAGEID, { namespace: 'geo' }) selectCoverageId

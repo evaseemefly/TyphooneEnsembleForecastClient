@@ -497,7 +497,8 @@ export default class TimeBar extends mixins(ResizeMixin) {
             msg.style.left = progressLineWidth + 10 + '.px'
             // msg.style.top = e.clientY - 35 + ".px";
             // 注意在vue组件中，若使用绝对定位，若在style中使用了scoped，则这个绝对定位是针对当前组件而言的
-            msg.style.top = event.offsetY - 45 + '.px'
+            // TODO:[-] 22-08-25 取消了根据移入的鼠标所在位置动态计算 msg 框偏移高度
+            // msg.style.top = event.offsetY - 45 + '.px'
         }
         myself.hoverCurrentDt = currentDate
     }
@@ -656,7 +657,7 @@ export default class TimeBar extends mixins(ResizeMixin) {
                 const lastIndex = tempArr.length - 1
                 tempArr = tempArr.slice(1, lastIndex)
                 tempArr.forEach((temp: ChildNode) => {
-                    ;(temp as HTMLElement).style.width = this.lenUnit * this.interval + 'px'
+                    (temp as HTMLElement).style.width = this.lenUnit * this.interval + 'px'
                     // temp.style.width = this.lenUnit * this.interval + "px";
                 })
             }
@@ -1044,7 +1045,7 @@ export default class TimeBar extends mixins(ResizeMixin) {
     color: #f5f7fa;
     padding: 3px;
     border-radius: 5px;
-    top: -45px;
+    top: -48px;
     box-shadow: 0 0 10px 0px black;
 }
 #staticmsg {
