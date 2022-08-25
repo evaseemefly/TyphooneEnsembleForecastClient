@@ -1,11 +1,20 @@
 <template>
     <div class="dateBar resize-element" ref="datebar">
+        <div class="timebar-operate-btn">
+            <div class="operate-previous" @click="subtract1Hour()">-1H</div>
+            <!-- <div
+                id="playpause"
+                @click="timerRecovery"
+                class="play-pause iconfont clickable off"
+            ></div> -->
+            <div class="operate-next" @click="add1Hour()">+1H</div>
+        </div>
         <div class="progress-line" @click="setTimeBar">
             <div id="played" class="played" style="width: 10px;"></div>
             <div class="avbl flicker"></div>
             <i style="left: 85.6454px;"></i>
         </div>
-        <div id="playpause" @click="timerRecovery" class="play-pause iconfont clickable off"></div>
+
         <div id="calendar">
             <div
                 class="calendar_interval"
@@ -503,7 +512,7 @@ export default class TimeBar extends mixins(ResizeMixin) {
         myself.hoverCurrentDt = currentDate
     }
 
-    setTimeBar(event: any): void {
+    setTimeBar(event: any | null): void {
         // console.log('点击事件')
         // 点击之后更新这个选中的时间
         // + 21-12-17 若不显示则直接跳出
@@ -593,6 +602,42 @@ export default class TimeBar extends mixins(ResizeMixin) {
         }
     }
 
+    /** 对当前的 hoverDate 执行 + addhours 操作 */
+    computedHoverDate(addHours: number): void {
+        const hoverMoment: moment.Moment = moment(this.hoverCurrentDt).add(addHours, 'h')
+        this.hoverCurrentDt = hoverMoment.toDate()
+        this.slideDateLabelr = hoverMoment.format('DD HH:mm')
+        // 根据当前 hoverMoment 获取距离起始的 dt 的个子数量
+        const lineStartMoment: moment.Moment = moment(this.allDateList[0].date)
+        // 计算当前时间与 line start 时间的差(小时)
+        const hours = hoverMoment.diff(lineStartMoment, 'h')
+
+        const playedDom = document.getElementById('played')
+        const cellWidth = this.hoursCellWidth
+        if (playedDom) {
+            playedDom.style.width = hours * cellWidth + 'px'
+        }
+        const msg = document.getElementById('msg')
+        const progressLineWidth = this.getCurrentProgressLineWidth(this.hoverCurrentDt)
+        if (msg != null) {
+            msg.style.display = 'block'
+            msg.style.left = progressLineWidth + 10 + 'px'
+        }
+        console.log(msg)
+        // 所有完毕后执行
+        this.setTimeBar({})
+    }
+
+    /** 将当前 hoverCurrent - 1hour */
+    subtract1Hour(): void {
+        this.computedHoverDate(-1)
+    }
+
+    /** 将当前 hoverCurrent + 1hour */
+    add1Hour(): void {
+        this.computedHoverDate(1)
+    }
+
     // [+] 21-01-18 根据传入的 startDt 初始化 hover 橙色的dt
     initHoverCurrentDtLine(startDt: Date): void {
         this.hoverCurrentDt = startDt
@@ -657,7 +702,7 @@ export default class TimeBar extends mixins(ResizeMixin) {
                 const lastIndex = tempArr.length - 1
                 tempArr = tempArr.slice(1, lastIndex)
                 tempArr.forEach((temp: ChildNode) => {
-                    (temp as HTMLElement).style.width = this.lenUnit * this.interval + 'px'
+                    ;(temp as HTMLElement).style.width = this.lenUnit * this.interval + 'px'
                     // temp.style.width = this.lenUnit * this.interval + "px";
                 })
             }
@@ -864,11 +909,30 @@ export default class TimeBar extends mixins(ResizeMixin) {
     /* 两边的边距 */
     margin-right: 20px;
     margin-left: 20px;
+    .timebar-operate-btn {
+        display: flex;
+        overflow: hidden;
+        border-radius: 5px;
+        color: white;
+        box-shadow: 0 0 4px 0 black;
+        .operate-previous {
+            width: 50px;
+            // border-radius: 1.2rem;
+            background: #34495e;
+        }
+        .operate-next {
+            width: 50px;
+            // border-radius: 1.2rem;
+            background: #f39c12;
+        }
+    }
 }
 
 #calendar {
     top: -20px;
     position: absolute;
+    // TODO:[-] 22-08-25 左侧加入了操作按钮，将右侧的时间进度栏修改为相对定位，且距离左侧100px，给操作按钮预留的空间
+    left: 100px;
 }
 // - 21-01-18 新加入的 遮罩 mask_layer
 #mask_layer {
@@ -990,10 +1054,14 @@ export default class TimeBar extends mixins(ResizeMixin) {
 }
 
 .progress-line {
+    // TODO:[-] 22-08-25 左侧加入了操作按钮，将右侧的时间进度栏修改为相对定位，且距离左侧100px，给操作按钮预留的空间
+    position: absolute;
+    left: 100px;
+    // --
     width: 100%;
     height: 6px;
     cursor: pointer;
-    position: relative;
+    // position: relative;
     border: 10px solid transparent;
     border-right-color: transparent;
     border-right-style: solid;
